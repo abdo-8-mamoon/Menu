@@ -37,7 +37,48 @@ async function init(){
 async function loadMenu(){if(!s.sb)return;let r=await s.sb.from("menu_items").select("*").eq("active",true).order("sort_order");if(!r.error&&r.data?.length)s.menu=r.data}
 async function loadSession(){if(!s.sb||!s.table)return;let r=await s.sb.from("table_sessions").select("*").eq("table_number",s.table).eq("status","open").order("opened_at",{ascending:false}).limit(1).maybeSingle();if(!r.error&&r.data)s.session=r.data}
 async function loadOrders(){if(!s.sb)return;let q=s.sb.from("orders").select("*,order_items(*)").order("created_at",{ascending:false}).limit(100);if(!s.manager&&!s.kitchen&&s.session)q=q.eq("session_id",s.session.id);let r=await q;if(!r.error&&r.data)s.orders=r.data}
-async function ensureSession(){if(s.session)return s.session;if(!s.sb)return null;let r=await s.sb.from("table_sessions").insert({table_number:s.table,status:"open"}).select().single();if(r.error){await loadSession();return s.session}s.session=r.data;return s.session}
+async function ensureSession(){
+    if(s.session) return s.session;
+
+    if(!s.sb){
+        console.error("Supabase client not initialized");
+        return null;
+    }
+
+    if(!s.table || s.table < 1 || s.table > 30){
+        console.error("Invalid table number:", s.table);
+        return null;
+    }
+
+    const r = await s.sb
+        .from("table_sessions")
+        .insert({
+            table_number: s.table,
+            status: "open"
+        })
+        .select()
+        .single();
+
+    if(r.error){
+        console.error("CREATE SESSION ERROR:", r.error);
+
+        alert(
+            "Supabase Error\n\n" +
+            r.error.message +
+            "\n\nCode: " +
+            (r.error.code || "N/A")
+        );
+
+        await loadSession();
+        return s.session;
+    }
+
+    s.session = r.data;
+
+    console.log("Session created:", s.session);
+
+    return s.session;
+}
 function header(){return `<header class="top"><div class="brand"><div class="logo">R</div><div>${CONFIG.RESTAURANT}<small class="muted" style="display:block">${T("نظام المطعم الذكي","Smart restaurant system")}</small></div></div><div class="actions"><button class="btn" id="lang">${s.lang==="ar"?"EN":"عربي"}</button><button class="btn" id="theme">◐</button>${(s.manager||s.kitchen)?`<button class="btn primary" id="customer">${T("واجهة الزبون","Customer")}</button>`:""}</div></header>`}
 function customer(){return header()+`<section class="hero"><span class="badge">${T("ترابيزة","TABLE")} ${s.table||"—"} • ${T("اطلب من موبايلك","ORDER FROM YOUR PHONE")}</span><h1>${T("منيو المطعم<br>بين إيديك.","Your menu.<br>In your hands.")}</h1><p>${T("اختار أكلك، عدّل طلبك، ابعت الطلب للمطبخ، وتابع حالته وفاتورتك من نفس المكان.","Choose your food, customize it, send it to the kitchen, and track your order and bill from one place.")}</p></section><main class="wrap"><div class="row"><div><h2>${T("المنيو","Menu")}</h2><span class="muted">${T("اختيارات الشيف اليومية","Chef's daily selections")}</span></div><button class="btn" id="myorders">${T("طلباتي","My orders")}</button></div><div class="cats">${Object.entries(cats).map(([k,v])=>`<button class="chip ${s.cat===k?"on":""}" data-cat="${k}">${T(v[0],v[1])}</button>`).join("")}</div><div class="menu">${s.menu.filter(x=>s.cat==="all"||(x.category||x.cat)===s.cat).map(food).join("")}</div></main>${s.cart.length?`<button class="cart" id="cart">🛒 ${T("السلة","Cart")} <b>${s.cart.reduce((a,x)=>a+x.qty,0)}</b></button>`:""}<footer>RestoFlow</footer>`}
 function food(x){return `<article class="food"><img src="${x.image_url||x.img||""}" alt=""><div class="foodbody"><h3>${nm(x)}</h3><div class="muted">${x.description_ar||x.description_en||T("اختيار شهي من الشيف","A delicious chef selection")}</div><div class="row" style="margin-top:13px"><span class="price">${money(x.price)}</span><button class="btn gold" data-add="${x.id}">+ ${T("إضافة","Add")}</button></div></div></article>`}
