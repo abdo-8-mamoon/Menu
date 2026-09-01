@@ -588,9 +588,21 @@ function avgTicketTrend(){
     values:list.map(x=>x.count?x.sum/x.count:0)
   };
 }
+function doneOrdersRaw(){
+  // any order that reached ready/served/paid, regardless of whether its timestamps are usable
+  return rangeOrders().filter(o=>["ready","served","paid"].includes(o.status));
+}
 function doneOrders(){
   // orders that reached at least "ready" and have a real created_at→updated_at span, used for prep-time based metrics
-  return rangeOrders().filter(o=>["ready","served","paid"].includes(o.status) && o.updated_at && o.created_at && o.updated_at!==o.created_at);
+  return doneOrdersRaw().filter(o=>o.updated_at && o.created_at && o.updated_at!==o.created_at);
+}
+function prepTimeStatus(){
+  // "ok" — usable timestamps found; "no-orders" — nothing has reached ready/served/paid yet;
+  // "no-trigger" — orders reached done status but updated_at never differs from created_at
+  // (almost always means the orders table has no trigger refreshing updated_at on status change)
+  if(doneOrders().length>0) return "ok";
+  if(doneOrdersRaw().length>0) return "no-trigger";
+  return "no-orders";
 }
 function trendByDay(items,valueFn,{limitDays=14}={}){
   const map=new Map();
@@ -710,6 +722,24 @@ function navBar(){
   </div>`;
 }
 
+function monthlyOrdersSeries(){
+  const mb=monthlyBreakdown();
+  return {
+    labels:mb.map(m=>m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"2-digit"})),
+    values:mb.map(m=>m.count)
+  };
+}
+function monthlyGrowthSeries(){
+  const mb=monthlyBreakdown();
+  return {
+    labels:mb.map(m=>m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"2-digit"})),
+    values:mb.map(m=>{
+      if(m.prevRevenue==null)return null;
+      if(m.prevRevenue===0)return m.revenue>0?100:0;
+      return ((m.revenue-m.prevRevenue)/m.prevRevenue)*100;
+    })
+  };
+}
 function monthsView(){
   const mb=monthlyBreakdown();
   const totalRevenue=mb.reduce((a,m)=>a+m.revenue,0);
@@ -738,6 +768,19 @@ function monthsView(){
       <h3>${t("الإيرادات الشهرية","Monthly revenue")}</h3>
       <div class="cap">${t("إجمالي الطلبات المدفوعة لكل شهر","Total paid orders per month")}</div>
       <div class="chart-box tall"><canvas id="chartMonthly"></canvas></div>
+    </div>
+
+    <div class="charts-row2">
+      <div class="chart-panel">
+        <h3>${t("عدد الطلبات لكل شهر","Orders per month")}</h3>
+        <div class="cap">${t("حجم الطلبات المدفوعة، بعيدًا عن قيمتها —","Paid order volume, separate from its value —")} ${t(`آخر ${CONFIG.MONTHLY_LOOKBACK_MONTHS} شهر`,`Last ${CONFIG.MONTHLY_LOOKBACK_MONTHS} months`)}</div>
+        <div class="chart-box"><canvas id="chartMonthlyOrders"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <h3>${t("نسبة النمو الشهري","Month-over-month growth")}</h3>
+        <div class="cap">${t("% التغيّر في الإيرادات عن الشهر اللي قبله —","% revenue change vs. the previous month —")} ${t(`آخر ${CONFIG.MONTHLY_LOOKBACK_MONTHS} شهر`,`Last ${CONFIG.MONTHLY_LOOKBACK_MONTHS} months`)}</div>
+        <div class="chart-box"><canvas id="chartMonthlyGrowth"></canvas></div>
+      </div>
     </div>
 
     <div class="section-title"><h2>${t("سجل الشهور","Monthly ledger")}</h2><span class="muted">${t("من الأحدث للأقدم","Most recent first")}</span></div>
@@ -802,6 +845,7 @@ function manager(){
   const turnover=tableTurnover();
   const scopeLoading=s.loading.range;
   const list=ordersForList();
+  const prepStatus=prepTimeStatus();
 
   return header()+navBar()+`<main class="container">
     <div class="rangebar">
@@ -902,12 +946,16 @@ function manager(){
         <div class="chart-panel">
           <h3>${t("اتجاه متوسط وقت التحضير","Prep time trend")}</h3>
           <div class="cap">${t("متوسط الدقائق من الطلب لجاهزيته يوميًا —","Average minutes from order to ready, per day —")} ${rangeLabel(s.range)}</div>
-          <div class="chart-box"><canvas id="chartPrepTrend"></canvas></div>
+          ${prepStatus==="ok"?`<div class="chart-box"><canvas id="chartPrepTrend"></canvas></div>`
+            :prepStatus==="no-trigger"?`<div class="list-note">${t("فيه طلبات وصلت لحالة جاهز/تم التقديم/مدفوع بس عمود updated_at في جدول orders مش بيتحدّث وقت تغيير الحالة، فمفيش وقت تحضير نقدر نحسبه. الحل: ضيف trigger على الجدول يحدّث updated_at تلقائيًا عند كل تعديل.","Some orders reached ready/served/paid, but the orders table's updated_at column never changes on status updates, so there's no prep time to calculate. Fix: add a trigger on the table that auto-refreshes updated_at on every update.")}</div>`
+            :`<div class="empty-note">${t("لسه مفيش طلبات وصلت لحالة جاهزة يتم قياس وقت تحضيرها.","No orders have reached ready yet to measure prep time.")}</div>`}
         </div>
         <div class="chart-panel">
           <h3>${t("نسبة الطلبات المتأخرة","Late orders rate")}</h3>
           <div class="cap">${t(`% الطلبات اللي عدّت ${CONFIG.LATE_MINUTES} دقيقة قبل الجاهزية —`,`% of orders exceeding ${CONFIG.LATE_MINUTES} min before ready —`)} ${rangeLabel(s.range)}</div>
-          <div class="chart-box"><canvas id="chartLateRate"></canvas></div>
+          ${prepStatus==="ok"?`<div class="chart-box"><canvas id="chartLateRate"></canvas></div>`
+            :prepStatus==="no-trigger"?`<div class="list-note">${t("نفس السبب: محتاجين عمود updated_at يتحدّث تلقائيًا عشان نقدر نحسب نسبة الطلبات المتأخرة.","Same cause: we need updated_at to auto-refresh to calculate the late-orders rate.")}</div>`
+            :`<div class="empty-note">${t("لسه مفيش بيانات كافية.","Not enough data yet.")}</div>`}
         </div>
       </div>
       <div class="charts-row3">
@@ -1105,6 +1153,22 @@ function renderCharts(){
     data:{labels:mb.map(m=>m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"2-digit"})),
       datasets:[{data:mb.map(m=>m.revenue),backgroundColor:"#2f6f7a",borderRadius:6,maxBarThickness:34}]},
     options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const mo=monthlyOrdersSeries();
+  const elMO=document.getElementById("chartMonthlyOrders");
+  if(elMO)s.charts.monthlyOrders=new Chart(elMO,{
+    type:"bar",
+    data:{labels:mo.labels,datasets:[{data:mo.values,backgroundColor:"#c9862c",borderRadius:6,maxBarThickness:34}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{precision:0}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const mg=monthlyGrowthSeries();
+  const elMG=document.getElementById("chartMonthlyGrowth");
+  if(elMG)s.charts.monthlyGrowth=new Chart(elMG,{
+    type:"line",
+    data:{labels:mg.labels,datasets:[{data:mg.values,borderColor:"#c23b2b",backgroundColor:"#c23b2b22",fill:true,tension:.3,pointRadius:3,pointBackgroundColor:"#c23b2b",borderWidth:2.5,spanGaps:true}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:th.grid},ticks:{callback:v=>v+"%"}},x:{grid:{display:false}}},maintainAspectRatio:false}
   });
 
   const pk=peakHours();
