@@ -713,7 +713,10 @@ async function loadMenu(){
     .order("sort_order");
 
   if(!r.error && r.data && r.data.length){
-    s.menu=r.data;
+    s.menu=r.data.map(row=>({
+      ...row,
+      cat:row.cat||row.category||row.cat_key||"all"
+    }));
   }
 }
 
