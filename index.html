@@ -575,6 +575,7 @@ async function init(){
   }
 
   render();
+  setTimeout(handlePaymentReturn, 500);
 }
 
 
@@ -2157,6 +2158,11 @@ function bill(o){
                 String(o.id)
               );
 
+              localStorage.setItem(
+                "restoflow_payment_table",
+                String(s.table || o.table_number || "")
+              );
+
 
               localStorage.setItem(
                 "restoflow_payment_reference",
@@ -2296,6 +2302,323 @@ function bill(o){
 
 }
 
+
+
+async function fetchOrderForPaymentReturn(orderId){
+  if(!s.sb || !orderId) return null;
+
+  const {data,error}=await s.sb
+    .from("orders")
+    .select("*,order_items(*)")
+    .eq("id",orderId)
+    .maybeSingle();
+
+  if(error){
+    console.error(
+      "Payment return order lookup error:",
+      error
+    );
+    return null;
+  }
+
+  return data || null;
+}
+
+async function handlePaymentReturn(){
+  const paramsNow =
+    new URLSearchParams(location.search);
+
+  const isReturn =
+    paramsNow.get("payment")==="return" ||
+    paramsNow.get("payment")==="success" ||
+    paramsNow.get("success")==="true" ||
+    paramsNow.get("success")==="1" ||
+    paramsNow.has("id") ||
+    paramsNow.has("txn_response_code") ||
+    paramsNow.has("merchant_order_id");
+
+  if(!isReturn || !s.sb) return;
+
+  const savedTable =
+    localStorage.getItem(
+      "restoflow_payment_table"
+    );
+
+  if(savedTable){
+    const tableNumber=Number(savedTable);
+
+    if(
+      Number.isFinite(tableNumber) &&
+      tableNumber>0
+    ){
+      s.table=tableNumber;
+    }
+  }
+
+  const savedOrderId =
+    localStorage.getItem(
+      "restoflow_payment_order"
+    );
+
+  if(!savedOrderId){
+    paymentReturnMessage(
+      "error",
+      t(
+        "تعذر تحديد الطلب.",
+        "Could not determine the order."
+      )
+    );
+    return;
+  }
+
+  let order =
+    await fetchOrderForPaymentReturn(
+      savedOrderId
+    );
+
+  if(!order){
+    paymentReturnMessage(
+      "error",
+      t(
+        "تعذر العثور على الطلب.",
+        "The order could not be found."
+      )
+    );
+    return;
+  }
+
+  /*
+    The Response Callback is only the customer return.
+    We wait for paymob-webhook to update Supabase.
+  */
+  let tries=0;
+  const maxTries=30;
+
+  while(
+    order &&
+    order.payment_status!=="paid" &&
+    order.status!=="paid" &&
+    order.payment_status!=="failed" &&
+    tries<maxTries
+  ){
+    await new Promise(
+      resolve=>setTimeout(resolve,1000)
+    );
+
+    const refreshed =
+      await fetchOrderForPaymentReturn(
+        savedOrderId
+      );
+
+    if(refreshed){
+      order=refreshed;
+    }
+
+    tries++;
+  }
+
+  // One final fresh read.
+  order =
+    await fetchOrderForPaymentReturn(
+      savedOrderId
+    ) || order;
+
+  const paid =
+    order.payment_status==="paid" ||
+    order.status==="paid";
+
+  const failed =
+    order.payment_status==="failed";
+
+  if(paid){
+
+    localStorage.removeItem(
+      "restoflow_payment_order"
+    );
+
+    localStorage.removeItem(
+      "restoflow_payment_reference"
+    );
+
+    localStorage.removeItem(
+      "restoflow_paymob_order"
+    );
+
+    // Keep table in URL and remove Paymob callback params.
+    try{
+      const cleanUrl =
+        location.origin+
+        location.pathname+
+        (
+          s.table
+            ? `?table=${s.table}`
+            : ""
+        );
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl
+      );
+    }catch(e){
+      console.warn(
+        "Could not clean payment URL:",
+        e
+      );
+    }
+
+    // IMPORTANT: show the real paid invoice.
+    bill(order);
+
+    return;
+  }
+
+  if(failed){
+    paymentReturnMessage(
+      "failed",
+      t(
+        "لم يتم الدفع",
+        "Payment failed"
+      ),
+      t(
+        "Paymob أكد أن العملية لم تكتمل. يمكنك إعادة المحاولة.",
+        "Paymob reported that the payment was not completed. You can try again."
+      ),
+      order
+    );
+    return;
+  }
+
+  paymentReturnMessage(
+    "pending",
+    t(
+      "جاري تأكيد الدفع...",
+      "Confirming payment..."
+    ),
+    t(
+      "تم الرجوع من Paymob، لكن تأكيد السيرفر لم يصل بعد.",
+      "You returned from Paymob, but the server confirmation has not arrived yet."
+    ),
+    order
+  );
+}
+
+function paymentReturnMessage(
+  type,
+  title,
+  message,
+  order=null
+){
+  const icon =
+    type==="failed"
+      ? "❌"
+      : type==="pending"
+        ? "⏳"
+        : "⚠️";
+
+  const d=modal(`
+    <div style="text-align:center;padding:12px">
+
+      <div style="font-size:52px">
+        ${icon}
+      </div>
+
+      <h2>${title}</h2>
+
+      <p class="muted">
+        ${message || ""}
+      </p>
+
+      ${
+        order
+          ? `
+            <div class="panel">
+              <b>
+                ${t("الطلب","Order")}
+                #${order.id}
+              </b>
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  margin-top:12px;
+                  font-size:20px;
+                  font-weight:900
+                "
+              >
+                <span>
+                  ${t("الإجمالي","Total")}
+                </span>
+
+                <span class="price">
+                  ${money(order.total)}
+                </span>
+              </div>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        type==="failed" && order
+          ? `
+            <button
+              class="btn gold"
+              id="retryPaymentReturn"
+            >
+              ↻
+              ${t(
+                "حاول مرة أخرى",
+                "Try again"
+              )}
+            </button>
+          `
+          : ""
+      }
+
+      ${
+        type==="pending" && order
+          ? `
+            <button
+              class="btn gold"
+              id="checkPaymentReturn"
+            >
+              ⟳
+              ${t(
+                "تحقق من الدفع",
+                "Check payment"
+              )}
+            </button>
+          `
+          : ""
+      }
+
+    </div>
+  `);
+
+  d
+    .querySelector("#retryPaymentReturn")
+    ?.addEventListener(
+      "click",
+      ()=>{
+        d.remove();
+        bill(order);
+      }
+    );
+
+  d
+    .querySelector("#checkPaymentReturn")
+    ?.addEventListener(
+      "click",
+      async()=>{
+        d.remove();
+        await handlePaymentReturn();
+      }
+    );
+
+  return d;
+}
 
 function render(){
 
