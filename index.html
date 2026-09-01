@@ -359,6 +359,13 @@ button{
   flex:1
 }
 
+
+.qr-scan-box{text-align:center}
+#cashQrReader{width:100%;max-width:420px;margin:16px auto;overflow:hidden;border-radius:18px}
+.qr-scan-status{padding:12px;border-radius:12px;background:#f7f7f7;color:var(--muted);font-weight:700;margin-top:10px}
+.qr-scan-actions{display:flex;gap:8px;margin-top:12px}
+.qr-scan-actions .btn{flex:1}
+
 .payment-loading{
   padding:14px;
   margin-top:12px;
@@ -385,6 +392,7 @@ footer{
   }
 }
 </style>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 
 <body>
@@ -495,6 +503,7 @@ const CAT={
 };
 
 const params=new URLSearchParams(location.search);
+const appMode=params.get("mode")||"customer";
 
 let s={
   lang:CONFIG.DEFAULT_LANGUAGE,
@@ -505,7 +514,8 @@ let s={
   table:Number(params.get("table"))||null,
   dark:false,
   sb:null,
-  currentOrder:null
+  currentOrder:null,
+  mode:appMode
 };
 
 const t=(a,e)=>s.lang==="ar"?a:e;
@@ -605,7 +615,7 @@ async function loadOrders(){
     .order("created_at",{ascending:false})
     .limit(100);
 
-  if(s.table){
+  if(s.table && s.mode==="customer"){
     q=q.eq("table_number",s.table);
   }
 
@@ -1522,6 +1532,145 @@ function ordersModal(){
 }
 
 
+
+function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
+  if(!s.sb){
+    alert(t("Supabase غير متصل.","Supabase is not connected."));
+    return;
+  }
+  originalBtn.disabled=true;
+  note.className="payment-loading";
+  note.textContent=t(
+    "تم مسح QR الجرسون. جاري تسجيل طلب الكاش...",
+    "Waiter QR scanned. Registering cash request..."
+  );
+  s.sb.from("orders").update({
+    payment_status:"pending_cash",
+    payment_method:"cash"
+  }).eq("id",o.id).then(r=>{
+    if(r.error){
+      originalBtn.disabled=false;
+      note.className="muted";
+      note.textContent=r.error.message;
+      return;
+    }
+    o.payment_status="pending_cash";
+    o.payment_method="cash";
+    invoiceModal.remove();
+    render();
+    tracking(o);
+  });
+}
+
+async function cashQrScanner(o,invoiceModal,note,originalBtn){
+  const scanModal=modal(`
+    <div class="qr-scan-box" dir="${s.lang==="ar"?"rtl":"ltr"}">
+      <h2>${t("تأكيد الدفع كاش","Confirm cash payment")}</h2>
+      <p class="muted">${t(
+        "افتح الكاميرا وامسح QR الجرسون المطبوع.",
+        "Open the camera and scan the printed waiter QR."
+      )}</p>
+      <div id="cashQrReader"></div>
+      <div id="cashQrStatus" class="qr-scan-status">${t(
+        "وجه الكاميرا ناحية QR الجرسون...",
+        "Point the camera at the waiter QR..."
+      )}</div>
+      <div class="qr-scan-actions">
+        <button class="btn" id="closeCashScanner">${t("إلغاء","Cancel")}</button>
+      </div>
+    </div>
+  `);
+
+  let scanner=null;
+  let finished=false;
+
+  const closeScanner=async()=>{
+    if(finished)return;
+    finished=true;
+    try{
+      if(scanner){
+        await scanner.stop();
+        await scanner.clear();
+      }
+    }catch(e){}
+    scanModal.remove();
+    originalBtn.disabled=false;
+    note.className="muted";
+    note.textContent=t(
+      "لم يتم تسجيل الكاش. يمكنك المحاولة مرة أخرى.",
+      "Cash was not registered. You can try again."
+    );
+  };
+
+  scanModal.querySelector("#closeCashScanner").onclick=closeScanner;
+
+  if(typeof Html5Qrcode==="undefined"){
+    scanModal.querySelector("#cashQrStatus").textContent=t(
+      "تعذر تحميل قارئ QR. تأكد من الإنترنت ثم حاول مرة أخرى.",
+      "QR scanner could not load. Check your internet connection and try again."
+    );
+    return;
+  }
+
+  scanner=new Html5Qrcode("cashQrReader");
+
+  try{
+    const cameras=await Html5Qrcode.getCameras();
+    if(!cameras || !cameras.length){
+      throw new Error(t("لم يتم العثور على كاميرا.","No camera was found."));
+    }
+
+    const preferred=cameras.find(c=>/back|rear|environment|خلف/i.test(c.label))||cameras[0];
+
+    await scanner.start(
+      preferred.id,
+      {fps:10,qrbox:{width:250,height:250},aspectRatio:1},
+      async(decodedText)=>{
+        if(finished)return;
+
+        let valid=false;
+        try{
+          const u=new URL(decodedText);
+          valid=
+            u.origin==="https://abdo-8-mamoon.github.io" &&
+            u.pathname==="/Menu/" &&
+            u.searchParams.get("mode")==="cashier";
+        }catch(e){}
+
+        if(!valid){
+          scanModal.querySelector("#cashQrStatus").textContent=t(
+            "ده مش QR الجرسون الخاص بـ RestoFlow. جرّب تاني.",
+            "This is not the RestoFlow waiter QR. Please try again."
+          );
+          return;
+        }
+
+        finished=true;
+        scanModal.querySelector("#cashQrStatus").textContent=t(
+          "تم التعرف على QR الجرسون ✓",
+          "Waiter QR recognized ✓"
+        );
+
+        try{
+          await scanner.stop();
+          await scanner.clear();
+        }catch(e){}
+
+        scanModal.remove();
+        confirmCashAfterQr(o,invoiceModal,note,originalBtn);
+      },
+      ()=>{}
+    );
+  }catch(error){
+    console.error("QR camera error:",error);
+    scanModal.querySelector("#cashQrStatus").textContent=
+      error?.message||t(
+        "مش قادر أفتح الكاميرا. اسمح للموقع باستخدام الكاميرا ثم حاول مرة أخرى.",
+        "Could not open the camera. Allow camera access and try again."
+      );
+  }
+}
+
 function bill(o){
 
   const items=o.order_items||[];
@@ -1544,8 +1693,11 @@ function bill(o){
 
 
   const paid=
-    o.payment_status==="paid"||
-    o.status==="paid";
+    o.payment_status==="paid";
+
+  const cashPending=
+    o.payment_method==="cash" &&
+    o.payment_status==="pending_cash";
 
 
   const created=
@@ -1685,10 +1837,15 @@ function bill(o){
                   "مدفوع ✓",
                   "Paid ✓"
                 )
-                :t(
-                  "غير مدفوع",
-                  "Unpaid"
-                )
+                :cashPending
+                  ?t(
+                    "في انتظار تأكيد الكاشير",
+                    "Waiting for cashier confirmation"
+                  )
+                  :t(
+                    "غير مدفوع",
+                    "Unpaid"
+                  )
             }
 
           </strong>
@@ -1804,6 +1961,25 @@ function bill(o){
             </div>
           `
 
+          :cashPending
+            ?`
+              <div
+                style="
+                  padding:16px;
+                  border-radius:14px;
+                  background:#fff7e8;
+                  color:#8d6425;
+                  font-weight:800;
+                  text-align:center
+                "
+              >
+                💵
+                ${t(
+                  "تم اختيار الدفع كاش. في انتظار تأكيد الكاشير للدفع.",
+                  "Cash selected. Waiting for cashier confirmation."
+                )}
+              </div>
+            `
           :`
             <h3>
               ${t(
@@ -2260,7 +2436,34 @@ function bill(o){
 
 
           // ======================================
-          // CASH / CARD / WALLET
+          // CASH PAYMENT
+          // Cash is NOT considered paid until a cashier confirms it.
+          // ======================================
+
+          if(method==="cash"){
+
+            if(!s.sb){
+              note.textContent=
+                t(
+                  "Supabase غير متصل.",
+                  "Supabase is not connected."
+                );
+              return;
+            }
+
+            btn.disabled=true;
+            note.className="payment-loading";
+            note.textContent=t(
+              "افتح الكاميرا وامسح QR الجرسون...",
+              "Open the camera and scan the waiter QR..."
+            );
+
+            await cashQrScanner(o,d,note,btn);
+            return;
+          }
+
+          // ======================================
+          // CARD / WALLET
           // ======================================
 
           if(!s.sb){
@@ -2666,6 +2869,124 @@ function paymentReturnMessage(
   return d;
 }
 
+function cashier(){
+
+  const pending=
+    s.orders.filter(
+      o=>o.payment_method==="cash" &&
+         o.payment_status==="pending_cash"
+    );
+
+  return header()+`
+
+    <main class="container" style="padding-top:28px">
+
+      <div class="section-title">
+        <div>
+          <h2>
+            ${t("شاشة الكاشير","Cashier Dashboard")}
+          </h2>
+          <div class="muted">
+            ${t(
+              "أكد الدفع الكاش بعد استلام المبلغ من العميل.",
+              "Confirm cash payments after receiving the money from the customer."
+            )}
+          </div>
+        </div>
+
+        <span class="badge">
+          ${pending.length} ${t("طلبات معلقة","pending")}
+        </span>
+      </div>
+
+      ${pending.length ? pending.map(o=>`
+        <div class="panel" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div>
+              <b style="font-size:20px">#${o.id}</b>
+              <div class="muted" style="margin-top:6px">
+                ${t("الترابيزة","Table")} ${o.table_number} • ${money(o.total)}
+              </div>
+            </div>
+            <span class="status s-new">
+              ${t("في انتظار الكاش","Cash pending")}
+            </span>
+          </div>
+
+          <p class="muted">
+            ${(o.order_items||[]).map(i=>
+              (i.name_ar||i.name||i.name_en)+" × "+i.quantity
+            ).join(" • ")}
+          </p>
+
+          <div class="actions">
+            <button class="btn" data-cash-view="${o.id}">
+              🧾 ${t("الفاتورة","Invoice")}
+            </button>
+            <button class="btn gold" data-cash-confirm="${o.id}">
+              ✓ ${t("تأكيد استلام الكاش","Confirm cash received")}
+            </button>
+          </div>
+        </div>
+      `).join("") : `
+        <div class="panel" style="text-align:center;padding:40px">
+          <div style="font-size:42px">💵</div>
+          <h3>${t("لا توجد مدفوعات كاش معلقة","No pending cash payments")}</h3>
+        </div>
+      `}
+
+    </main>
+  `;
+}
+
+function bindCashier(){
+
+  document.querySelectorAll("[data-cash-view]").forEach(btn=>{
+    btn.onclick=()=>{
+      const o=s.orders.find(x=>String(x.id)===String(btn.dataset.cashView));
+      if(o) bill(o);
+    };
+  });
+
+  document.querySelectorAll("[data-cash-confirm]").forEach(btn=>{
+    btn.onclick=async()=>{
+      const o=s.orders.find(x=>String(x.id)===String(btn.dataset.cashConfirm));
+      if(!o || !s.sb) return;
+
+      const ok=confirm(
+        t(
+          `هل استلمت مبلغ ${money(o.total)} من الترابيزة ${o.table_number}؟`,
+          `Did you receive ${money(o.total)} from table ${o.table_number}?`
+        )
+      );
+
+      if(!ok) return;
+
+      btn.disabled=true;
+      btn.textContent=t("جاري التأكيد...","Confirming...");
+
+      const r=await s.sb
+        .from("orders")
+        .update({
+          payment_status:"paid",
+          payment_method:"cash",
+          paid_at:new Date().toISOString()
+        })
+        .eq("id",o.id)
+        .eq("payment_status","pending_cash");
+
+      if(r.error){
+        btn.disabled=false;
+        btn.textContent=t("تأكيد استلام الكاش","Confirm cash received");
+        alert(r.error.message);
+        return;
+      }
+
+      await loadOrders();
+    };
+  });
+}
+
 function render(){
 
   document.documentElement.dir=
@@ -2676,9 +2997,14 @@ function render(){
   document.getElementById(
     "app"
   ).innerHTML=
-    customer();
+    s.mode==="cashier"
+      ? cashier()
+      : customer();
 
-  bind();
+  if(s.mode==="cashier")
+    bindCashier();
+  else
+    bind();
 }
 
 
@@ -2688,7 +3014,7 @@ setInterval(
       loadOrders();
     }
   },
-  300000
+  5000
 );
 
 
