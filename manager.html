@@ -165,7 +165,13 @@ input{font:inherit}
 /* ============ MONTHLY COMPARISON ============ */
 .month-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-top:1px dashed var(--line-soft)}
 .month-row:first-child{border-top:none}
-.month-row .m-label{font-weight:700;font-size:14.5px}
+.month-row.current{background:var(--steel-tint);margin:0 -18px;padding-inline:20px;border-radius:10px;border-top-color:transparent}
+.month-row.current+.month-row{border-top-color:transparent}
+.month-row .m-left{display:flex;align-items:center;gap:12px}
+.m-rank{font-family:var(--font-num);font-size:12px;font-weight:700;color:var(--muted-dim);width:22px;flex:none;text-align:center}
+.month-row .m-label{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:7px}
+.m-best-badge{font-size:10.5px;font-weight:700;background:var(--amber-tint);color:var(--amber-dim);border-radius:999px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px}
+.m-current-badge{font-size:10.5px;font-weight:700;background:var(--steel);color:#fff;border-radius:999px;padding:2px 8px}
 .month-row .m-sub{color:var(--muted);font-size:12px;margin-top:2px}
 .month-row .m-right{text-align:end}
 .month-row .m-rev{font-family:var(--font-num);font-weight:700;font-size:15px}
@@ -173,6 +179,7 @@ input{font:inherit}
 .delta-mini.up{background:#e3f1e6;color:#276b3f}
 .delta-mini.down{background:var(--ember-tint);color:var(--ember-dim)}
 [data-theme="dark"] .delta-mini.up{background:#1e3324;color:#8fdba9}
+[data-theme="dark"] .month-row.current{background:#173238}
 
 /* ============ LEDGER: ORDERS ============ */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 12px;margin-top:14px}
@@ -265,7 +272,6 @@ let s={
   weekRevenue:[],         // always-trailing-7-days paid orders, independent of the selected range
   monthlyData:[],         // paid orders over the last MONTHLY_LOOKBACK_MONTHS months, for month-over-month comparison
   monthlyTruncated:false,
-  selectedMonth:null,     // key 'YYYY-MM' of the month currently shown in the monthly comparison
   tableHistory:{table:null, orders:[], loading:false, truncated:false},
 
   loading:{live:false, range:false},
@@ -393,8 +399,6 @@ async function fetchMonthlyRevenue(){
       .eq("status","paid").gte("created_at",start.toISOString()).range(from,to),
       {pageSize:CONFIG.RANGE_PAGE_SIZE,maxRows:10000});
     s.monthlyData=rows; s.monthlyTruncated=truncated;
-    const keys=monthlyBreakdown().map(m=>m.key);
-    if(!s.selectedMonth || !keys.includes(s.selectedMonth)) s.selectedMonth=keys[keys.length-1]||null;
   }catch(e){ /* non-fatal — the monthly section just stays empty */ }
 }
 
@@ -503,12 +507,22 @@ function monthlyBreakdown(){
   const list=[...map.values()].sort((a,b)=>a.date-b.date);
   return list.map((m,i)=>({...m, prevRevenue:i>0?list[i-1].revenue:null}));
 }
-function monthRow(m){
+function monthRow(m,opts={}){
+  const {rank,isBest,isCurrent}=opts;
   const delta=m.prevRevenue==null?null:(m.prevRevenue===0?(m.revenue>0?100:null):((m.revenue-m.prevRevenue)/m.prevRevenue)*100);
   const label=m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"long",year:"numeric"});
   const avg=m.count?m.revenue/m.count:0;
-  return `<div class="month-row">
-    <div><div class="m-label">${label}</div><div class="m-sub">${m.count} ${t("طلب مدفوع","paid orders")} • ${t("متوسط الفاتورة","avg. ticket")} ${money(avg)}</div></div>
+  return `<div class="month-row ${isCurrent?"current":""}">
+    <div class="m-left">
+      ${rank!=null?`<span class="m-rank">#${rank}</span>`:""}
+      <div>
+        <div class="m-label">${label}
+          ${isBest?`<span class="m-best-badge">🏆 ${t("الأفضل","Best")}</span>`:""}
+          ${isCurrent?`<span class="m-current-badge">${t("الحالي","Current")}</span>`:""}
+        </div>
+        <div class="m-sub">${m.count} ${t("طلب مدفوع","paid orders")} • ${t("متوسط الفاتورة","avg. ticket")} ${money(avg)}</div>
+      </div>
+    </div>
     <div class="m-right">
       <div class="m-rev">${money(m.revenue)}</div>
       ${delta==null?"":`<div class="delta-mini ${delta>=0?"up":"down"}">${delta>=0?"▲":"▼"} ${Math.abs(delta).toFixed(1)}%</div>`}
@@ -657,21 +671,44 @@ function navBar(){
 
 function monthsView(){
   const mb=monthlyBreakdown();
-  const chips=mb.slice().reverse().map(m=>`<button class="chip ${m.key===s.selectedMonth?"active":""}" data-month="${m.key}">${m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"numeric"})}</button>`).join("");
-  const active=mb.find(m=>m.key===s.selectedMonth)||mb[mb.length-1];
+  const totalRevenue=mb.reduce((a,m)=>a+m.revenue,0);
+  const avgMonthly=mb.length?totalRevenue/mb.length:0;
+  const best=mb.length?mb.reduce((a,b)=>b.revenue>a.revenue?b:a):null;
+  const latest=mb[mb.length-1]||null;
+  const latestDelta=latest&&latest.prevRevenue!=null
+    ?(latest.prevRevenue===0?(latest.revenue>0?100:null):((latest.revenue-latest.prevRevenue)/latest.prevRevenue)*100)
+    :null;
+  const bestLabel=best?best.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"long",year:"numeric"}):"—";
+  const byDateDesc=mb.slice().reverse(); // most recent month first, for the ledger
+
   return header()+navBar()+`<main class="container">
     <div class="section-title"><h2>${t("مقارنة الشهور","Monthly comparison")}</h2><span class="muted">${t(`آخر ${CONFIG.MONTHLY_LOOKBACK_MONTHS} شهر`,`Last ${CONFIG.MONTHLY_LOOKBACK_MONTHS} months`)}</span></div>
     ${s.error?`<div class="banner err"><span>⚠</span><span>${t("حصل خطأ في تحميل البيانات:","Error loading data:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
-    <div class="chart-panel">
+    ${!mb.length?`<div class="panel"><div class="empty-note">${t("لسه مفيش بيانات شهرية كافية للمقارنة.","Not enough monthly data yet for a comparison.")}</div></div>`:`
+
+    <div class="kpis">
+      <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("إجمالي الإيرادات","Total revenue")}</div><b>${money(totalRevenue)}</b></div>
+      <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("متوسط شهري","Monthly average")}</div><b>${money(avgMonthly)}</b></div>
+      <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("أفضل شهر","Best month")}</div><b style="font-size:15.5px">🏆 ${bestLabel}</b></div>
+      <div class="kpi c-muted"><div class="lbl"><span class="dot"></span>${t("مقارنة بالشهر السابق","vs. last month")}</div><b>${latestDelta==null?"—":`${latestDelta>=0?"▲":"▼"} ${Math.abs(latestDelta).toFixed(1)}%`}</b></div>
+    </div>
+
+    <div class="chart-panel" style="margin-top:14px">
       <h3>${t("الإيرادات الشهرية","Monthly revenue")}</h3>
       <div class="cap">${t("إجمالي الطلبات المدفوعة لكل شهر","Total paid orders per month")}</div>
       <div class="chart-box tall"><canvas id="chartMonthly"></canvas></div>
     </div>
-    <section class="panel" style="margin-top:14px">
+
+    <div class="section-title"><h2>${t("سجل الشهور","Monthly ledger")}</h2><span class="muted">${t("من الأحدث للأقدم","Most recent first")}</span></div>
+    <section class="panel">
       ${s.monthlyTruncated?`<div class="list-note">${t("البيانات مبنية على أحدث الطلبات المطابقة فقط، وممكن ما تشملش كل الطلبات لو الحجم كبير جدًا.","Based on the most recent matching orders only; may not include everything if volume is very high.")}</div>`:""}
-      ${!mb.length?`<div class="empty-note">${t("لسه مفيش بيانات شهرية كافية للمقارنة.","Not enough monthly data yet for a comparison.")}</div>`
-        :`<div class="chips" style="padding-bottom:12px">${chips}</div>${monthRow(active)}`}
+      ${byDateDesc.map((m,i)=>monthRow(m,{
+        rank:i+1,
+        isBest: best && m.key===best.key,
+        isCurrent: latest && m.key===latest.key
+      })).join("")}
     </section>
+    `}
   </main>
   <footer>RestoFlow Manager</footer>`;
 }
@@ -884,7 +921,6 @@ function bind(){
   document.getElementById("tableModalVeil")?.addEventListener("click",closeTableModal);
   document.querySelectorAll("[data-range]").forEach(b=>{ b.onclick=()=>{ if(b.dataset.range!==s.range) setRange(b.dataset.range); }; });
   document.querySelectorAll("[data-statuschip]").forEach(b=>{ b.onclick=()=>{s.statusFilter=b.dataset.statuschip;render()}; });
-  document.querySelectorAll("[data-month]").forEach(b=>{ b.onclick=()=>{ s.selectedMonth=b.dataset.month; render(); }; });
   document.getElementById("exportCsv")?.addEventListener("click",exportCSV);
   document.getElementById("manualRefresh")?.addEventListener("click",()=>{ if(s.sb) refreshAll(); });
   document.getElementById("dismissErr")?.addEventListener("click",()=>{ s.error=null; render(); });
