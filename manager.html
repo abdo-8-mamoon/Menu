@@ -3,27 +3,145 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#111318">
+<meta name="theme-color" content="#1c2422">
 <title>RestoFlow — لوحة المدير</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f7f5;--card:#fff;--text:#151515;--muted:#707070;--line:#e8e5df;--accent:#b78635;--dark:#111318;--good:#1d8a58;--shadow:0 18px 50px #1717170e}
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
-button{font:inherit;cursor:pointer}.top{position:sticky;top:0;z-index:20;background:#ffffffeb;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:12px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900}.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#d8b36a,#8c5f20);display:grid;place-items:center;color:#fff;font-size:21px}
-.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--card);padding:9px 13px;border-radius:11px}.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.gold{background:var(--accent);color:#fff;border-color:var(--accent)}
-.container{max-width:1250px;margin:auto;padding:28px 4vw}.section-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:10px 0 20px}.section-title h2{margin:0;font-size:28px}.muted{color:var(--muted)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{padding:18px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,#fff,#faf9f5)}.stat b{display:block;font-size:31px;margin-top:7px}
-.orders{display:grid;gap:12px}.order{border:1px solid var(--line);border-radius:16px;padding:15px;display:grid;grid-template-columns:1fr auto;gap:12px}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px}.s-new{background:#fff1d8;color:#9b6410}.s-prep{background:#e9efff;color:#365aa3}.s-ready{background:#e4f7ed;color:#167045}.s-served{background:#eee;color:#555}.s-paid{background:#e5f8ed;color:#167045}
-.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.order-actions .btn{padding:7px 10px;font-size:13px}
-.manager-head{background:linear-gradient(120deg,#14161b,#2a2925);color:#fff;border-radius:22px;padding:25px;margin-bottom:18px}.manager-head h1{margin:0 0 8px}
-.table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.table-card{border:1px solid var(--line);padding:14px;border-radius:15px;text-align:center;background:#fff}
-.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.qr-card{border:1px solid var(--line);border-radius:16px;padding:15px;text-align:center;background:#fff}.qr-box{display:grid;place-items:center;min-height:150px;margin:8px 0}.qr-link{font-size:12px;word-break:break-all;color:#555}
-.kitchen-empty{text-align:center;padding:40px;color:var(--muted)}
-footer{padding:35px 4vw;color:var(--muted);text-align:center}
-@media(max-width:800px){.grid4{grid-template-columns:repeat(2,1fr)}.order{grid-template-columns:1fr}}
-@media(max-width:480px){.container{padding:22px 4vw}.grid4{grid-template-columns:1fr 1fr}}
+/*
+  DESIGN CONCEPT — "The Ledger"
+  Same paper-and-steel world as the kitchen screen, read from the office instead
+  of the pass: a dark nightly-report band up top with the headline number, then
+  a light ledger of hairline-ruled panels below. Charts and receipt rows share
+  one ruled-paper logic instead of a grid of identical shadowed cards.
+*/
+:root{
+  --bg:#eef1ef;
+  --panel:#ffffff;
+  --panel2:#fbfcfb;
+  --line:#d7ddda;
+  --line-soft:#e2e7e4;
+  --text:#202725;
+  --text-dim:#4c5652;
+  --muted:#7e8a85;
+  --muted-dim:#a8b2ad;
+
+  --ink:#1c2422;
+  --ink2:#26302c;
+
+  --steel:#2f6f7a;
+  --steel-dim:#1f4d55;
+  --steel-tint:#e0eef0;
+
+  --amber:#c9862c;
+  --amber-dim:#96691f;
+  --amber-tint:#faf0dd;
+
+  --ember:#c23b2b;
+  --ember-dim:#8f2a1e;
+  --ember-tint:#fbe6e2;
+
+  --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
+  --font-num:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer}
+
+/* ============ TOP ============ */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:13px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,var(--ink2),var(--ink));display:grid;place-items:center;color:var(--amber);font-size:19px;font-weight:800;border:1px solid var(--line)}
+.brand b{font-weight:700;font-size:16px;display:block}
+.brand small{color:var(--muted);font-weight:500;font-size:12px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 14px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--text);transition:border-color .15s}
+.btn:hover{border-color:var(--muted-dim)}
+.btn:active{transform:scale(.96)}
+.btn.dark{background:var(--ink);color:var(--amber);border-color:var(--ink)}
+
+.container{max-width:1280px;margin:auto;padding:26px 4vw 10px}
+
+/* ============ HERO LEDGER HEAD ============ */
+.hero{background:linear-gradient(128deg,var(--ink),var(--ink2));color:#eef1ee;border-radius:20px;padding:28px 30px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset-inline-end:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#c9862c33,transparent 70%)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;position:relative}
+.hero-label{color:#c7cfcb;font-size:13.5px;font-weight:500}
+.hero-num{font-family:var(--font-num);font-size:clamp(34px,6vw,54px);font-weight:700;letter-spacing:.5px;margin:6px 0 2px;color:#fff}
+.hero-sub{color:#aeb8b3;font-size:13.5px}
+.hero-pills{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid #ffffff1f;position:relative}
+.hero-pill{display:flex;flex-direction:column;gap:2px}
+.hero-pill span{color:#9aa6a1;font-size:12px}
+.hero-pill b{font-family:var(--font-num);font-size:19px;color:#fff;font-weight:700}
+
+/* ============ SECTIONS ============ */
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 12px}
+.section-title h2{margin:0;font-size:18px;font-weight:700}
+.section-title .muted{color:var(--muted);font-size:12.5px}
+.muted{color:var(--muted)}
+
+/* ============ KPI STRIP ============ */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.kpi{padding:16px 18px;border-inline-start:1px solid var(--line)}
+.kpi:first-child{border-inline-start:none}
+.kpi .lbl{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.kpi.c-steel .dot{background:var(--steel)}.kpi.c-amber .dot{background:var(--amber)}.kpi.c-ember .dot{background:var(--ember)}.kpi.c-muted .dot{background:var(--muted-dim)}
+.kpi b{display:block;font-family:var(--font-num);font-size:26px;margin-top:8px;font-weight:700}
+
+/* ============ CHARTS ============ */
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
+.chart-panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.chart-panel h3{margin:0 0 2px;font-size:14.5px;font-weight:700}
+.chart-panel .cap{color:var(--muted);font-size:12px;margin-bottom:10px}
+.chart-box{position:relative;height:220px}
+.chart-box.tall{height:260px}
+.charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+
+/* ============ LEDGER: ORDERS ============ */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 12px;margin-top:14px}
+.orders{display:flex;flex-direction:column}
+.order{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 0;border-top:1px dashed var(--line-soft)}
+.order:first-child{border-top:none}
+.order-id{font-family:var(--font-num);color:var(--muted);font-size:12px}
+.order-table{font-weight:700;font-size:15px;margin-inline-start:6px}
+.order-items{color:var(--text-dim);font-size:13.5px;margin-top:4px}
+.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.order-actions .btn{padding:7px 11px;font-size:12.5px}
+.order-right{text-align:end}
+.status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600}
+.status i{width:6px;height:6px;border-radius:50%}
+.s-new{background:var(--steel-tint);color:var(--steel-dim)}.s-new i{background:var(--steel)}
+.s-prep{background:var(--amber-tint);color:var(--amber-dim)}.s-prep i{background:var(--amber)}
+.s-ready{background:var(--ember-tint);color:var(--ember-dim)}.s-ready i{background:var(--ember)}
+.s-served{background:var(--line-soft);color:var(--text-dim)}.s-served i{background:var(--muted-dim)}
+.s-paid{background:#e3f1e6;color:#276b3f}.s-paid i{background:#3f9660}
+.order-total{font-family:var(--font-num);margin-top:8px;font-weight:700}
+.empty-note{text-align:center;padding:40px;color:var(--muted-dim)}
+
+/* ============ TABLES ============ */
+.table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:9px}
+.table-card{border:1px solid var(--line);padding:12px 10px;border-radius:12px;text-align:center;background:var(--panel2);border-top:3px solid var(--muted-dim)}
+.table-card.active{border-top-color:var(--amber);background:var(--amber-tint)}
+.table-card strong{font-size:14px}
+.table-card small{display:block;margin-top:3px;color:var(--muted);font-size:11.5px}
+.table-card.active small{color:var(--amber-dim)}
+
+/* ============ QR ============ */
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.qr-card{border:1px solid var(--line);border-radius:14px;padding:15px;text-align:center;background:var(--panel2)}
+.qr-box{display:grid;place-items:center;min-height:150px;margin:8px 0;background:#fff;border-radius:10px;padding:8px}
+.qr-link{font-size:11.5px;word-break:break-all;color:var(--muted)}
+.qr-card .actions{justify-content:center;margin-top:9px}
+
+footer{padding:34px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
+
+@media(max-width:900px){.charts{grid-template-columns:1fr}.charts-row2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.kpi:nth-child(3){border-inline-start:none}}
+@media(max-width:640px){.order{grid-template-columns:1fr}.order-right{text-align:start;margin-top:8px}.hero-pills{gap:14px}}
 </style>
 </head>
 <body><div id="app"></div>
@@ -36,10 +154,15 @@ const CONFIG={
   MENU_URL:"menu.html"
 };
 
-let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],dark:false,sb:null};
+let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],sb:null,charts:{}};
 
 const t=(a,e)=>s.lang==="ar"?a:e;
 const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
+const STATUS_META={
+  new:["جديد","New","s-new"], preparing:["قيد التحضير","Preparing","s-prep"],
+  ready:["جاهز","Ready","s-ready"], served:["تم التقديم","Served","s-served"],
+  paid:["مدفوع","Paid","s-paid"]
+};
 
 async function init(){
   if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
@@ -55,61 +178,146 @@ async function init(){
 
 async function loadOrders(){
   if(!s.sb)return;
-  const r=await s.sb.from("orders").select("*,order_items(*)").order("created_at",{ascending:false}).limit(100);
+  const r=await s.sb.from("orders").select("*,order_items(*)").order("created_at",{ascending:false}).limit(300);
   if(!r.error && r.data)s.orders=r.data;
   render();
 }
 
+/* ---------------- data shaping for charts ---------------- */
+function revenueByDay(){
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
+    days.push(d);
+  }
+  const labels=days.map(d=>d.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{weekday:"short"}));
+  const values=days.map(d=>{
+    const next=new Date(d); next.setDate(next.getDate()+1);
+    return s.orders.filter(o=>o.status==="paid" && o.created_at && new Date(o.created_at)>=d && new Date(o.created_at)<next)
+      .reduce((a,o)=>a+Number(o.total||0),0);
+  });
+  return {labels,values};
+}
+function statusCounts(){
+  const keys=["new","preparing","ready","served","paid"];
+  const colors=["#2f6f7a","#c9862c","#c23b2b","#a8b2ad","#3f9660"];
+  const labels=keys.map(k=>t(STATUS_META[k][0],STATUS_META[k][1]));
+  const values=keys.map(k=>s.orders.filter(o=>o.status===k).length);
+  return {labels,values,colors};
+}
+function topItems(){
+  const map=new Map();
+  s.orders.forEach(o=>(o.order_items||[]).forEach(i=>{
+    const name=i.name_ar||i.name||i.name_en||t("صنف","Item");
+    map.set(name,(map.get(name)||0)+Number(i.quantity||0));
+  }));
+  const sorted=[...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+  return {labels:sorted.map(x=>x[0]),values:sorted.map(x=>x[1])};
+}
+
+/* ---------------- render ---------------- */
 function header(){
   return `<header class="top">
-    <div class="brand"><div class="logo">R</div><div>${CONFIG.RESTAURANT_NAME}
-      <small class="muted" style="display:block;font-weight:400">${t("لوحة تحكم المدير","Manager dashboard")}</small>
-    </div></div>
-    <div class="actions">
-      <button class="btn" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
-      <button class="btn" id="theme">${s.dark?"☀️":"🌙"}</button>
-    </div>
+    <div class="brand"><div class="logo">R</div><div><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("لوحة تحكم المدير","Manager dashboard")}</small></div></div>
+    <div class="actions"><button class="btn dark" id="lang">${s.lang==="ar"?"EN":"عربي"}</button></div>
   </header>`;
 }
 
 function manager(){
-  let active=s.orders.filter(o=>!["paid","served"].includes(o.status)).length;
-  let rev=s.orders.filter(o=>o.status==="paid").reduce((a,o)=>a+Number(o.total||0),0);
+  const active=s.orders.filter(o=>!["paid","served"].includes(o.status)).length;
+  const paidOrders=s.orders.filter(o=>o.status==="paid");
+  const rev=paidOrders.reduce((a,o)=>a+Number(o.total||0),0);
+  const avgTicket=paidOrders.length?rev/paidOrders.length:0;
+  const activeTables=new Set(s.orders.filter(o=>!["paid","served"].includes(o.status)).map(o=>Number(o.table_number))).size;
+
   return header()+`<main class="container">
-    <section class="manager-head"><span class="badge">${t("لوحة تحكم المدير","MANAGER DASHBOARD")}</span>
-      <h1>${t("كل المطعم قدامك.","Your restaurant, at a glance.")}</h1>
-      <p>${t("الطلبات والمطبخ والترابيزات وQR Codes في مكان واحد.","Orders, kitchen, tables and QR codes in one place.")}</p>
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="hero-label">${t("إجمالي الإيرادات المحصّلة","Total revenue collected")}</div>
+          <div class="hero-num">${money(rev)}</div>
+          <div class="hero-sub">${t("من","from")} ${paidOrders.length} ${t("طلب مدفوع","paid orders")}</div>
+        </div>
+      </div>
+      <div class="hero-pills">
+        <div class="hero-pill"><span>${t("متوسط الفاتورة","Avg. ticket")}</span><b>${money(avgTicket)}</b></div>
+        <div class="hero-pill"><span>${t("طلبات نشطة بالمطبخ","Active in kitchen")}</span><b>${active}</b></div>
+        <div class="hero-pill"><span>${t("ترابيزات مشغولة","Occupied tables")}</span><b>${activeTables}/${CONFIG.TABLES}</b></div>
+        <div class="hero-pill"><span>${t("إجمالي الطلبات","Total orders")}</span><b>${s.orders.length}</b></div>
+      </div>
     </section>
-    <div class="grid4">
-      <div class="stat">👥 ${t("الطلبات","Orders")}<b>${s.orders.length}</b></div>
-      <div class="stat">🔥 ${t("طلبات المطبخ","Kitchen queue")}<b>${active}</b></div>
-      <div class="stat">💰 ${t("المبيعات المدفوعة","Paid sales")}<b>${money(rev)}</b></div>
-      <div class="stat">🪑 ${t("الترابيزات","Tables")}<b>${CONFIG.TABLES}</b></div>
+
+    <div class="kpis">
+      <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("طلبات جديدة","New orders")}</div><b>${s.orders.filter(o=>o.status==="new").length}</b></div>
+      <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("قيد التحضير","Preparing")}</div><b>${s.orders.filter(o=>o.status==="preparing").length}</b></div>
+      <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("جاهز للتقديم","Ready")}</div><b>${s.orders.filter(o=>o.status==="ready").length}</b></div>
+      <div class="kpi c-muted"><div class="lbl"><span class="dot"></span>${t("ترابيزات متاحة","Available tables")}</div><b>${CONFIG.TABLES-activeTables}</b></div>
     </div>
-    <section class="panel" style="margin-top:18px"><div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">Live</span></div>
-      <div class="orders">${s.orders.length?s.orders.map(orderCard).join(""):`<div class="kitchen-empty">${t("لا توجد طلبات بعد.","No orders yet.")}</div>`}</div>
+
+    <div class="charts">
+      <div class="chart-panel">
+        <h3>${t("الإيرادات خلال ٧ أيام","Revenue, last 7 days")}</h3>
+        <div class="cap">${t("مجموع الطلبات المدفوعة يوميًا","Daily total of paid orders")}</div>
+        <div class="chart-box tall"><canvas id="chartRevenue"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <h3>${t("الطلبات حسب الحالة","Orders by status")}</h3>
+        <div class="cap">${t("توزيع كل الطلبات الحالية","Current distribution across all orders")}</div>
+        <div class="chart-box tall"><canvas id="chartStatus"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-row2">
+      <div class="chart-panel">
+        <h3>${t("الأصناف الأكثر طلبًا","Top-selling items")}</h3>
+        <div class="cap">${t("بعدد القطع المباعة","By quantity sold")}</div>
+        <div class="chart-box"><canvas id="chartTopItems"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <h3>${t("إشغال الترابيزات","Table occupancy")}</h3>
+        <div class="cap">${t("نسبة المشغول إلى المتاح الآن","Occupied vs. available, right now")}</div>
+        <div class="chart-box"><canvas id="chartTables"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">${t("مباشر","Live")}</span></div>
+    <section class="panel">
+      <div class="orders">${s.orders.length?s.orders.slice(0,40).map(orderCard).join(""):`<div class="empty-note">${t("لا توجد طلبات بعد.","No orders yet.")}</div>`}</div>
     </section>
-    <section class="panel"><div class="section-title"><h2>${t("الترابيزات","Tables")}</h2></div>
-      <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>`<div class="table-card"><strong>${t("ترابيزة","Table")} ${i+1}</strong><br><small class="muted">${s.orders.some(o=>Number(o.table_number)===i+1&&!["paid","served"].includes(o.status))?t("نشطة","Active"):t("متاحة","Available")}</small></div>`).join("")}</div>
+
+    <div class="section-title"><h2>${t("الترابيزات","Tables")}</h2></div>
+    <section class="panel" style="padding-top:14px">
+      <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>{
+        const isActive=s.orders.some(o=>Number(o.table_number)===i+1&&!["paid","served"].includes(o.status));
+        return `<div class="table-card ${isActive?"active":""}"><strong>${t("ترابيزة","Table")} ${i+1}</strong><small>${isActive?t("نشطة","Active"):t("متاحة","Available")}</small></div>`;
+      }).join("")}</div>
     </section>
-    <section class="panel"><div class="section-title"><h2>QR Codes</h2><button class="btn gold" id="showQR">${t("عرض كل الـQR","Show all QR codes")}</button></div>
-      <p class="muted">${t("كل ترابيزة لها لينك مستقل لصفحة المنيو. عند مسح الـQR يفتح المنيو مباشرة على رقم الترابيزة.","Each table has its own link to the menu page. Scanning its QR opens the menu directly for that table.")}</p>
+
+    <div class="section-title"><h2>QR Codes</h2><button class="btn dark" id="showQR">${t("عرض كل الـQR","Show all QR codes")}</button></div>
+    <section class="panel" style="padding-top:14px">
+      <p class="muted" style="margin-top:0">${t("كل ترابيزة لها لينك مستقل لصفحة المنيو. عند مسح الـQR يفتح المنيو مباشرة على رقم الترابيزة.","Each table has its own link to the menu page. Scanning its QR opens the menu directly for that table.")}</p>
       <div id="qrArea"></div>
     </section>
   </main><footer>RestoFlow Manager</footer>`;
 }
 
 function orderCard(o){
-  const l={new:["جديد","New","s-new"],preparing:["قيد التحضير","Preparing","s-prep"],ready:["جاهز","Ready","s-ready"],served:["تم التقديم","Served","s-served"],paid:["مدفوع","Paid","s-paid"]}[o.status]||["جديد","New","s-new"];
+  const l=STATUS_META[o.status]||STATUS_META.new;
   let actions="";
-  if(o.status==="new")actions=`<button class="btn gold" data-status="${o.id}:preparing">${t("قيد التحضير","Preparing")}</button>`;
-  if(o.status==="preparing")actions=`<button class="btn gold" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
+  if(o.status==="new")actions=`<button class="btn" data-status="${o.id}:preparing">${t("بدء التحضير","Start preparing")}</button>`;
+  if(o.status==="preparing")actions=`<button class="btn" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
   if(o.status==="ready")actions=`<button class="btn" data-status="${o.id}:served">${t("تم التقديم","Served")}</button>`;
   if(o.status==="served")actions=`<button class="btn" data-status="${o.id}:paid">${t("تم الدفع","Paid")}</button>`;
-  return `<div class="order"><div><strong>#${o.id} • ${t("ترابيزة","Table")} ${o.table_number||"—"}</strong>
-    <div class="muted">${(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en||"Item"} × ${i.quantity}`).join(" • ")}</div>
-    ${actions?`<div class="order-actions">${actions}</div>`:""}</div>
-    <div><span class="status ${l[2]}">${t(l[0],l[1])}</span><div style="margin-top:8px">${money(o.total)}</div></div></div>`;
+  return `<div class="order">
+    <div>
+      <span class="order-id">#${o.id}</span><span class="order-table">${t("ترابيزة","Table")} ${o.table_number||"—"}</span>
+      <div class="order-items">${(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en||"Item"} × ${i.quantity}`).join(" • ")||t("لا توجد تفاصيل","No item details")}</div>
+      ${actions?`<div class="order-actions">${actions}</div>`:""}
+    </div>
+    <div class="order-right">
+      <span class="status ${l[2]}"><i></i>${t(l[0],l[1])}</span>
+      <div class="order-total">${money(o.total)}</div>
+    </div>
+  </div>`;
 }
 
 async function updateStatus(id,status){
@@ -125,7 +333,6 @@ async function updateStatus(id,status){
 
 function bind(){
   document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
-  document.getElementById("theme")?.addEventListener("click",()=>{s.dark=!s.dark;document.body.style.filter=s.dark?"invert(.92) hue-rotate(180deg)":"none";render()});
   document.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
   document.getElementById("showQR")?.addEventListener("click",renderQR);
 }
@@ -148,10 +355,67 @@ function renderQR(){
   });
 }
 
+/* ---------------- charts ---------------- */
+function destroyCharts(){
+  Object.values(s.charts).forEach(c=>c?.destroy?.());
+  s.charts={};
+}
+function baseFont(){ return getComputedStyle(document.body).fontFamily || "IBM Plex Sans Arabic, sans-serif"; }
+
+function renderCharts(){
+  destroyCharts();
+  if(typeof Chart==="undefined")return;
+  Chart.defaults.font.family=baseFont();
+  Chart.defaults.color="#7e8a85";
+  Chart.defaults.font.size=12;
+
+  const rev=revenueByDay();
+  const elRev=document.getElementById("chartRevenue");
+  if(elRev)s.charts.revenue=new Chart(elRev,{
+    type:"line",
+    data:{labels:rev.labels,datasets:[{
+      data:rev.values,borderColor:"#c9862c",backgroundColor:"#c9862c22",
+      fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c9862c",borderWidth:2.5
+    }]},
+    options:{plugins:{legend:{display:false}},scales:{
+      y:{beginAtZero:true,grid:{color:"#e2e7e4"},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},
+      x:{grid:{display:false}}
+    },maintainAspectRatio:false}
+  });
+
+  const st=statusCounts();
+  const elStatus=document.getElementById("chartStatus");
+  if(elStatus)s.charts.status=new Chart(elStatus,{
+    type:"doughnut",
+    data:{labels:st.labels,datasets:[{data:st.values,backgroundColor:st.colors,borderColor:"#fff",borderWidth:3}]},
+    options:{cutout:"64%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,padding:14}}},maintainAspectRatio:false}
+  });
+
+  const ti=topItems();
+  const elTop=document.getElementById("chartTopItems");
+  if(elTop)s.charts.topItems=new Chart(elTop,{
+    type:"bar",
+    data:{labels:ti.labels,datasets:[{data:ti.values,backgroundColor:"#2f6f7a",borderRadius:5,maxBarThickness:22}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{
+      x:{beginAtZero:true,grid:{color:"#e2e7e4"}},y:{grid:{display:false}}
+    },maintainAspectRatio:false}
+  });
+
+  const activeTables=new Set(s.orders.filter(o=>!["paid","served"].includes(o.status)).map(o=>Number(o.table_number))).size;
+  const freeTables=Math.max(0,CONFIG.TABLES-activeTables);
+  const elTables=document.getElementById("chartTables");
+  if(elTables)s.charts.tables=new Chart(elTables,{
+    type:"doughnut",
+    data:{labels:[t("مشغولة","Occupied"),t("متاحة","Available")],datasets:[{data:[activeTables,freeTables],backgroundColor:["#c9862c","#e2e7e4"],borderColor:"#fff",borderWidth:3}]},
+    options:{cutout:"64%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,padding:14}}},maintainAspectRatio:false}
+  });
+}
+
 function render(){
   document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
   document.getElementById("app").innerHTML=manager();
   bind();
+  renderCharts();
 }
 
 setInterval(()=>{if(s.sb)loadOrders()},300000);
