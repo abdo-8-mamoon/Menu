@@ -611,6 +611,33 @@ h1,h2,h3,.brand,.price{
   text-align:center
 }
 
+.food-detail-note{
+  width:100%;
+  min-height:70px;
+  resize:vertical;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  font-family:inherit;
+  font-size:14px;
+  line-height:1.6;
+  margin-top:6px
+}
+
+.food-detail-note:focus{
+  outline:2px solid var(--accent);
+  outline-offset:1px
+}
+
+.item-note{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px
+}
+
 footer{
   padding:40px 4vw;
   color:var(--muted);
@@ -1232,7 +1259,7 @@ function add(id,qty=1){
 }
 
 
-function setCartQty(id,qty){
+function setCartItem(id,qty,note=""){
 
   let i=s.cart.findIndex(
     x=>+x.id===id
@@ -1242,8 +1269,9 @@ function setCartQty(id,qty){
     if(i>-1)s.cart.splice(i,1);
   }else if(i>-1){
     s.cart[i].qty=qty;
+    s.cart[i].note=note||"";
   }else{
-    s.cart.push({id,qty});
+    s.cart.push({id,qty,note:note||""});
   }
 
   render();
@@ -1348,15 +1376,34 @@ function foodDetail(id){
 
     <div
       class="muted"
-      style="text-align:center;margin-bottom:10px"
+      style="text-align:center;margin-bottom:14px"
     >
       ${t("الإجمالي","Total")}:
       <b id="fdTotal">${money(f.price*qty)}</b>
     </div>
 
+    <label
+      class="muted"
+      style="font-size:14px;font-weight:600"
+    >
+      ${t(
+        "ملاحظات على الطلب (اختياري)",
+        "Order notes (optional)"
+      )}
+    </label>
+
+    <textarea
+      id="fdNote"
+      class="food-detail-note"
+      placeholder="${t(
+        "مثال: من غير بصل، صوص إضافي، ماحدش زيادة...",
+        "e.g. no onions, extra sauce, not too spicy..."
+      )}"
+    >${inCart?.note||""}</textarea>
+
     <button
       class="btn gold"
-      style="width:100%"
+      style="width:100%;margin-top:14px"
       id="fdConfirm"
     >
       ${
@@ -1396,7 +1443,12 @@ function foodDetail(id){
 
   d.querySelector("#fdConfirm")
     .onclick=()=>{
-      setCartQty(id,qty);
+      const note=
+        d.querySelector("#fdNote")
+          .value.trim();
+
+      setCartItem(id,qty,note);
+
       d.remove();
     };
 }
@@ -1429,6 +1481,24 @@ function cartModal(){
               <br>
 
               ${money(f.price)} × ${x.qty}
+
+              ${
+                x.note
+                  ?`<span class="item-note">📝 ${x.note}</span>`
+                  :""
+              }
+
+              <button
+                class="btn"
+                style="padding:5px 12px;font-size:12px;margin-top:6px"
+                data-note="${x.id}"
+              >
+                ${
+                  x.note
+                    ?t("تعديل الملاحظة","Edit note")
+                    :t("إضافة ملاحظة","Add note")
+                }
+              </button>
 
             </span>
 
@@ -1465,6 +1535,16 @@ function cartModal(){
       )}
     </button>
   `);
+
+
+  d.querySelectorAll("[data-note]")
+    .forEach(
+      b=>
+        b.onclick=()=>{
+          d.remove();
+          foodDetail(+b.dataset.note);
+        }
+    );
 
 
   d.querySelectorAll("[data-inc]")
@@ -1531,17 +1611,31 @@ async function place(d){
       m=>+m.id===+x.id
     );
 
+    const noteSuffix_ar=
+      x.note
+        ?` (ملاحظة: ${x.note})`
+        :"";
+
+    const noteSuffix_en=
+      x.note
+        ?` (note: ${x.note})`
+        :"";
+
     return {
 
       menu_item_id:f.id,
 
       name:
-        f.name_en||
-        f.name_ar,
+        (f.name_en||f.name_ar)+
+        noteSuffix_en,
 
-      name_ar:f.name_ar,
+      name_ar:
+        f.name_ar+
+        noteSuffix_ar,
 
-      name_en:f.name_en,
+      name_en:
+        f.name_en+
+        noteSuffix_en,
 
       price:f.price,
 
