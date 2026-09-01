@@ -29,6 +29,7 @@
   --text-dim:#4c5652;
   --muted:#7e8a85;
   --muted-dim:#a8b2ad;
+  --top-bg:rgba(255,255,255,.92);
 
   --ink:#1c2422;
   --ink2:#26302c;
@@ -48,12 +49,32 @@
   --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
   --font-num:'JetBrains Mono',ui-monospace,monospace;
 }
+[data-theme="dark"]{
+  --bg:#121716;
+  --panel:#1b201f;
+  --panel2:#212724;
+  --line:#2b3230;
+  --line-soft:#242b29;
+  --text:#e7ece9;
+  --text-dim:#b5bfba;
+  --muted:#889390;
+  --muted-dim:#5c655f;
+  --top-bg:rgba(18,23,22,.88);
+
+  --ink:#0e1211;
+  --ink2:#171d1a;
+
+  --steel-tint:#173238;
+  --amber-tint:#2e2410;
+  --ember-tint:#301813;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)}
+body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);transition:background .2s,color .2s}
 button{font:inherit;cursor:pointer}
+input{font:inherit}
 
 /* ============ TOP ============ */
-.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:13px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.top{position:sticky;top:0;z-index:20;background:var(--top-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:13px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:11px}
 .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,var(--ink2),var(--ink));display:grid;place-items:center;color:var(--amber);font-size:19px;font-weight:800;border:1px solid var(--line)}
 .brand b{font-weight:700;font-size:16px;display:block}
@@ -63,15 +84,29 @@ button{font:inherit;cursor:pointer}
 .btn:hover{border-color:var(--muted-dim)}
 .btn:active{transform:scale(.96)}
 .btn.dark{background:var(--ink);color:var(--amber);border-color:var(--ink)}
+.btn.icon{width:38px;padding:9px 0;text-align:center}
+.snd{display:flex;align-items:center;gap:7px;user-select:none}
+.snd input{width:16px;height:16px;accent-color:var(--amber)}
 
 .container{max-width:1280px;margin:auto;padding:26px 4vw 10px}
+
+/* ============ RANGE BAR ============ */
+.rangebar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.segmented{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+.segmented button{border:none;background:transparent;color:var(--muted);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}
+.segmented button.active{background:var(--ink);color:var(--amber)}
+.rangebar .note{color:var(--muted);font-size:12px}
 
 /* ============ HERO LEDGER HEAD ============ */
 .hero{background:linear-gradient(128deg,var(--ink),var(--ink2));color:#eef1ee;border-radius:20px;padding:28px 30px;margin-bottom:16px;position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;inset-inline-end:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#c9862c33,transparent 70%)}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;position:relative}
 .hero-label{color:#c7cfcb;font-size:13.5px;font-weight:500}
+.hero-num-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .hero-num{font-family:var(--font-num);font-size:clamp(34px,6vw,54px);font-weight:700;letter-spacing:.5px;margin:6px 0 2px;color:#fff}
+.delta{font-family:var(--font-num);font-size:14px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
+.delta.up{background:#3f966033;color:#8fdba9}
+.delta.down{background:#c23b2b33;color:#f3aca0}
 .hero-sub{color:#aeb8b3;font-size:13.5px}
 .hero-pills{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid #ffffff1f;position:relative}
 .hero-pill{display:flex;flex-direction:column;gap:2px}
@@ -79,7 +114,7 @@ button{font:inherit;cursor:pointer}
 .hero-pill b{font-family:var(--font-num);font-size:19px;color:#fff;font-weight:700}
 
 /* ============ SECTIONS ============ */
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 12px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 12px;flex-wrap:wrap}
 .section-title h2{margin:0;font-size:18px;font-weight:700}
 .section-title .muted{color:var(--muted);font-size:12.5px}
 .muted{color:var(--muted)}
@@ -92,6 +127,7 @@ button{font:inherit;cursor:pointer}
 .kpi .dot{width:7px;height:7px;border-radius:50%;flex:none}
 .kpi.c-steel .dot{background:var(--steel)}.kpi.c-amber .dot{background:var(--amber)}.kpi.c-ember .dot{background:var(--ember)}.kpi.c-muted .dot{background:var(--muted-dim)}
 .kpi b{display:block;font-family:var(--font-num);font-size:26px;margin-top:8px;font-weight:700}
+.kpi2{margin-top:14px}
 
 /* ============ CHARTS ============ */
 .charts{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
@@ -101,12 +137,24 @@ button{font:inherit;cursor:pointer}
 .chart-box{position:relative;height:220px}
 .chart-box.tall{height:260px}
 .charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.charts-row3{margin-top:14px}
+
+/* ============ ORDERS TOOLBAR ============ */
+.orders-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 0}
+.search-box{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:var(--panel2)}
+.search-box input{border:none;background:transparent;outline:none;color:var(--text);width:100%;font-size:13.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel2);padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.chip.active{background:var(--ink);color:var(--amber);border-color:var(--ink)}
 
 /* ============ LEDGER: ORDERS ============ */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 12px;margin-top:14px}
 .orders{display:flex;flex-direction:column}
-.order{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 0;border-top:1px dashed var(--line-soft)}
+.order{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 2px;border-top:1px dashed var(--line-soft);border-inline-start:3px solid transparent;transition:border-color .3s,background .3s}
 .order:first-child{border-top:none}
+.order.late{border-inline-start-color:var(--ember);background:var(--ember-tint)}
+.late-tag{display:none;align-items:center;gap:5px;color:var(--ember-dim);font-size:11.5px;font-weight:700;margin-inline-start:8px}
+.order.late .late-tag{display:inline-flex}
 .order-id{font-family:var(--font-num);color:var(--muted);font-size:12px}
 .order-table{font-weight:700;font-size:15px;margin-inline-start:6px}
 .order-items{color:var(--text-dim);font-size:13.5px;margin-top:4px}
@@ -120,6 +168,7 @@ button{font:inherit;cursor:pointer}
 .s-ready{background:var(--ember-tint);color:var(--ember-dim)}.s-ready i{background:var(--ember)}
 .s-served{background:var(--line-soft);color:var(--text-dim)}.s-served i{background:var(--muted-dim)}
 .s-paid{background:#e3f1e6;color:#276b3f}.s-paid i{background:#3f9660}
+[data-theme="dark"] .s-paid{background:#1e3324;color:#8fdba9}
 .order-total{font-family:var(--font-num);margin-top:8px;font-weight:700}
 .empty-note{text-align:center;padding:40px;color:var(--muted-dim)}
 
@@ -130,7 +179,14 @@ button{font:inherit;cursor:pointer}
 .table-card strong{font-size:14px}
 .table-card small{display:block;margin-top:3px;color:var(--muted);font-size:11.5px}
 .table-card.active small{color:var(--amber-dim)}
-.table-orders-btn{display:block;width:100%;margin-top:9px;padding:7px 6px;font-size:12px;background:var(--panel);}
+.table-orders-btn{display:block;width:100%;margin-top:9px;padding:7px 6px;font-size:12px;background:var(--panel)}
+
+/* ============ QR ============ */
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.qr-card{border:1px solid var(--line);border-radius:14px;padding:15px;text-align:center;background:var(--panel2)}
+.qr-box{display:grid;place-items:center;min-height:150px;margin:8px 0;background:#fff;border-radius:10px;padding:8px}
+.qr-link{font-size:11.5px;word-break:break-all;color:var(--muted)}
+.qr-card .actions{justify-content:center;margin-top:9px}
 
 /* ============ MODAL ============ */
 .modal-veil{position:fixed;inset:0;background:#1c242299;backdrop-filter:blur(2px);z-index:50;opacity:0;pointer-events:none;transition:opacity .18s}
@@ -144,15 +200,8 @@ html[dir="rtl"] .modal{--slide-off:-100%}
 .modal-head .muted{color:#9aa6a1;font-size:12px}
 .modal-close{border:1px solid #ffffff33;background:transparent;color:#fff;width:32px;height:32px;border-radius:9px;font-size:16px;line-height:1;flex:none}
 .modal-body{padding:14px 18px 24px;overflow-y:auto;flex:1}
-.modal-body .order{padding:13px 0}
+.modal-body .order{padding:13px 2px}
 .modal-empty{text-align:center;color:var(--muted-dim);padding:36px 10px}
-
-/* ============ QR ============ */
-.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.qr-card{border:1px solid var(--line);border-radius:14px;padding:15px;text-align:center;background:var(--panel2)}
-.qr-box{display:grid;place-items:center;min-height:150px;margin:8px 0;background:#fff;border-radius:10px;padding:8px}
-.qr-link{font-size:11.5px;word-break:break-all;color:var(--muted)}
-.qr-card .actions{justify-content:center;margin-top:9px}
 
 footer{padding:34px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
 
@@ -167,10 +216,16 @@ const CONFIG={
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
   RESTAURANT_NAME:"RestoFlow", CURRENCY:"ج.م", TABLES:30, DEFAULT_LANGUAGE:"ar",
   // Change this to the URL of your menu.html page (customer ordering page).
-  MENU_URL:"menu.html"
+  MENU_URL:"menu.html",
+  LATE_MINUTES:15 // an active order (new/preparing/ready) older than this is flagged late
 };
 
-let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],sb:null,charts:{},openTable:null};
+let s={
+  lang:CONFIG.DEFAULT_LANGUAGE, orders:[], sb:null, charts:{}, openTable:null,
+  range:"all", search:"", statusFilter:"all",
+  theme: localStorage.getItem("rf_theme") || "light",
+  sound: true, lateIds:new Set()
+};
 
 const t=(a,e)=>s.lang==="ar"?a:e;
 const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
@@ -179,6 +234,24 @@ const STATUS_META={
   ready:["جاهز","Ready","s-ready"], served:["تم التقديم","Served","s-served"],
   paid:["مدفوع","Paid","s-paid"]
 };
+const ACTIVE_STATUSES=["new","preparing","ready"];
+
+/* ---------------- sound (generated tone, no external files) ---------------- */
+let audioCtx=null;
+function beep(){
+  if(!s.sound)return;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const now=audioCtx.currentTime;
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type="sine"; o.frequency.value=660;
+    g.gain.setValueAtTime(0.0001,now);
+    g.gain.exponentialRampToValueAtTime(0.3,now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.22);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(now); o.stop(now+0.24);
+  }catch(e){}
+}
 
 async function init(){
   if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
@@ -190,102 +263,215 @@ async function init(){
       .subscribe();
   }
   render();
+  setInterval(()=>{ checkLateAlerts(); tickLate(); },30000);
 }
 
 async function loadOrders(){
   if(!s.sb)return;
   const r=await s.sb.from("orders").select("*,order_items(*)").order("created_at",{ascending:false}).limit(300);
   if(!r.error && r.data)s.orders=r.data;
+  checkLateAlerts();
   render();
+}
+
+function minutesSince(dateStr){ if(!dateStr)return 0; return (Date.now()-new Date(dateStr).getTime())/60000; }
+function isLate(o){ return ACTIVE_STATUSES.includes(o.status) && minutesSince(o.created_at)>=CONFIG.LATE_MINUTES; }
+function checkLateAlerts(){
+  const activeLate=s.orders.filter(isLate);
+  const newlyLate=activeLate.filter(o=>!s.lateIds.has(String(o.id)));
+  if(newlyLate.length) beep();
+  s.lateIds=new Set(activeLate.map(o=>String(o.id)));
+}
+function tickLate(){
+  document.querySelectorAll("[data-order-created]").forEach(el=>{
+    const created=el.dataset.orderCreated, status=el.dataset.orderStatus;
+    el.classList.toggle("late", ACTIVE_STATUSES.includes(status) && minutesSince(created)>=CONFIG.LATE_MINUTES);
+  });
+}
+
+/* ---------------- date range ---------------- */
+function rangeBounds(range){
+  const now=new Date();
+  if(range==="today"){ const start=new Date(now); start.setHours(0,0,0,0); return [start,new Date(start.getTime()+86400000)]; }
+  if(range==="week"){ const start=new Date(now); start.setDate(start.getDate()-6); start.setHours(0,0,0,0); return [start,new Date(now.getTime()+1)]; }
+  if(range==="month"){ const start=new Date(now.getFullYear(),now.getMonth(),1); return [start,new Date(now.getTime()+1)]; }
+  return [null,null];
+}
+function prevRangeBounds(range){
+  const [start,end]=rangeBounds(range);
+  if(!start)return [null,null];
+  const span=end-start;
+  return [new Date(start.getTime()-span), start];
+}
+function inRange(o,range){
+  const [start,end]=rangeBounds(range);
+  if(!start)return true;
+  if(!o.created_at)return false;
+  const d=new Date(o.created_at);
+  return d>=start && d<end;
+}
+function rangeOrders(){ return s.orders.filter(o=>inRange(o,s.range)); }
+function revenueBetween(start,end){
+  return s.orders.filter(o=>o.status==="paid" && o.created_at && new Date(o.created_at)>=start && new Date(o.created_at)<end)
+    .reduce((a,o)=>a+Number(o.total||0),0);
+}
+function revenueDelta(){
+  if(s.range==="all")return null;
+  const [start,end]=rangeBounds(s.range);
+  const [pstart,pend]=prevRangeBounds(s.range);
+  const cur=revenueBetween(start,end), prev=revenueBetween(pstart,pend);
+  if(prev===0)return cur>0?100:null;
+  return ((cur-prev)/prev)*100;
+}
+function daySpanFor(range){
+  if(range==="today")return 1;
+  if(range==="week")return 7;
+  if(range==="month")return new Date().getDate();
+  const dates=s.orders.map(o=>o.created_at?new Date(o.created_at):null).filter(Boolean);
+  if(!dates.length)return 1;
+  const earliest=new Date(Math.min(...dates.map(d=>d.getTime())));
+  return Math.max(1, Math.round((Date.now()-earliest.getTime())/86400000));
 }
 
 /* ---------------- data shaping for charts ---------------- */
 function revenueByDay(){
   const days=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
-    days.push(d);
-  }
+  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); d.setHours(0,0,0,0); days.push(d); }
   const labels=days.map(d=>d.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{weekday:"short"}));
-  const values=days.map(d=>{
-    const next=new Date(d); next.setDate(next.getDate()+1);
-    return s.orders.filter(o=>o.status==="paid" && o.created_at && new Date(o.created_at)>=d && new Date(o.created_at)<next)
-      .reduce((a,o)=>a+Number(o.total||0),0);
-  });
+  const values=days.map(d=>{ const next=new Date(d); next.setDate(next.getDate()+1); return revenueBetween(d,next); });
   return {labels,values};
 }
 function statusCounts(){
   const keys=["new","preparing","ready","served","paid"];
   const colors=["#2f6f7a","#c9862c","#c23b2b","#a8b2ad","#3f9660"];
   const labels=keys.map(k=>t(STATUS_META[k][0],STATUS_META[k][1]));
-  const values=keys.map(k=>s.orders.filter(o=>o.status===k).length);
+  const values=keys.map(k=>rangeOrders().filter(o=>o.status===k).length);
   return {labels,values,colors};
 }
 function topItems(){
   const map=new Map();
-  s.orders.forEach(o=>(o.order_items||[]).forEach(i=>{
+  rangeOrders().forEach(o=>(o.order_items||[]).forEach(i=>{
     const name=i.name_ar||i.name||i.name_en||t("صنف","Item");
     map.set(name,(map.get(name)||0)+Number(i.quantity||0));
   }));
   const sorted=[...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
   return {labels:sorted.map(x=>x[0]),values:sorted.map(x=>x[1])};
 }
+function peakHours(){
+  const counts=Array(24).fill(0);
+  rangeOrders().forEach(o=>{ if(o.created_at) counts[new Date(o.created_at).getHours()]++; });
+  const labels=counts.map((_,h)=>`${String(h).padStart(2,"0")}:00`);
+  return {labels,values:counts};
+}
+function avgPrepMinutes(){
+  const done=rangeOrders().filter(o=>["ready","served","paid"].includes(o.status) && o.updated_at && o.created_at && o.updated_at!==o.created_at);
+  if(!done.length)return null;
+  const total=done.reduce((a,o)=>a+(new Date(o.updated_at)-new Date(o.created_at))/60000,0);
+  return total/done.length;
+}
+function tableTurnover(){
+  const paid=rangeOrders().filter(o=>o.status==="paid").length;
+  const days=daySpanFor(s.range);
+  return paid/CONFIG.TABLES/days;
+}
+
+/* ---------------- filtered orders list ---------------- */
+function ordersForList(){
+  let list=rangeOrders();
+  if(s.statusFilter!=="all") list=list.filter(o=>o.status===s.statusFilter);
+  if(s.search.trim()){
+    const q=s.search.trim();
+    list=list.filter(o=>String(o.table_number??"").includes(q) || String(o.id).includes(q));
+  }
+  return [...list].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+}
+
+function exportCSV(){
+  const list=ordersForList();
+  const rows=[["#","Table","Status","Items","Total","CreatedAt"]];
+  list.forEach(o=>rows.push([o.id,o.table_number,o.status,(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en} x${i.quantity}`).join("; "),o.total,o.created_at]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=`restoflow-orders-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
 
 /* ---------------- render ---------------- */
 function header(){
   return `<header class="top">
     <div class="brand"><div class="logo">R</div><div><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("لوحة تحكم المدير","Manager dashboard")}</small></div></div>
-    <div class="actions"><button class="btn dark" id="lang">${s.lang==="ar"?"EN":"عربي"}</button></div>
+    <div class="actions">
+      <label class="snd btn"><input type="checkbox" id="soundToggle" ${s.sound?"checked":""}> 🔔</label>
+      <button class="btn icon" id="themeToggle" title="${t("الوضع الليلي","Dark mode")}">${s.theme==="dark"?"☀️":"🌙"}</button>
+      <button class="btn dark" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+    </div>
   </header>`;
 }
 
+function rangeLabel(r){ return {today:t("اليوم","Today"),week:t("آخر ٧ أيام","Last 7 days"),month:t("هذا الشهر","This month"),all:t("كل الفترات","All time")}[r]; }
+
 function manager(){
-  const active=s.orders.filter(o=>!["paid","served"].includes(o.status)).length;
-  const paidOrders=s.orders.filter(o=>o.status==="paid");
+  const ro=rangeOrders();
+  const paidOrders=ro.filter(o=>o.status==="paid");
   const rev=paidOrders.reduce((a,o)=>a+Number(o.total||0),0);
   const avgTicket=paidOrders.length?rev/paidOrders.length:0;
-  const activeTables=new Set(s.orders.filter(o=>!["paid","served"].includes(o.status)).map(o=>Number(o.table_number))).size;
+  const active=s.orders.filter(o=>ACTIVE_STATUSES.includes(o.status)).length;
+  const activeTables=new Set(s.orders.filter(o=>ACTIVE_STATUSES.includes(o.status)).map(o=>Number(o.table_number))).size;
+  const delta=revenueDelta();
+  const prep=avgPrepMinutes();
+  const turnover=tableTurnover();
 
   return header()+`<main class="container">
+    <div class="rangebar">
+      <div class="segmented">
+        ${["today","week","month","all"].map(r=>`<button data-range="${r}" class="${s.range===r?"active":""}">${rangeLabel(r)}</button>`).join("")}
+      </div>
+      <div class="note">${t("التحليلات والرسومات بتتغيّر مع الفترة — حالة المطبخ والترابيزات دايمًا لحظية.","Analytics follow the selected range — kitchen & table status stay live.")}</div>
+    </div>
+
     <section class="hero">
       <div class="hero-top">
         <div>
-          <div class="hero-label">${t("إجمالي الإيرادات المحصّلة","Total revenue collected")}</div>
-          <div class="hero-num">${money(rev)}</div>
-          <div class="hero-sub">${t("من","from")} ${paidOrders.length} ${t("طلب مدفوع","paid orders")}</div>
+          <div class="hero-label">${t("إجمالي الإيرادات","Total revenue")} — ${rangeLabel(s.range)}</div>
+          <div class="hero-num-row">
+            <div class="hero-num">${money(rev)}</div>
+            ${delta==null?"":`<span class="delta ${delta>=0?"up":"down"}">${delta>=0?"▲":"▼"} ${Math.abs(delta).toFixed(1)}%</span>`}
+          </div>
+          <div class="hero-sub">${t("من","from")} ${paidOrders.length} ${t("طلب مدفوع","paid orders")}${delta==null?"":` • ${t("مقارنة بالفترة السابقة","vs. previous period")}`}</div>
         </div>
       </div>
       <div class="hero-pills">
         <div class="hero-pill"><span>${t("متوسط الفاتورة","Avg. ticket")}</span><b>${money(avgTicket)}</b></div>
-        <div class="hero-pill"><span>${t("طلبات نشطة بالمطبخ","Active in kitchen")}</span><b>${active}</b></div>
-        <div class="hero-pill"><span>${t("ترابيزات مشغولة","Occupied tables")}</span><b>${activeTables}/${CONFIG.TABLES}</b></div>
-        <div class="hero-pill"><span>${t("إجمالي الطلبات","Total orders")}</span><b>${s.orders.length}</b></div>
+        <div class="hero-pill"><span>${t("متوسط وقت التحضير","Avg. prep time")}</span><b>${prep==null?"—":`${prep.toFixed(0)} ${t("د","min")}`}</b></div>
+        <div class="hero-pill"><span>${t("دوران الترابيزات","Table turnover")}</span><b>${turnover.toFixed(1)}/${t("يوم","day")}</b></div>
+        <div class="hero-pill"><span>${t("طلبات نشطة الآن","Active right now")}</span><b>${active}</b></div>
       </div>
     </section>
 
     <div class="kpis">
-      <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("طلبات جديدة","New orders")}</div><b>${s.orders.filter(o=>o.status==="new").length}</b></div>
-      <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("قيد التحضير","Preparing")}</div><b>${s.orders.filter(o=>o.status==="preparing").length}</b></div>
-      <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("جاهز للتقديم","Ready")}</div><b>${s.orders.filter(o=>o.status==="ready").length}</b></div>
-      <div class="kpi c-muted"><div class="lbl"><span class="dot"></span>${t("ترابيزات متاحة","Available tables")}</div><b>${CONFIG.TABLES-activeTables}</b></div>
+      <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("طلبات جديدة (الآن)","New orders (now)")}</div><b>${s.orders.filter(o=>o.status==="new").length}</b></div>
+      <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("قيد التحضير (الآن)","Preparing (now)")}</div><b>${s.orders.filter(o=>o.status==="preparing").length}</b></div>
+      <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("جاهز للتقديم (الآن)","Ready (now)")}</div><b>${s.orders.filter(o=>o.status==="ready").length}</b></div>
+      <div class="kpi c-muted"><div class="lbl"><span class="dot"></span>${t("ترابيزات متاحة (الآن)","Available tables (now)")}</div><b>${CONFIG.TABLES-activeTables}</b></div>
     </div>
 
     <div class="charts">
       <div class="chart-panel">
         <h3>${t("الإيرادات خلال ٧ أيام","Revenue, last 7 days")}</h3>
-        <div class="cap">${t("مجموع الطلبات المدفوعة يوميًا","Daily total of paid orders")}</div>
+        <div class="cap">${t("مجموع الطلبات المدفوعة يوميًا (بيتحدث دايمًا آخر أسبوع)","Daily total of paid orders (always trailing 7 days)")}</div>
         <div class="chart-box tall"><canvas id="chartRevenue"></canvas></div>
       </div>
       <div class="chart-panel">
         <h3>${t("الطلبات حسب الحالة","Orders by status")}</h3>
-        <div class="cap">${t("توزيع كل الطلبات الحالية","Current distribution across all orders")}</div>
+        <div class="cap">${rangeLabel(s.range)}</div>
         <div class="chart-box tall"><canvas id="chartStatus"></canvas></div>
       </div>
     </div>
     <div class="charts-row2">
       <div class="chart-panel">
         <h3>${t("الأصناف الأكثر طلبًا","Top-selling items")}</h3>
-        <div class="cap">${t("بعدد القطع المباعة","By quantity sold")}</div>
+        <div class="cap">${t("بعدد القطع —","By quantity —")} ${rangeLabel(s.range)}</div>
         <div class="chart-box"><canvas id="chartTopItems"></canvas></div>
       </div>
       <div class="chart-panel">
@@ -294,17 +480,31 @@ function manager(){
         <div class="chart-box"><canvas id="chartTables"></canvas></div>
       </div>
     </div>
+    <div class="charts-row3">
+      <div class="chart-panel">
+        <h3>${t("خريطة ساعات الذروة","Peak hours")}</h3>
+        <div class="cap">${t("عدد الطلبات حسب ساعة اليوم —","Order count by hour of day —")} ${rangeLabel(s.range)}</div>
+        <div class="chart-box"><canvas id="chartPeak"></canvas></div>
+      </div>
+    </div>
 
     <div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">${t("مباشر","Live")}</span></div>
     <section class="panel">
-      <div class="orders">${s.orders.length?s.orders.slice(0,40).map(orderCard).join(""):`<div class="empty-note">${t("لا توجد طلبات بعد.","No orders yet.")}</div>`}</div>
+      <div class="orders-toolbar">
+        <div class="search-box">🔎<input id="orderSearch" placeholder="${t("دوّر برقم الترابيزة أو رقم الطلب…","Search by table or order #…")}" value="${s.search.replace(/"/g,"&quot;")}"></div>
+        <div class="chips">
+          ${["all","new","preparing","ready","served","paid"].map(k=>`<button class="chip ${s.statusFilter===k?"active":""}" data-statuschip="${k}">${k==="all"?t("الكل","All"):t(STATUS_META[k][0],STATUS_META[k][1])}</button>`).join("")}
+        </div>
+        <button class="btn" id="exportCsv">⬇ ${t("تصدير CSV","Export CSV")}</button>
+      </div>
+      <div class="orders">${ordersForList().length?ordersForList().slice(0,60).map(orderCard).join(""):`<div class="empty-note">${t("لا توجد طلبات مطابقة.","No matching orders.")}</div>`}</div>
     </section>
 
     <div class="section-title"><h2>${t("الترابيزات","Tables")}</h2></div>
     <section class="panel" style="padding-top:14px">
       <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>{
         const n=i+1;
-        const isActive=s.orders.some(o=>Number(o.table_number)===n&&!["paid","served"].includes(o.status));
+        const isActive=s.orders.some(o=>Number(o.table_number)===n&&ACTIVE_STATUSES.includes(o.status));
         const count=s.orders.filter(o=>Number(o.table_number)===n).length;
         return `<div class="table-card ${isActive?"active":""}">
           <strong>${t("ترابيزة","Table")} ${n}</strong>
@@ -332,9 +532,9 @@ function orderCard(o){
   if(o.status==="preparing")actions=`<button class="btn" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
   if(o.status==="ready")actions=`<button class="btn" data-status="${o.id}:served">${t("تم التقديم","Served")}</button>`;
   if(o.status==="served")actions=`<button class="btn" data-status="${o.id}:paid">${t("تم الدفع","Paid")}</button>`;
-  return `<div class="order">
+  return `<div class="order ${isLate(o)?"late":""}" data-order-created="${o.created_at||""}" data-order-status="${o.status}">
     <div>
-      <span class="order-id">#${o.id}</span><span class="order-table">${t("ترابيزة","Table")} ${o.table_number||"—"}</span>
+      <span class="order-id">#${o.id}</span><span class="order-table">${t("ترابيزة","Table")} ${o.table_number||"—"}</span><span class="late-tag">⏱ ${t("متأخر","Late")}</span>
       <div class="order-items">${(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en||"Item"} × ${i.quantity}`).join(" • ")||t("لا توجد تفاصيل","No item details")}</div>
       ${actions?`<div class="order-actions">${actions}</div>`:""}
     </div>
@@ -358,12 +558,28 @@ async function updateStatus(id,status){
 
 function bind(){
   document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
+  document.getElementById("themeToggle")?.addEventListener("click",()=>{
+    s.theme=s.theme==="dark"?"light":"dark"; localStorage.setItem("rf_theme",s.theme); render();
+  });
+  document.getElementById("soundToggle")?.addEventListener("change",e=>{s.sound=e.target.checked; if(s.sound)beep();});
   document.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
   document.getElementById("showQR")?.addEventListener("click",renderQR);
-  document.querySelectorAll("[data-tableorders]").forEach(b=>{
-    b.onclick=()=>{s.openTable=Number(b.dataset.tableorders);renderModal()};
-  });
+  document.querySelectorAll("[data-tableorders]").forEach(b=>{ b.onclick=()=>{s.openTable=Number(b.dataset.tableorders);renderModal()}; });
   document.getElementById("tableModalVeil")?.addEventListener("click",closeTableModal);
+  document.querySelectorAll("[data-range]").forEach(b=>{ b.onclick=()=>{s.range=b.dataset.range;render()}; });
+  document.querySelectorAll("[data-statuschip]").forEach(b=>{ b.onclick=()=>{s.statusFilter=b.dataset.statuschip;render()}; });
+  document.getElementById("exportCsv")?.addEventListener("click",exportCSV);
+  const searchEl=document.getElementById("orderSearch");
+  searchEl?.addEventListener("input",e=>{ s.search=e.target.value; renderOrdersOnly(); });
+}
+
+function renderOrdersOnly(){
+  const wrap=document.querySelector(".orders");
+  if(!wrap)return;
+  const list=ordersForList();
+  wrap.innerHTML=list.length?list.slice(0,60).map(orderCard).join(""):`<div class="empty-note">${t("لا توجد طلبات مطابقة.","No matching orders.")}</div>`;
+  wrap.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
+  tickLate();
 }
 
 function closeTableModal(){ s.openTable=null; renderModal(); }
@@ -372,12 +588,9 @@ function renderModal(){
   const veil=document.getElementById("tableModalVeil");
   const modal=document.getElementById("tableModal");
   if(!veil||!modal)return;
-  if(s.openTable==null){
-    veil.classList.remove("open"); modal.classList.remove("open");
-    return;
-  }
+  if(s.openTable==null){ veil.classList.remove("open"); modal.classList.remove("open"); return; }
   const n=s.openTable;
-  const tableOrders=s.orders.filter(o=>Number(o.table_number)===n);
+  const tableOrders=s.orders.filter(o=>Number(o.table_number)===n).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   const rev=tableOrders.filter(o=>o.status==="paid").reduce((a,o)=>a+Number(o.total||0),0);
   modal.innerHTML=`
     <div class="modal-head">
@@ -388,8 +601,9 @@ function renderModal(){
       ${tableOrders.length ? tableOrders.map(orderCard).join("") : `<div class="modal-empty">${t("لا توجد طلبات لهذه الترابيزة بعد.","No orders for this table yet.")}</div>`}
     </div>`;
   document.getElementById("tableModalClose")?.addEventListener("click",closeTableModal);
-  document.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
+  modal.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
   veil.classList.add("open"); modal.classList.add("open");
+  tickLate();
 }
 
 function renderQR(){
@@ -411,38 +625,33 @@ function renderQR(){
 }
 
 /* ---------------- charts ---------------- */
-function destroyCharts(){
-  Object.values(s.charts).forEach(c=>c?.destroy?.());
-  s.charts={};
-}
+function destroyCharts(){ Object.values(s.charts).forEach(c=>c?.destroy?.()); s.charts={}; }
 function baseFont(){ return getComputedStyle(document.body).fontFamily || "IBM Plex Sans Arabic, sans-serif"; }
+function chartTheme(){
+  return s.theme==="dark" ? {grid:"#2b3230",text:"#889390"} : {grid:"#e2e7e4",text:"#7e8a85"};
+}
 
 function renderCharts(){
   destroyCharts();
   if(typeof Chart==="undefined")return;
+  const th=chartTheme();
   Chart.defaults.font.family=baseFont();
-  Chart.defaults.color="#7e8a85";
+  Chart.defaults.color=th.text;
   Chart.defaults.font.size=12;
 
   const rev=revenueByDay();
   const elRev=document.getElementById("chartRevenue");
   if(elRev)s.charts.revenue=new Chart(elRev,{
     type:"line",
-    data:{labels:rev.labels,datasets:[{
-      data:rev.values,borderColor:"#c9862c",backgroundColor:"#c9862c22",
-      fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c9862c",borderWidth:2.5
-    }]},
-    options:{plugins:{legend:{display:false}},scales:{
-      y:{beginAtZero:true,grid:{color:"#e2e7e4"},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},
-      x:{grid:{display:false}}
-    },maintainAspectRatio:false}
+    data:{labels:rev.labels,datasets:[{data:rev.values,borderColor:"#c9862c",backgroundColor:"#c9862c22",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c9862c",borderWidth:2.5}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
   });
 
   const st=statusCounts();
   const elStatus=document.getElementById("chartStatus");
   if(elStatus)s.charts.status=new Chart(elStatus,{
     type:"doughnut",
-    data:{labels:st.labels,datasets:[{data:st.values,backgroundColor:st.colors,borderColor:"#fff",borderWidth:3}]},
+    data:{labels:st.labels,datasets:[{data:st.values,backgroundColor:st.colors,borderColor:s.theme==="dark"?"#1b201f":"#fff",borderWidth:3}]},
     options:{cutout:"64%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,padding:14}}},maintainAspectRatio:false}
   });
 
@@ -451,27 +660,35 @@ function renderCharts(){
   if(elTop)s.charts.topItems=new Chart(elTop,{
     type:"bar",
     data:{labels:ti.labels,datasets:[{data:ti.values,backgroundColor:"#2f6f7a",borderRadius:5,maxBarThickness:22}]},
-    options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{
-      x:{beginAtZero:true,grid:{color:"#e2e7e4"}},y:{grid:{display:false}}
-    },maintainAspectRatio:false}
+    options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:th.grid}},y:{grid:{display:false}}},maintainAspectRatio:false}
   });
 
-  const activeTables=new Set(s.orders.filter(o=>!["paid","served"].includes(o.status)).map(o=>Number(o.table_number))).size;
+  const activeTables=new Set(s.orders.filter(o=>ACTIVE_STATUSES.includes(o.status)).map(o=>Number(o.table_number))).size;
   const freeTables=Math.max(0,CONFIG.TABLES-activeTables);
   const elTables=document.getElementById("chartTables");
   if(elTables)s.charts.tables=new Chart(elTables,{
     type:"doughnut",
-    data:{labels:[t("مشغولة","Occupied"),t("متاحة","Available")],datasets:[{data:[activeTables,freeTables],backgroundColor:["#c9862c","#e2e7e4"],borderColor:"#fff",borderWidth:3}]},
+    data:{labels:[t("مشغولة","Occupied"),t("متاحة","Available")],datasets:[{data:[activeTables,freeTables],backgroundColor:["#c9862c",th.grid],borderColor:s.theme==="dark"?"#1b201f":"#fff",borderWidth:3}]},
     options:{cutout:"64%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,padding:14}}},maintainAspectRatio:false}
+  });
+
+  const pk=peakHours();
+  const elPeak=document.getElementById("chartPeak");
+  if(elPeak)s.charts.peak=new Chart(elPeak,{
+    type:"bar",
+    data:{labels:pk.labels,datasets:[{data:pk.values,backgroundColor:"#c23b2b",borderRadius:4,maxBarThickness:18}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{precision:0}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}}},maintainAspectRatio:false}
   });
 }
 
 function render(){
   document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
+  document.documentElement.setAttribute("data-theme",s.theme);
   document.getElementById("app").innerHTML=manager();
   bind();
   renderCharts();
   renderModal();
+  tickLate();
 }
 
 document.addEventListener("keydown",e=>{ if(e.key==="Escape" && s.openTable!=null) closeTableModal(); });
