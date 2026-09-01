@@ -2,8 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <meta name="theme-color" content="#f6f2ea">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <title>RestoFlow — المنيو</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -101,8 +105,15 @@
 
 *{box-sizing:border-box}
 
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%
+}
+
 body{
   margin:0;
+  min-width:0;
+  overflow-x:hidden;
   font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
   background:var(--bg-grad);
   color:var(--text);
@@ -126,9 +137,10 @@ h1,h2,h3,.brand,.price{
   background:var(--top-bg);
   backdrop-filter:blur(18px);
   border-bottom:1px solid var(--line);
-  padding:12px 4vw;
+  padding:calc(12px + env(safe-area-inset-top)) 4vw 12px;
   display:flex;
   gap:12px;
+  flex-wrap:wrap;
   align-items:center;
   justify-content:space-between
 }
@@ -301,7 +313,13 @@ h1,h2,h3,.brand,.price{
   overflow-x:auto;
   overflow-y:hidden;
   padding:4px 2px 14px;
-  scrollbar-width:none
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity
+}
+
+.categories .chip{
+  scroll-snap-align:start
 }
 
 .categories::-webkit-scrollbar{
@@ -404,8 +422,9 @@ h1,h2,h3,.brand,.price{
 .cart{
   position:fixed;
   left:22px;
-  bottom:22px;
+  bottom:calc(22px + env(safe-area-inset-bottom));
   z-index:30;
+  max-width:calc(100vw - 44px);
   background:linear-gradient(160deg,var(--accent),var(--accent-deep));
   color:#ffffff;
   border:0;
@@ -446,13 +465,15 @@ h1,h2,h3,.brand,.price{
   z-index:50;
   display:grid;
   place-items:center;
-  padding:18px
+  padding:18px;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))
 }
 
 .modal-card{
   width:min(650px,100%);
   max-height:90vh;
   overflow:auto;
+  -webkit-overflow-scrolling:touch;
   background:var(--card);
   border-radius:22px;
   padding:24px;
@@ -621,7 +642,7 @@ h1,h2,h3,.brand,.price{
   border-radius:12px;
   padding:10px 12px;
   font-family:inherit;
-  font-size:14px;
+  font-size:16px;
   line-height:1.6;
   margin-top:6px
 }
@@ -640,7 +661,7 @@ h1,h2,h3,.brand,.price{
 
 .toast{
   position:fixed;
-  bottom:100px;
+  bottom:calc(100px + env(safe-area-inset-bottom));
   left:50%;
   transform:translate(-50%,16px);
   z-index:60;
@@ -684,16 +705,31 @@ h1,h2,h3,.brand,.price{
 
 @media(max-width:480px){
   .toast{
-    bottom:90px
+    bottom:calc(90px + env(safe-area-inset-bottom))
   }
 }
 
 footer{
-  padding:40px 4vw;
+  padding:40px 4vw calc(40px + env(safe-area-inset-bottom));
   color:var(--muted);
   text-align:center;
   border-top:1px solid var(--line);
   margin-top:20px
+}
+
+@media(max-width:600px){
+  .actions{
+    row-gap:10px
+  }
+
+  .invoice-actions,
+  .qr-scan-actions{
+    flex-wrap:wrap
+  }
+
+  #invoice > div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important
+  }
 }
 
 @media(max-width:480px){
@@ -703,6 +739,62 @@ footer{
 
   .container{
     padding:24px 4vw
+  }
+
+  .hero{
+    min-height:auto;
+    padding:38px 6vw 34px
+  }
+
+  .hero p{
+    font-size:16px;
+    line-height:1.7
+  }
+
+  .section-title{
+    flex-wrap:wrap
+  }
+
+  .section-title h2{
+    font-size:26px
+  }
+
+  .modal-card{
+    padding:18px;
+    border-radius:18px
+  }
+
+  .modal-card h2{
+    font-size:22px
+  }
+
+  .food-detail-img{
+    height:170px
+  }
+
+  .food-detail-qty{
+    gap:14px
+  }
+
+  .btn{
+    padding:11px 16px;
+    font-size:14px
+  }
+
+  .cart{
+    left:14px;
+    padding:12px 16px;
+    font-size:14px
+  }
+
+  .brand{
+    font-size:17px
+  }
+
+  .logo{
+    width:38px;
+    height:38px;
+    font-size:18px
   }
 }
 </style>
