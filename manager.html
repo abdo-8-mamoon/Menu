@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111318">
+<title>RestoFlow — لوحة المدير</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--text:#151515;--muted:#707070;--line:#e8e5df;--accent:#b78635;--dark:#111318;--good:#1d8a58;--shadow:0 18px 50px #1717170e}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer}.top{position:sticky;top:0;z-index:20;background:#ffffffeb;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:12px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900}.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#d8b36a,#8c5f20);display:grid;place-items:center;color:#fff;font-size:21px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--card);padding:9px 13px;border-radius:11px}.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.gold{background:var(--accent);color:#fff;border-color:var(--accent)}
+.container{max-width:1250px;margin:auto;padding:28px 4vw}.section-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:10px 0 20px}.section-title h2{margin:0;font-size:28px}.muted{color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{padding:18px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,#fff,#faf9f5)}.stat b{display:block;font-size:31px;margin-top:7px}
+.orders{display:grid;gap:12px}.order{border:1px solid var(--line);border-radius:16px;padding:15px;display:grid;grid-template-columns:1fr auto;gap:12px}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px}.s-new{background:#fff1d8;color:#9b6410}.s-prep{background:#e9efff;color:#365aa3}.s-ready{background:#e4f7ed;color:#167045}.s-served{background:#eee;color:#555}.s-paid{background:#e5f8ed;color:#167045}
+.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.order-actions .btn{padding:7px 10px;font-size:13px}
+.manager-head{background:linear-gradient(120deg,#14161b,#2a2925);color:#fff;border-radius:22px;padding:25px;margin-bottom:18px}.manager-head h1{margin:0 0 8px}
+.table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.table-card{border:1px solid var(--line);padding:14px;border-radius:15px;text-align:center;background:#fff}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.qr-card{border:1px solid var(--line);border-radius:16px;padding:15px;text-align:center;background:#fff}.qr-box{display:grid;place-items:center;min-height:150px;margin:8px 0}.qr-link{font-size:12px;word-break:break-all;color:#555}
+.kitchen-empty{text-align:center;padding:40px;color:var(--muted)}
+footer{padding:35px 4vw;color:var(--muted);text-align:center}
+@media(max-width:800px){.grid4{grid-template-columns:repeat(2,1fr)}.order{grid-template-columns:1fr}}
+@media(max-width:480px){.container{padding:22px 4vw}.grid4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+const CONFIG={
+  SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
+  SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
+  RESTAURANT_NAME:"RestoFlow", CURRENCY:"ج.م", TABLES:30, DEFAULT_LANGUAGE:"ar",
+  // Change this to the URL of your menu.html page (customer ordering page).
+  MENU_URL:"menu.html"
+};
+
+let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],dark:false,sb:null};
+
+const t=(a,e)=>s.lang==="ar"?a:e;
+const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
+
+async function init(){
+  if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
+    s.sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY);
+    await loadOrders();
+    s.sb.channel("rf-manager-live")
+      .on("postgres_changes",{event:"*",schema:"public",table:"orders"},async()=>{await loadOrders()})
+      .on("postgres_changes",{event:"*",schema:"public",table:"order_items"},async()=>{await loadOrders()})
+      .subscribe();
+  }
+  render();
+}
+
+async function loadOrders(){
+  if(!s.sb)return;
+  const r=await s.sb.from("orders").select("*,order_items(*)").order("created_at",{ascending:false}).limit(100);
+  if(!r.error && r.data)s.orders=r.data;
+  render();
+}
+
+function header(){
+  return `<header class="top">
+    <div class="brand"><div class="logo">R</div><div>${CONFIG.RESTAURANT_NAME}
+      <small class="muted" style="display:block;font-weight:400">${t("لوحة تحكم المدير","Manager dashboard")}</small>
+    </div></div>
+    <div class="actions">
+      <button class="btn" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+      <button class="btn" id="theme">${s.dark?"☀️":"🌙"}</button>
+    </div>
+  </header>`;
+}
+
+function manager(){
+  let active=s.orders.filter(o=>!["paid","served"].includes(o.status)).length;
+  let rev=s.orders.filter(o=>o.status==="paid").reduce((a,o)=>a+Number(o.total||0),0);
+  return header()+`<main class="container">
+    <section class="manager-head"><span class="badge">${t("لوحة تحكم المدير","MANAGER DASHBOARD")}</span>
+      <h1>${t("كل المطعم قدامك.","Your restaurant, at a glance.")}</h1>
+      <p>${t("الطلبات والمطبخ والترابيزات وQR Codes في مكان واحد.","Orders, kitchen, tables and QR codes in one place.")}</p>
+    </section>
+    <div class="grid4">
+      <div class="stat">👥 ${t("الطلبات","Orders")}<b>${s.orders.length}</b></div>
+      <div class="stat">🔥 ${t("طلبات المطبخ","Kitchen queue")}<b>${active}</b></div>
+      <div class="stat">💰 ${t("المبيعات المدفوعة","Paid sales")}<b>${money(rev)}</b></div>
+      <div class="stat">🪑 ${t("الترابيزات","Tables")}<b>${CONFIG.TABLES}</b></div>
+    </div>
+    <section class="panel" style="margin-top:18px"><div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">Live</span></div>
+      <div class="orders">${s.orders.length?s.orders.map(orderCard).join(""):`<div class="kitchen-empty">${t("لا توجد طلبات بعد.","No orders yet.")}</div>`}</div>
+    </section>
+    <section class="panel"><div class="section-title"><h2>${t("الترابيزات","Tables")}</h2></div>
+      <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>`<div class="table-card"><strong>${t("ترابيزة","Table")} ${i+1}</strong><br><small class="muted">${s.orders.some(o=>Number(o.table_number)===i+1&&!["paid","served"].includes(o.status))?t("نشطة","Active"):t("متاحة","Available")}</small></div>`).join("")}</div>
+    </section>
+    <section class="panel"><div class="section-title"><h2>QR Codes</h2><button class="btn gold" id="showQR">${t("عرض كل الـQR","Show all QR codes")}</button></div>
+      <p class="muted">${t("كل ترابيزة لها لينك مستقل لصفحة المنيو. عند مسح الـQR يفتح المنيو مباشرة على رقم الترابيزة.","Each table has its own link to the menu page. Scanning its QR opens the menu directly for that table.")}</p>
+      <div id="qrArea"></div>
+    </section>
+  </main><footer>RestoFlow Manager</footer>`;
+}
+
+function orderCard(o){
+  const l={new:["جديد","New","s-new"],preparing:["قيد التحضير","Preparing","s-prep"],ready:["جاهز","Ready","s-ready"],served:["تم التقديم","Served","s-served"],paid:["مدفوع","Paid","s-paid"]}[o.status]||["جديد","New","s-new"];
+  let actions="";
+  if(o.status==="new")actions=`<button class="btn gold" data-status="${o.id}:preparing">${t("قيد التحضير","Preparing")}</button>`;
+  if(o.status==="preparing")actions=`<button class="btn gold" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
+  if(o.status==="ready")actions=`<button class="btn" data-status="${o.id}:served">${t("تم التقديم","Served")}</button>`;
+  if(o.status==="served")actions=`<button class="btn" data-status="${o.id}:paid">${t("تم الدفع","Paid")}</button>`;
+  return `<div class="order"><div><strong>#${o.id} • ${t("ترابيزة","Table")} ${o.table_number||"—"}</strong>
+    <div class="muted">${(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en||"Item"} × ${i.quantity}`).join(" • ")}</div>
+    ${actions?`<div class="order-actions">${actions}</div>`:""}</div>
+    <div><span class="status ${l[2]}">${t(l[0],l[1])}</span><div style="margin-top:8px">${money(o.total)}</div></div></div>`;
+}
+
+async function updateStatus(id,status){
+  if(s.sb){
+    const r=await s.sb.from("orders").update({status}).eq("id",id);
+    if(r.error){alert(r.error.message);return}
+    await loadOrders();
+  }else{
+    const o=s.orders.find(x=>String(x.id)===String(id)); if(o)o.status=status;
+    render();
+  }
+}
+
+function bind(){
+  document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
+  document.getElementById("theme")?.addEventListener("click",()=>{s.dark=!s.dark;document.body.style.filter=s.dark?"invert(.92) hue-rotate(180deg)":"none";render()});
+  document.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
+  document.getElementById("showQR")?.addEventListener("click",renderQR);
+}
+
+function renderQR(){
+  const area=document.getElementById("qrArea"); if(!area)return;
+  const base=new URL(CONFIG.MENU_URL, location.href).href;
+  area.innerHTML=`<div class="qr-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>{
+    const n=i+1,url=`${base}?table=${n}`;
+    return `<div class="qr-card"><strong>${t("ترابيزة","Table")} ${n}</strong><div class="qr-box" id="qr-${n}"></div><div class="qr-link">${url}</div><div class="actions" style="justify-content:center;margin-top:9px">
+      <button class="btn" data-copyqr="${n}">${t("نسخ اللينك","Copy link")}</button>
+      <a class="btn" target="_blank" href="${url}">${t("فتح","Open")}</a></div></div>`;
+  }).join("")}</div>`;
+  for(let n=1;n<=CONFIG.TABLES;n++){
+    const url=`${base}?table=${n}`;
+    new QRCode(document.getElementById(`qr-${n}`),{text:url,width:145,height:145});
+  }
+  area.querySelectorAll("[data-copyqr]").forEach(b=>b.onclick=async()=>{
+    const n=b.dataset.copyqr;await navigator.clipboard.writeText(`${base}?table=${n}`);b.textContent=t("تم النسخ ✓","Copied ✓");
+  });
+}
+
+function render(){
+  document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
+  document.getElementById("app").innerHTML=manager();
+  bind();
+}
+
+setInterval(()=>{if(s.sb)loadOrders()},300000);
+init();
+</script>
+</body>
+</html>
