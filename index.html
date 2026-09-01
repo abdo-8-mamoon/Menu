@@ -110,6 +110,82 @@ html{
   text-size-adjust:100%
 }
 
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(26px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes fadeInDown{
+  from{opacity:0;transform:translateY(-16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes scaleIn{
+  from{opacity:0;transform:scale(.9) translateY(14px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+
+@keyframes popIn{
+  0%{opacity:0;transform:scale(.55)}
+  65%{opacity:1;transform:scale(1.08)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+@keyframes bounceIn{
+  0%{opacity:0;transform:translate(-50%,50px) scale(.9)}
+  55%{opacity:1;transform:translate(-50%,-8px) scale(1.02)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+
+@keyframes floaty{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-5px) rotate(-2deg)}
+}
+
+@keyframes pulseRing{
+  0%{box-shadow:0 0 0 0 rgba(122,31,31,.45)}
+  70%{box-shadow:0 0 0 14px rgba(122,31,31,0)}
+  100%{box-shadow:0 0 0 0 rgba(122,31,31,0)}
+}
+
+@keyframes badgePop{
+  0%{transform:scale(.4)}
+  55%{transform:scale(1.35)}
+  75%{transform:scale(.92)}
+  100%{transform:scale(1)}
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+@keyframes shimmerSweep{
+  0%{background-position:-150% 0}
+  100%{background-position:250% 0}
+}
+
+@keyframes wiggle{
+  0%,100%{transform:rotate(0deg)}
+  25%{transform:rotate(-4deg)}
+  75%{transform:rotate(4deg)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important
+  }
+}
+
 body{
   margin:0;
   min-width:0;
@@ -142,7 +218,8 @@ h1,h2,h3,.brand,.price{
   gap:12px;
   flex-wrap:wrap;
   align-items:center;
-  justify-content:space-between
+  justify-content:space-between;
+  animation:fadeInDown .5s ease both
 }
 
 .brand{
@@ -166,7 +243,13 @@ h1,h2,h3,.brand,.price{
   font-size:20px;
   font-family:"Markazi Text",serif;
   font-weight:700;
-  box-shadow:0 8px 16px -6px rgba(85,20,20,.4)
+  box-shadow:0 8px 16px -6px rgba(85,20,20,.4);
+  animation:floaty 3.2s ease-in-out infinite;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1)
+}
+
+.logo:hover{
+  transform:scale(1.1) rotate(8deg)
 }
 
 .actions{
@@ -187,16 +270,17 @@ h1,h2,h3,.brand,.price{
   padding:12px 18px;
   border-radius:12px;
   white-space:nowrap;
-  transition:transform .15s ease,box-shadow .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease
 }
 
 .btn:hover{
   border-color:var(--ink-soft);
-  box-shadow:0 6px 16px -8px rgba(0,0,0,.35)
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.35);
+  transform:translateY(-2px)
 }
 
 .btn:active{
-  transform:translateY(1px)
+  transform:translateY(1px) scale(.96)
 }
 
 .btn:focus-visible{
@@ -221,11 +305,13 @@ h1,h2,h3,.brand,.price{
   background:linear-gradient(160deg,var(--accent),var(--accent-deep));
   color:#ffffff;
   border-color:var(--accent-deep);
-  font-weight:600
+  font-weight:600;
+  animation:pulseRing 2.8s ease-in-out infinite
 }
 
 .gold:hover{
-  box-shadow:0 10px 22px -10px rgba(122,31,31,.55)
+  box-shadow:0 10px 22px -10px rgba(122,31,31,.55);
+  animation-play-state:paused
 }
 
 .hero{
@@ -257,14 +343,18 @@ h1,h2,h3,.brand,.price{
   font-size:clamp(38px,6.4vw,72px);
   line-height:1.06;
   margin:0 0 16px;
-  color:var(--text)
+  color:var(--text);
+  animation:fadeInUp .7s ease both;
+  animation-delay:.1s
 }
 
 .hero p{
   max-width:620px;
   color:var(--muted);
   font-size:18px;
-  line-height:1.85
+  line-height:1.85;
+  animation:fadeInUp .7s ease both;
+  animation-delay:.22s
 }
 
 .badge{
@@ -275,7 +365,8 @@ h1,h2,h3,.brand,.price{
   padding:7px 14px;
   color:var(--accent);
   font-size:14px;
-  margin-bottom:16px
+  margin-bottom:16px;
+  animation:fadeInUp .6s ease both,pulseRing 2.6s ease-in-out 1s infinite
 }
 
 .container{
@@ -289,7 +380,8 @@ h1,h2,h3,.brand,.price{
   justify-content:space-between;
   align-items:end;
   gap:12px;
-  margin:6px 0 22px
+  margin:6px 0 22px;
+  animation:fadeInUp .5s ease both
 }
 
 .section-title h2{
@@ -338,13 +430,27 @@ h1,h2,h3,.brand,.price{
   font-size:15px;
   font-weight:500;
   box-shadow:0 3px 10px -6px rgba(0,0,0,.2);
-  transition:color .15s ease,background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  transition:color .15s ease,background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .2s cubic-bezier(.34,1.56,.64,1)
 }
+
+.categories .chip:nth-child(1){animation-delay:.02s}
+.categories .chip:nth-child(2){animation-delay:.06s}
+.categories .chip:nth-child(3){animation-delay:.1s}
+.categories .chip:nth-child(4){animation-delay:.14s}
+.categories .chip:nth-child(5){animation-delay:.18s}
+.categories .chip:nth-child(6){animation-delay:.22s}
+.categories .chip:nth-child(7){animation-delay:.26s}
+.categories .chip:nth-child(8){animation-delay:.3s}
 
 .chip:hover{
   color:var(--text);
   border-color:var(--ink-soft);
-  transform:translateY(-1px)
+  transform:translateY(-2px) scale(1.04)
+}
+
+.chip:active{
+  transform:scale(.94)
 }
 
 .chip:focus-visible{
@@ -372,11 +478,24 @@ h1,h2,h3,.brand,.price{
   border-radius:18px;
   overflow:hidden;
   box-shadow:var(--shadow);
-  transition:transform .25s ease,box-shadow .25s ease
+  animation:fadeInUp .5s ease both;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease
 }
 
+.menu .food:nth-child(1){animation-delay:.03s}
+.menu .food:nth-child(2){animation-delay:.08s}
+.menu .food:nth-child(3){animation-delay:.13s}
+.menu .food:nth-child(4){animation-delay:.18s}
+.menu .food:nth-child(5){animation-delay:.23s}
+.menu .food:nth-child(6){animation-delay:.28s}
+.menu .food:nth-child(7){animation-delay:.33s}
+.menu .food:nth-child(8){animation-delay:.38s}
+.menu .food:nth-child(9){animation-delay:.43s}
+.menu .food:nth-child(10){animation-delay:.48s}
+.menu .food:nth-child(n+11){animation-delay:.5s}
+
 .food:hover{
-  transform:translateY(-4px);
+  transform:translateY(-8px) scale(1.015);
   box-shadow:0 34px 70px -22px rgba(0,0,0,.65)
 }
 
@@ -385,16 +504,12 @@ h1,h2,h3,.brand,.price{
   height:170px;
   object-fit:cover;
   display:block;
-  transition:transform .4s ease;
+  transition:transform .5s cubic-bezier(.22,1,.36,1);
   cursor:pointer
 }
 
 .food:hover img{
-  transform:scale(1.045)
-}
-
-.food-body{
-  padding:16px
+  transform:scale(1.08)
 }
 
 .food h3{
@@ -402,13 +517,27 @@ h1,h2,h3,.brand,.price{
   font-weight:600;
   font-size:21px;
   color:var(--text);
-  cursor:pointer
+  cursor:pointer;
+  transition:color .2s ease
+}
+
+.food-body{
+  padding:16px
+}
+
+.food:hover h3{
+  color:var(--accent-deep)
 }
 
 .price{
   font-weight:600;
   color:var(--accent-deep);
-  font-size:20px
+  font-size:20px;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1)
+}
+
+.food:hover .price{
+  transform:scale(1.08)
 }
 
 .food-row{
@@ -432,11 +561,16 @@ h1,h2,h3,.brand,.price{
   padding:14px 20px;
   box-shadow:0 20px 45px -10px rgba(85,20,20,.45);
   font-weight:700;
-  transition:transform .15s ease
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1)
 }
 
 .cart:hover{
-  transform:translateY(-2px)
+  transform:translateY(-3px) scale(1.03)
+}
+
+.cart:active{
+  transform:scale(.95)
 }
 
 .cart span{
@@ -445,7 +579,9 @@ h1,h2,h3,.brand,.price{
   border-radius:999px;
   padding:3px 8px;
   margin-right:6px;
-  font-weight:700
+  font-weight:700;
+  display:inline-block;
+  animation:badgePop .4s cubic-bezier(.34,1.56,.64,1) both
 }
 
 .panel{
@@ -454,7 +590,8 @@ h1,h2,h3,.brand,.price{
   border-radius:18px;
   padding:20px;
   box-shadow:var(--shadow);
-  margin-bottom:18px
+  margin-bottom:18px;
+  animation:fadeInUp .4s ease both
 }
 
 .modal{
@@ -466,7 +603,8 @@ h1,h2,h3,.brand,.price{
   display:grid;
   place-items:center;
   padding:18px;
-  padding-bottom:calc(18px + env(safe-area-inset-bottom))
+  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  animation:fadeIn .25s ease both
 }
 
 .modal-card{
@@ -477,7 +615,8 @@ h1,h2,h3,.brand,.price{
   background:var(--card);
   border-radius:22px;
   padding:24px;
-  box-shadow:0 50px 100px -25px rgba(0,0,0,.6)
+  box-shadow:0 50px 100px -25px rgba(0,0,0,.6);
+  animation:scaleIn .32s cubic-bezier(.22,1,.36,1) both
 }
 
 .modal-card h2{
@@ -494,7 +633,13 @@ h1,h2,h3,.brand,.price{
   border-radius:50%;
   width:34px;
   height:34px;
-  font-size:16px
+  font-size:16px;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .2s ease
+}
+
+.close:hover{
+  transform:rotate(90deg) scale(1.08);
+  background:color-mix(in srgb, var(--text) 14%, transparent)
 }
 
 .cart-item{
@@ -502,7 +647,8 @@ h1,h2,h3,.brand,.price{
   justify-content:space-between;
   gap:10px;
   padding:13px 0;
-  border-bottom:1px solid var(--line)
+  border-bottom:1px solid var(--line);
+  animation:fadeInUp .35s ease both
 }
 
 .qty{
@@ -517,7 +663,12 @@ h1,h2,h3,.brand,.price{
   border:1px solid var(--line);
   background:var(--card);
   border-radius:8px;
-  color:var(--text)
+  color:var(--text);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),background-color .15s ease
+}
+
+.qty button:active{
+  transform:scale(.85)
 }
 
 .track{
@@ -542,7 +693,8 @@ h1,h2,h3,.brand,.price{
   border-radius:999px;
   padding:5px 11px;
   font-size:12px;
-  font-weight:600
+  font-weight:600;
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both
 }
 
 .s-new{
@@ -591,10 +743,12 @@ h1,h2,h3,.brand,.price{
   padding:14px;
   margin-top:12px;
   border-radius:14px;
-  background:var(--payment-loading-bg);
+  background:linear-gradient(90deg,var(--payment-loading-bg) 0%,var(--payment-loading-bg) 35%,#ffffff55 50%,var(--payment-loading-bg) 65%,var(--payment-loading-bg) 100%);
+  background-size:250% 100%;
   color:var(--accent-deep);
   text-align:center;
-  font-weight:600
+  font-weight:600;
+  animation:shimmerSweep 1.6s linear infinite,fadeIn .3s ease both
 }
 
 .food-detail-img{
@@ -603,7 +757,8 @@ h1,h2,h3,.brand,.price{
   object-fit:cover;
   border-radius:16px;
   display:block;
-  margin-bottom:16px
+  margin-bottom:16px;
+  animation:scaleIn .4s cubic-bezier(.22,1,.36,1) both
 }
 
 .food-detail-qty{
@@ -622,14 +777,21 @@ h1,h2,h3,.brand,.price{
   border-radius:12px;
   color:var(--text);
   font-size:20px;
-  font-weight:700
+  font-weight:700;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),background-color .15s ease
+}
+
+.food-detail-qty button:active{
+  transform:scale(.85)
 }
 
 .food-detail-qty span{
   font-size:26px;
   font-weight:700;
   min-width:34px;
-  text-align:center
+  text-align:center;
+  display:inline-block;
+  animation:badgePop .3s cubic-bezier(.34,1.56,.64,1)
 }
 
 .food-detail-note{
@@ -678,13 +840,14 @@ h1,h2,h3,.brand,.price{
   box-shadow:var(--shadow);
   opacity:0;
   pointer-events:none;
-  transition:opacity .3s ease,transform .3s ease
+  transition:opacity .35s cubic-bezier(.34,1.56,.64,1),transform .35s cubic-bezier(.34,1.56,.64,1)
 }
 
 .toast.show{
   opacity:1;
   transform:translate(-50%,0);
-  pointer-events:auto
+  pointer-events:auto;
+  animation:bounceIn .5s cubic-bezier(.34,1.56,.64,1)
 }
 
 .toast span{
@@ -700,7 +863,12 @@ h1,h2,h3,.brand,.price{
   color:var(--muted);
   font-size:17px;
   line-height:1;
-  padding:2px
+  padding:2px;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1)
+}
+
+.toast .toast-close:hover{
+  transform:rotate(90deg) scale(1.15)
 }
 
 @media(max-width:480px){
@@ -1068,10 +1236,18 @@ async function loadOrders(){
   const r=await q;
 
   if(!r.error && r.data){
-    s.orders=r.data;
-  }
 
-  render();
+    const changed=
+      JSON.stringify(r.data)!==
+      JSON.stringify(s.orders);
+
+    s.orders=r.data;
+
+    if(changed){
+      render();
+    }
+
+  }
 }
 
 
