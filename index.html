@@ -1832,18 +1832,6 @@ function bill(o){
 
               <button
                 class="btn"
-                data-pay="card"
-              >
-                💳
-                ${t(
-                  "بطاقة",
-                  "Card"
-                )}
-              </button>
-
-
-              <button
-                class="btn"
                 data-pay="wallet"
               >
                 📱
@@ -1856,12 +1844,12 @@ function bill(o){
 
               <button
                 class="btn gold"
-                data-pay="online"
+                data-pay="card"
               >
-                🌐
+                💳
                 ${t(
-                  "ادفع أونلاين",
-                  "Pay Online"
+                  "الدفع بالكارت",
+                  "Pay by Card"
                 )}
               </button>
 
@@ -2063,10 +2051,21 @@ function bill(o){
 
 
           // ======================================
-          // PAYMOB ONLINE PAYMENT
+          // PAYMOB CARD / MOBILE WALLET PAYMENT
           // ======================================
 
-          if(method==="online"){
+          if(method==="online" || method==="card" || method==="wallet"){
+
+            // Paymob Integration IDs
+            // Card: 5889037
+            // Mobile Wallet: 5889814
+            const paymentMethod =
+              method === "wallet" ? "wallet" : "card";
+
+            const integrationId =
+              paymentMethod === "wallet"
+                ? "5889814"
+                : "5889037";
 
             if(!s.sb){
 
@@ -2110,7 +2109,9 @@ function bill(o){
                   "create-kashier-payment",
                   {
                     body:{
-                      order_id:o.id
+                      order_id:o.id,
+                      payment_method:paymentMethod,
+                      integration_id:integrationId
                     }
                   }
                 );
@@ -2152,6 +2153,11 @@ function bill(o){
 
 
               // Save payment information
+
+              localStorage.setItem(
+                "restoflow_payment_method",
+                paymentMethod
+              );
 
               localStorage.setItem(
                 "restoflow_payment_order",
@@ -2431,6 +2437,10 @@ async function handlePaymentReturn(){
     order.payment_status==="failed";
 
   if(paid){
+
+    localStorage.removeItem(
+      "restoflow_payment_method"
+    );
 
     localStorage.removeItem(
       "restoflow_payment_order"
