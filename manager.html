@@ -288,6 +288,19 @@ const STATUS_META={
 };
 const ACTIVE_STATUSES=["new","preparing","ready"];
 
+/* ---------------- date helpers ----------------
+   localDayKey() groups a timestamp by the day it falls on in the VIEWER's
+   local timezone. It is used everywhere a chart needs to bucket rows "by
+   day", so the bucket a row lands in always matches the label shown under
+   it (also computed from getFullYear/getMonth/getDate — i.e. local time).
+   Using toISOString().slice(0,10) here would bucket by UTC day while the
+   label stays local, which silently splits/merges same-day rows across
+   two visually-identical labels whenever local time is ahead of UTC
+   (e.g. Egypt, UTC+2/+3) — that's the "two Sep 1 points" bug. */
+function localDayKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
 /* ---------------- sound (generated tone, no external files) ---------------- */
 let audioCtx=null;
 function beep(){
@@ -576,7 +589,7 @@ function avgTicketTrend(){
   const map=new Map();
   rangeOrders().filter(o=>o.status==="paid" && o.created_at).forEach(o=>{
     const d=new Date(o.created_at);
-    const key=d.toISOString().slice(0,10);
+    const key=localDayKey(d);
     const cur=map.get(key)||{date:new Date(d.getFullYear(),d.getMonth(),d.getDate()),sum:0,count:0};
     cur.sum+=Number(o.total||0); cur.count+=1;
     map.set(key,cur);
@@ -608,7 +621,7 @@ function trendByDay(items,valueFn,{limitDays=14}={}){
   const map=new Map();
   items.forEach(o=>{
     const d=new Date(o.created_at);
-    const key=d.toISOString().slice(0,10);
+    const key=localDayKey(d);
     const cur=map.get(key)||{date:new Date(d.getFullYear(),d.getMonth(),d.getDate()),rows:[]};
     cur.rows.push(o);
     map.set(key,cur);
