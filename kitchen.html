@@ -3,128 +3,186 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f3ead8">
+<meta name="theme-color" content="#181614">
 <title>RestoFlow — شاشة المطبخ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
+/*
+  DESIGN CONCEPT — "The Pass"
+  A kitchen expo rail at night: brushed-steel counter under a warm heat-lamp glow,
+  paper tickets bulldog-clipped to a rail. Urgency reads as temperature — a ticket
+  is cool steel-blue when it lands, warms to amber, and goes ember-red as it burns.
+  One signature motion: a new ticket drops and clips onto the rail. Everything else
+  stays still and legible, the way a real kitchen screen has to be.
+*/
 :root{
-  --bg:#f3ead8;
-  --rail:#ece0c7;
-  --panel:#faf5ea;
-  --panel2:#fffcf5;
-  --line:#ddceac;
-  --line-soft:#e8dcbd;
-  --text:#3b2f22;
-  --muted:#8a7c66;
-  --muted-dim:#b6a988;
+  --bg:#eef1ef;
+  --bg-glow: radial-gradient(1200px 520px at 50% -10%, #ffffff 0%, transparent 60%);
+  --steelwall:#e3e8e5;
+  --rail:#f6f8f7;
+  --panel:#ffffff;
+  --panel2:#fbfcfb;
+  --line:#d7ddda;
+  --line-soft:#e2e7e4;
+  --paper:#202725;
+  --paper-dim:#4c5652;
+  --muted:#7e8a85;
+  --muted-dim:#a8b2ad;
 
-  --brown:#8a5a34;
-  --brown-dim:#6b4527;
-  --brown-tint:#f0dcc0;
+  --steel:#2f6f7a;
+  --steel-dim:#1f4d55;
+  --steel-tint:#e0eef0;
 
-  --grey:#6f6b60;
-  --grey-dim:#57534a;
-  --grey-tint:#e6e2d7;
+  --amber:#c9862c;
+  --amber-dim:#96691f;
+  --amber-tint:#faf0dd;
 
-  --red:#7a2a2a;
-  --red-dim:#5e1f1f;
-  --red-tint:#f0d6cf;
+  --ember:#c23b2b;
+  --ember-dim:#8f2a1e;
+  --ember-tint:#fbe6e2;
 
-  --cream:#fdf8ee;
+  --clip:#98a19c;
+
   --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
   --font-num:'JetBrains Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);overflow-x:hidden;
-  background-image:
-    radial-gradient(1100px 480px at 12% -12%, #efe2c4 0%, transparent 60%),
-    radial-gradient(900px 460px at 100% 0%, #e9dcbe 0%, transparent 55%);
+  margin:0;font-family:var(--font-body);background:var(--bg);color:var(--paper);overflow-x:hidden;
+  background-image:var(--bg-glow);
 }
 button{font:inherit;cursor:pointer}
+::selection{background:var(--amber);color:#171512}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+}
 
 /* ============ TOP RAIL ============ */
-.top{position:sticky;top:0;z-index:30;background:#f3ead8f2;backdrop-filter:blur(14px);border-bottom:2px solid var(--brown);box-shadow:0 1px 0 var(--line)}
+.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:0 12px 26px -20px rgba(32,39,37,.35)}
+.top::after{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--steel),var(--amber),var(--ember),transparent);opacity:.5}
 .top-inner{padding:14px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:13px}
-.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(155deg,var(--brown),var(--brown-dim));display:grid;place-items:center;color:var(--cream);font-size:22px;font-weight:800;flex:none}
-.brand-text b{font-size:19px;font-weight:700;letter-spacing:.2px;display:block;color:var(--text)}
+.logo{width:46px;height:46px;border-radius:9px;background:
+    linear-gradient(155deg,#ffffff,#e7ece9),
+    conic-gradient(from 200deg,var(--ember),var(--amber),var(--steel),var(--ember));
+  background-blend-mode:soft-light;
+  display:grid;place-items:center;color:var(--paper);font-size:21px;font-weight:800;flex:none;
+  border:1px solid var(--line);box-shadow:inset 0 0 0 1px #ffffffaa, 0 4px 14px -8px rgba(32,39,37,.3)}
+.brand-text b{font-size:19px;font-weight:700;letter-spacing:.2px;display:block;color:var(--paper)}
 .brand-text small{color:var(--muted);font-weight:500;font-size:12.5px;display:block;margin-top:1px}
-.clock{font-family:var(--font-num);font-weight:700;font-size:22px;letter-spacing:.5px;color:var(--brown-dim);background:var(--panel);border:1px solid var(--line);padding:8px 18px;border-radius:8px;font-variant-numeric:tabular-nums;direction:ltr}
+.clock{font-family:var(--font-num);font-weight:700;font-size:22px;letter-spacing:1px;color:var(--amber-dim);background:var(--panel);border:1px solid var(--line);padding:8px 18px;border-radius:8px;font-variant-numeric:tabular-nums;direction:ltr;box-shadow:inset 0 1px 4px -1px rgba(32,39,37,.12)}
 .top-actions{display:flex;gap:9px;align-items:center}
-.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 15px;border-radius:10px;font-weight:600;font-size:14px;transition:.15s}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--paper);padding:10px 15px;border-radius:9px;font-weight:600;font-size:14px;transition:border-color .15s,transform .08s}
 .btn:hover{border-color:var(--muted-dim)}
-.btn:active{transform:scale(.96)}
-.btn.brand-btn{background:var(--brown);color:var(--cream);border-color:var(--brown);font-weight:700}
+.btn:active{transform:scale(.95)}
+.btn.brand-btn{background:linear-gradient(160deg,var(--amber),var(--amber-dim));color:#1c1207;border-color:var(--amber-dim);font-weight:700}
 .snd{display:flex;align-items:center;gap:9px;user-select:none}
-.snd input{width:17px;height:17px;accent-color:var(--brown)}
+.snd input{width:17px;height:17px;accent-color:var(--amber)}
 
 /* ============ STATS RAIL ============ */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 24px 6px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 17px;border-top:3px solid var(--stat-c,var(--brown))}
-.stat.incoming{--stat-c:var(--grey)}
-.stat.active{--stat-c:var(--brown)}
-.stat.complete{--stat-c:var(--red)}
-.stat.total{--stat-c:var(--brown-dim)}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--stat-c,var(--steel))}
+.stat.incoming{--stat-c:var(--steel)}
+.stat.active{--stat-c:var(--amber)}
+.stat.complete{--stat-c:var(--ember)}
+.stat.total{--stat-c:var(--muted-dim)}
 .stat .lbl{color:var(--muted);font-size:12.5px;font-weight:600}
-.stat b{display:block;font-family:var(--font-num);font-size:32px;margin-top:6px;font-weight:700;color:var(--text)}
+.stat b{display:block;font-family:var(--font-num);font-size:32px;margin-top:6px;font-weight:700;color:var(--paper)}
 
 /* ============ BOARD ============ */
-.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 24px 28px}
-.col{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;min-height:220px}
-.col-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 13px;margin-bottom:13px;border-bottom:1px solid var(--line-soft)}
-.col-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px;color:var(--text)}
-.col-flag{width:9px;height:9px;border-radius:2px;flex:none}
-.col.new .col-flag{background:var(--grey)}
-.col.preparing .col-flag{background:var(--brown)}
-.col.ready .col-flag{background:var(--red)}
-.col-count{font-family:var(--font-num);background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-weight:700;font-size:13.5px;color:var(--muted)}
-.col-body{display:flex;flex-direction:column;gap:11px;flex:1}
-.empty{text-align:center;color:var(--muted-dim);padding:44px 10px;font-size:13.5px}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:18px 24px 28px;position:relative}
+.col{background:var(--steelwall);border:1px solid var(--line);padding:0 14px 16px;display:flex;flex-direction:column;min-height:260px;position:relative}
+.col + .col{border-inline-start:none}
+.col:first-child{border-start-start-radius:14px;border-end-start-radius:14px}
+.col:last-child{border-start-end-radius:14px;border-end-end-radius:14px}
+/* rivets along the shared dividers, like a steel expo counter */
+.col:not(:last-child)::after{
+  content:"";position:absolute;inset-inline-end:-1px;top:14px;bottom:14px;width:1px;
+  background-image:radial-gradient(var(--clip) 1.4px, transparent 1.6px);
+  background-size:1px 22px;background-repeat:repeat-y;opacity:.35;
+}
+.rail-bar{height:8px;margin:0 -14px 4px;background:linear-gradient(180deg,#2f2a20,#211d17);border-bottom:1px solid var(--line)}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 12px;margin-bottom:6px;border-bottom:1px dashed var(--line-soft)}
+.col-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px;color:var(--paper)}
+.col-flag{width:8px;height:8px;border-radius:50%;flex:none;box-shadow:0 0 8px 1px var(--flag-glow,transparent)}
+.col.new .col-flag{background:var(--steel);--flag-glow:#5b7a8c88}
+.col.preparing .col-flag{background:var(--amber);--flag-glow:#d6963388}
+.col.ready .col-flag{background:var(--ember);--flag-glow:#d8482f99}
+.col-count{font-family:var(--font-num);background:var(--rail);border:1px solid var(--line);border-radius:7px;padding:2px 10px;font-weight:700;font-size:13.5px;color:var(--paper-dim)}
+.col-body{display:flex;flex-direction:column;gap:16px;flex:1;padding-top:4px}
+.empty{text-align:center;color:var(--muted-dim);padding:44px 10px;font-size:13.5px;font-style:normal}
+.empty::before{content:"—";display:block;font-size:20px;margin-bottom:6px;color:var(--line)}
 
-/* ============ TICKET CARD ============ */
-.card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:box-shadow .25s,border-color .25s}
-.card.urg-ok{box-shadow:inset 3px 0 0 var(--grey)}
-.card.urg-warn{box-shadow:inset 3px 0 0 var(--brown)}
-.card.urg-late{box-shadow:inset 4px 0 0 var(--red)}
-.card.flash{animation:flashIn .85s ease 2}
-@keyframes flashIn{0%,100%{background:var(--panel2)}50%{background:var(--brown-tint)}}
+/* ============ TICKET CARD — clipped to the rail ============ */
+.ticket-wrap{position:relative;padding-top:14px}
+.clip{
+  position:absolute;top:0;inset-inline-start:50%;transform:translateX(-50%);
+  width:34px;height:16px;z-index:2;
+}
+.clip svg{display:block;filter:drop-shadow(0 3px 3px rgba(32,39,37,.35))}
 
-.ticket-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;gap:10px}
-.tnum{font-size:20px;font-weight:700;color:var(--text)}
-.oid{font-family:var(--font-num);color:var(--muted);font-size:11.5px;margin-top:2px}
-.timer{font-family:var(--font-num);font-weight:700;font-size:15px;padding:5px 11px;border-radius:8px;background:var(--panel);border:1px solid var(--line);white-space:nowrap;letter-spacing:.5px;transition:color .3s,border-color .3s}
-.timer.urg-ok{color:var(--grey);border-color:var(--line)}
-.timer.urg-warn{color:var(--brown);border-color:#8a5a3455}
-.timer.urg-late{color:var(--red);border-color:#7a2a2a55}
-
-.perf{height:12px;background:
-  radial-gradient(circle 4.5px at 12px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 28px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 44px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 60px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 76px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 92px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 108px 50%, var(--panel) 99%, transparent 100%),
-  radial-gradient(circle 4.5px at 124px 50%, var(--panel) 99%, transparent 100%);
-  background-repeat:repeat-x;background-color:var(--panel2);border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);
+.card{
+  background:
+    repeating-linear-gradient(180deg, #00000000 0 27px, #20272505 27px 28px),
+    linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);border-radius:3px 3px 8px 8px;overflow:hidden;
+  transform:rotate(var(--tilt,0deg));
+  box-shadow:0 12px 22px -16px rgba(32,39,37,.28), inset 0 0 0 1px #ffffff;
+  transition:box-shadow .3s,border-color .4s;
+}
+.card.urg-ok{border-color:var(--steel)}
+.card.urg-warn{border-color:var(--amber-dim)}
+.card.urg-late{border-color:var(--ember-dim);animation:emberPulse 2.4s ease-in-out infinite}
+@keyframes emberPulse{
+  0%,100%{box-shadow:0 12px 22px -16px rgba(32,39,37,.28), inset 0 0 0 1px #fff, 0 0 0px #c23b2b00}
+  50%{box-shadow:0 12px 22px -16px rgba(32,39,37,.28), inset 0 0 0 1px #fff, 0 0 14px 1px #c23b2b40}
 }
 
-.items{list-style:none;margin:0;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.items li{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14.5px;color:var(--text)}
-.iqty{font-family:var(--font-num);background:var(--panel);border:1px solid var(--line);color:var(--brown-dim);font-weight:700;border-radius:7px;padding:2px 9px;font-size:12.5px;min-width:28px;text-align:center;flex:none}
+.card.drop{animation:ticketDrop .55s cubic-bezier(.2,1.1,.4,1) both}
+@keyframes ticketDrop{
+  0%{opacity:0;transform:translateY(-38px) rotate(-9deg)}
+  60%{opacity:1;transform:translateY(4px) rotate(2deg)}
+  100%{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg))}
+}
 
-.card-actions{display:flex;gap:8px;padding:0 14px 14px}
-.card-actions .btn{flex:1;padding:12px 8px;font-size:14px;text-align:center;border-radius:9px;font-weight:700}
-.act-start{background:var(--brown);border-color:var(--brown);color:var(--cream)}
-.act-ready{background:var(--red);border-color:var(--red);color:var(--cream)}
-.act-served{background:var(--grey);border-color:var(--grey);color:var(--cream)}
+.ticket-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;gap:10px}
+.tnum{font-size:19px;font-weight:700;color:var(--paper)}
+.oid{font-family:var(--font-num);color:var(--muted);font-size:11.5px;margin-top:2px}
+.timer{font-family:var(--font-num);font-weight:700;font-size:15px;padding:5px 11px;border-radius:7px;white-space:nowrap;letter-spacing:.5px;transition:color .3s,border-color .3s,background .3s;border:1px solid transparent}
+.timer.urg-ok{color:var(--steel);background:var(--steel-tint);border-color:#5b7a8c33}
+.timer.urg-warn{color:var(--amber);background:var(--amber-tint);border-color:#d6963344}
+.timer.urg-late{color:var(--ember);background:var(--ember-tint);border-color:#d8482f55}
 
-@media(max-width:1000px){.board{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+.tear{
+  height:10px;margin:0 10px;
+  background-image:radial-gradient(circle 3px at center, var(--steelwall) 99%, transparent 100%);
+  background-size:14px 10px;background-position:center;background-repeat:repeat-x;
+  border-top:1px dashed var(--line);
+}
+
+.items{list-style:none;margin:0;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.items li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14.5px;color:var(--paper-dim)}
+.iqty{font-family:var(--font-num);background:var(--rail);border:1px solid var(--line);color:var(--amber);font-weight:700;border-radius:6px;padding:2px 9px;font-size:12.5px;min-width:28px;text-align:center;flex:none}
+
+.card-actions{display:flex;gap:8px;padding:4px 14px 14px}
+.card-actions .btn{flex:1;padding:12px 8px;font-size:14px;text-align:center;border-radius:8px;font-weight:700;border:none}
+.act-start{background:linear-gradient(160deg,var(--steel),var(--steel-dim));color:#0d1518}
+.act-ready{background:linear-gradient(160deg,var(--amber),var(--amber-dim));color:#1c1207}
+.act-served{background:linear-gradient(160deg,var(--ember),var(--ember-dim));color:#20100c}
+.card-actions .btn:active{transform:scale(.96) translateY(1px);filter:brightness(.92)}
+
+@media(max-width:1000px){
+  .board{grid-template-columns:1fr;gap:16px}
+  .col{border-radius:14px!important;border-inline-start:1px solid var(--line)!important}
+  .col:not(:last-child)::after{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
 @media(max-width:520px){.top-inner{padding:12px 14px}.stats{padding:14px 14px 4px}.board{padding:14px 14px 20px}.clock{font-size:16px;padding:6px 11px}.brand-text small{display:none}}
 </style>
 </head>
@@ -134,13 +192,21 @@ const CONFIG={
   SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
   RESTAURANT_NAME:"RestoFlow", DEFAULT_LANGUAGE:"ar",
-  WARN_MINUTES:8,   // brown after this many minutes
-  LATE_MINUTES:15   // dark red after this many minutes
+  WARN_MINUTES:8,   // amber after this many minutes
+  LATE_MINUTES:15   // ember-red after this many minutes
 };
 
-let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],sb:null,sound:true,knownIds:new Set(),flashIds:new Set()};
+let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],sb:null,sound:true,knownIds:new Set(),flashIds:new Set(),tilts:new Map()};
 
 const t=(a,e)=>s.lang==="ar"?a:e;
+
+function tiltFor(id){
+  if(!s.tilts.has(id)){
+    const seed=[...String(id)].reduce((a,c)=>a+c.charCodeAt(0),0);
+    s.tilts.set(id, (((seed%7)-3)*0.35).toFixed(2));
+  }
+  return s.tilts.get(id);
+}
 
 /* ---- sound alert (generated tone, no external files) ---- */
 let audioCtx=null;
@@ -188,7 +254,7 @@ async function loadOrders(isFirstLoad){
   render();
 
   if(newOrders.length){
-    setTimeout(()=>{ newOrders.forEach(o=>s.flashIds.delete(String(o.id))); render(); },2000);
+    setTimeout(()=>{ newOrders.forEach(o=>s.flashIds.delete(String(o.id))); render(); },1400);
   }
 }
 
@@ -232,7 +298,7 @@ function statsBar(){
     <div class="stat incoming"><div class="lbl">${t("طلبات جديدة","New orders")}</div><b>${n}</b></div>
     <div class="stat active"><div class="lbl">${t("قيد التحضير","Preparing")}</div><b>${p}</b></div>
     <div class="stat complete"><div class="lbl">${t("جاهز للتقديم","Ready")}</div><b>${rd}</b></div>
-    <div class="stat total"><div class="lbl">${t("إجمالي الطابور","Total in queue")}</div><b>${n+p+rd}</b></div>
+    <div class="stat total"><div class="lbl">${t("إجمالي التذاكر المفتوحة","Open tickets")}</div><b>${n+p+rd}</b></div>
   </section>`;
 }
 
@@ -245,6 +311,7 @@ function board(){
   return `<section class="board">
     ${cols.map(c=>`
       <div class="col ${c.key}">
+        <div class="rail-bar"></div>
         <div class="col-head"><div class="col-title"><span class="col-flag"></span>${c.title}</div><span class="col-count">${c.data.length}</span></div>
         <div class="col-body">
           ${c.data.length ? c.data.map(orderCard).join("") : `<div class="empty">${t("لا توجد طلبات","No orders")}</div>`}
@@ -254,24 +321,36 @@ function board(){
   </section>`;
 }
 
+function clipSvg(){
+  return `<svg width="34" height="16" viewBox="0 0 34 16" xmlns="http://www.w3.org/2000/svg">
+    <rect x="13" y="0" width="8" height="9" rx="2" fill="#3a332b" stroke="#161310" stroke-width="1"/>
+    <rect x="6" y="7" width="22" height="7" rx="3.5" fill="#8a8378" stroke="#161310" stroke-width="1"/>
+    <rect x="9" y="9" width="16" height="2.4" rx="1.2" fill="#5f594e"/>
+  </svg>`;
+}
+
 function orderCard(o){
   const urg=urgency(o.created_at);
   const flashing=s.flashIds.has(String(o.id));
+  const tilt=tiltFor(o.id);
   let actionBtn="";
   if(o.status==="new")actionBtn=`<button class="btn act-start" data-status="${o.id}:preparing">${t("ابدأ التحضير","Start")}</button>`;
   if(o.status==="preparing")actionBtn=`<button class="btn act-ready" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
   if(o.status==="ready")actionBtn=`<button class="btn act-served" data-status="${o.id}:served">${t("تم التقديم","Served")}</button>`;
 
-  return `<div class="card ${urg} ${flashing?"flash":""}" data-order-id="${o.id}" data-created="${o.created_at||""}">
-    <div class="ticket-head">
-      <div><div class="tnum">${t("ترابيزة","Table")} ${o.table_number||"—"}</div><div class="oid">#${o.id}</div></div>
-      <div class="timer ${urg}" data-timer="${o.id}">${fmtElapsed(o.created_at)}</div>
+  return `<div class="ticket-wrap" style="--tilt:${tilt}deg">
+    <div class="clip">${clipSvg()}</div>
+    <div class="card ${urg} ${flashing?"drop":""}" data-order-id="${o.id}" data-created="${o.created_at||""}">
+      <div class="ticket-head">
+        <div><div class="tnum">${t("ترابيزة","Table")} ${o.table_number||"—"}</div><div class="oid">#${o.id}</div></div>
+        <div class="timer ${urg}" data-timer="${o.id}">${fmtElapsed(o.created_at)}</div>
+      </div>
+      <div class="tear"></div>
+      <ul class="items">
+        ${(o.order_items||[]).length ? (o.order_items||[]).map(i=>`<li><span>${i.name_ar||i.name||i.name_en||t("صنف","Item")}</span><span class="iqty">×${i.quantity}</span></li>`).join("") : `<li><span class="muted">${t("لا توجد تفاصيل","No item details")}</span></li>`}
+      </ul>
+      <div class="card-actions">${actionBtn}</div>
     </div>
-    <div class="perf"></div>
-    <ul class="items">
-      ${(o.order_items||[]).length ? (o.order_items||[]).map(i=>`<li><span>${i.name_ar||i.name||i.name_en||t("صنف","Item")}</span><span class="iqty">×${i.quantity}</span></li>`).join("") : `<li><span class="muted">${t("لا توجد تفاصيل","No item details")}</span></li>`}
-    </ul>
-    <div class="card-actions">${actionBtn}</div>
   </div>`;
 }
 
