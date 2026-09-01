@@ -2067,6 +2067,30 @@ function bill(o){
                 ? "5889814"
                 : "5889037";
 
+            // For wallet payments, ask for the Egyptian wallet number.
+            let walletNumber = "";
+
+            if(paymentMethod === "wallet"){
+              walletNumber = window.prompt(
+                t(
+                  "اكتب رقم المحفظة (مثال: 01010101010)",
+                  "Enter wallet number (example: 01010101010)"
+                ),
+                ""
+              ) || "";
+
+              walletNumber = walletNumber.replace(/\D/g, "");
+
+              if(!/^01\d{9}$/.test(walletNumber)){
+                note.className="muted";
+                note.textContent=t(
+                  "رقم المحفظة غير صحيح. اكتب رقم مصري 11 رقم يبدأ بـ 01.",
+                  "Invalid wallet number. Enter an 11-digit Egyptian number starting with 01."
+                );
+                return;
+              }
+            }
+
             if(!s.sb){
 
               note.textContent=
@@ -2111,7 +2135,10 @@ function bill(o){
                     body:{
                       order_id:o.id,
                       payment_method:paymentMethod,
-                      integration_id:integrationId
+                      integration_id:integrationId,
+                      ...(paymentMethod === "wallet"
+                        ? { wallet_number:walletNumber }
+                        : {})
                     }
                   }
                 );
@@ -2138,17 +2165,26 @@ function bill(o){
               }
 
 
-              if(
-                !data||
-                !data.success||
-                !data.checkout_url
-              ){
-
+              if(!data || !data.success){
                 throw new Error(
-                  data?.error||
-                  "Paymob checkout URL was not returned"
+                  data?.error ||
+                  "Paymob payment could not be started"
                 );
+              }
 
+              // Card returns checkout_url.
+              // Wallet returns redirect_url.
+              const paymentUrl =
+                paymentMethod === "wallet"
+                  ? data.redirect_url
+                  : data.checkout_url;
+
+              if(!paymentUrl){
+                throw new Error(
+                  paymentMethod === "wallet"
+                    ? "Paymob wallet redirect URL was not returned"
+                    : "Paymob checkout URL was not returned"
+                );
               }
 
 
@@ -2194,7 +2230,7 @@ function bill(o){
               // Open Paymob
 
               window.location.href=
-                data.checkout_url;
+                paymentUrl;
 
 
             }catch(error){
