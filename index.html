@@ -638,6 +638,56 @@ h1,h2,h3,.brand,.price{
   margin-top:4px
 }
 
+.toast{
+  position:fixed;
+  bottom:100px;
+  left:50%;
+  transform:translate(-50%,16px);
+  z-index:60;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  max-width:min(420px,90vw);
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--line);
+  border-inline-start:4px solid var(--accent);
+  border-radius:14px;
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease,transform .3s ease
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+  pointer-events:auto
+}
+
+.toast span{
+  font-size:14px;
+  line-height:1.7;
+  flex:1
+}
+
+.toast .toast-close{
+  flex:none;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:17px;
+  line-height:1;
+  padding:2px
+}
+
+@media(max-width:480px){
+  .toast{
+    bottom:90px
+  }
+}
+
 footer{
   padding:40px 4vw;
   color:var(--muted);
@@ -1242,6 +1292,8 @@ function add(id,qty=1){
 
   if(!f)return;
 
+  let wasEmpty=s.cart.length===0;
+
   let q=s.cart.find(
     x=>+x.id===id
   );
@@ -1256,10 +1308,14 @@ function add(id,qty=1){
   }
 
   render();
+
+  if(wasEmpty)showOrderReminder();
 }
 
 
 function setCartItem(id,qty,note=""){
+
+  let wasEmpty=s.cart.length===0;
 
   let i=s.cart.findIndex(
     x=>+x.id===id
@@ -1275,6 +1331,52 @@ function setCartItem(id,qty,note=""){
   }
 
   render();
+
+  if(wasEmpty && qty>0)showOrderReminder();
+}
+
+
+function showOrderReminder(){
+
+  showToast(
+    t(
+      "✅ تمت إضافة الصنف إلى طلبك بنجاح. عند الانتهاء من اختيار كل ما ترغبون به، يُرجى التكرّم بالضغط على زر «إرسال الطلب إلى المطبخ» لإتمام عملية الطلب.",
+      "✅ Item added to your order. Once you have finished selecting everything you would like, kindly tap the “Send to kitchen” button to complete your order."
+    )
+  );
+}
+
+
+function showToast(message){
+
+  document
+    .querySelectorAll(".toast")
+    .forEach(el=>el.remove());
+
+  let el=document.createElement("div");
+
+  el.className="toast";
+
+  el.innerHTML=`
+    <span>${message}</span>
+    <button class="toast-close" aria-label="close">×</button>
+  `;
+
+  document.body.appendChild(el);
+
+  requestAnimationFrame(
+    ()=>el.classList.add("show")
+  );
+
+  const close=()=>{
+    el.classList.remove("show");
+    setTimeout(()=>el.remove(),300);
+  };
+
+  el.querySelector(".toast-close")
+    .onclick=close;
+
+  setTimeout(close,6000);
 }
 
 
