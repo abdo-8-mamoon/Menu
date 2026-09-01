@@ -367,7 +367,8 @@ h1,h2,h3,.brand,.price{
   height:170px;
   object-fit:cover;
   display:block;
-  transition:transform .4s ease
+  transition:transform .4s ease;
+  cursor:pointer
 }
 
 .food:hover img{
@@ -382,7 +383,8 @@ h1,h2,h3,.brand,.price{
   margin:0 0 6px;
   font-weight:600;
   font-size:21px;
-  color:var(--text)
+  color:var(--text);
+  cursor:pointer
 }
 
 .price{
@@ -572,6 +574,41 @@ h1,h2,h3,.brand,.price{
   color:var(--accent-deep);
   text-align:center;
   font-weight:600
+}
+
+.food-detail-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:16px;
+  display:block;
+  margin-bottom:16px
+}
+
+.food-detail-qty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin:20px 0
+}
+
+.food-detail-qty button{
+  width:44px;
+  height:44px;
+  border:1px solid var(--line);
+  background:var(--card);
+  border-radius:12px;
+  color:var(--text);
+  font-size:20px;
+  font-weight:700
+}
+
+.food-detail-qty span{
+  font-size:26px;
+  font-weight:700;
+  min-width:34px;
+  text-align:center
 }
 
 footer{
@@ -1046,11 +1083,12 @@ function food(x){
       <img
         src="${x.img||x.image_url||""}"
         alt=""
+        data-open="${x.id}"
       >
 
       <div class="food-body">
 
-        <h3>
+        <h3 data-open="${x.id}">
           ${name(x)}
         </h3>
 
@@ -1143,6 +1181,16 @@ function bind(){
 
 
   document
+    .querySelectorAll("[data-open]")
+    .forEach(
+      el=>
+        el.onclick=()=>foodDetail(
+          +el.dataset.open
+        )
+    );
+
+
+  document
     .getElementById("cart")
     ?.addEventListener(
       "click",
@@ -1159,7 +1207,7 @@ function bind(){
 }
 
 
-function add(id){
+function add(id,qty=1){
 
   let f=s.menu.find(
     x=>+x.id===id
@@ -1171,12 +1219,32 @@ function add(id){
     x=>+x.id===id
   );
 
-  q
-    ?q.qty++
-    :s.cart.push({
+  if(q){
+    q.qty+=qty;
+  }else{
+    s.cart.push({
       id,
-      qty:1
+      qty
     });
+  }
+
+  render();
+}
+
+
+function setCartQty(id,qty){
+
+  let i=s.cart.findIndex(
+    x=>+x.id===id
+  );
+
+  if(qty<=0){
+    if(i>-1)s.cart.splice(i,1);
+  }else if(i>-1){
+    s.cart[i].qty=qty;
+  }else{
+    s.cart.push({id,qty});
+  }
 
   render();
 }
@@ -1212,6 +1280,125 @@ function modal(content){
   document.body.appendChild(d);
 
   return d;
+}
+
+
+function foodDetail(id){
+
+  let f=s.menu.find(
+    x=>+x.id===id
+  );
+
+  if(!f)return;
+
+  let inCart=s.cart.find(
+    x=>+x.id===id
+  );
+
+  let qty=inCart?inCart.qty:1;
+
+  const d=modal(`
+
+    <img
+      class="food-detail-img"
+      src="${f.img||f.image_url||""}"
+      alt=""
+    >
+
+    <h2>
+      ${name(f)}
+    </h2>
+
+    <p class="muted">
+      ${
+        s.lang==="ar"
+          ?(
+            f.description_ar||
+            "اختيار شهي من إعداد الشيف"
+          )
+          :(
+            f.description_en||
+            "A delicious chef selection"
+          )
+      }
+    </p>
+
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-top:6px
+      "
+    >
+      <span class="price">
+        ${money(f.price)}
+      </span>
+    </div>
+
+    <div class="food-detail-qty">
+
+      <button id="fdMinus">−</button>
+
+      <span id="fdQty">${qty}</span>
+
+      <button id="fdPlus">+</button>
+
+    </div>
+
+    <div
+      class="muted"
+      style="text-align:center;margin-bottom:10px"
+    >
+      ${t("الإجمالي","Total")}:
+      <b id="fdTotal">${money(f.price*qty)}</b>
+    </div>
+
+    <button
+      class="btn gold"
+      style="width:100%"
+      id="fdConfirm"
+    >
+      ${
+        inCart
+          ?t("تحديث السلة","Update cart")
+          :t("إضافة إلى السلة","Add to cart")
+      }
+    </button>
+
+  `);
+
+
+  const qtyEl=d.querySelector("#fdQty");
+  const totalEl=d.querySelector("#fdTotal");
+
+  const refresh=()=>{
+    qtyEl.textContent=qty;
+    totalEl.textContent=money(f.price*qty);
+    d.querySelector("#fdMinus").disabled=qty<=1;
+  };
+
+  refresh();
+
+  d.querySelector("#fdMinus")
+    .onclick=()=>{
+      if(qty>1){
+        qty--;
+        refresh();
+      }
+    };
+
+  d.querySelector("#fdPlus")
+    .onclick=()=>{
+      qty++;
+      refresh();
+    };
+
+  d.querySelector("#fdConfirm")
+    .onclick=()=>{
+      setCartQty(id,qty);
+      d.remove();
+    };
 }
 
 
