@@ -588,6 +588,47 @@ function avgTicketTrend(){
     values:list.map(x=>x.count?x.sum/x.count:0)
   };
 }
+function doneOrders(){
+  // orders that reached at least "ready" and have a real created_at→updated_at span, used for prep-time based metrics
+  return rangeOrders().filter(o=>["ready","served","paid"].includes(o.status) && o.updated_at && o.created_at && o.updated_at!==o.created_at);
+}
+function trendByDay(items,valueFn,{limitDays=14}={}){
+  const map=new Map();
+  items.forEach(o=>{
+    const d=new Date(o.created_at);
+    const key=d.toISOString().slice(0,10);
+    const cur=map.get(key)||{date:new Date(d.getFullYear(),d.getMonth(),d.getDate()),rows:[]};
+    cur.rows.push(o);
+    map.set(key,cur);
+  });
+  let list=[...map.values()].sort((a,b)=>a.date-b.date);
+  if(list.length>limitDays) list=list.slice(-limitDays);
+  return {
+    labels:list.map(x=>x.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",day:"numeric"})),
+    values:list.map(x=>valueFn(x.rows))
+  };
+}
+function prepTimeTrend(){
+  return trendByDay(doneOrders(), rows=>{
+    if(!rows.length)return 0;
+    const total=rows.reduce((a,o)=>a+(new Date(o.updated_at)-new Date(o.created_at))/60000,0);
+    return total/rows.length;
+  });
+}
+function lateRateTrend(){
+  return trendByDay(doneOrders(), rows=>{
+    if(!rows.length)return 0;
+    const late=rows.filter(o=>(new Date(o.updated_at)-new Date(o.created_at))/60000>=CONFIG.LATE_MINUTES).length;
+    return Math.round((late/rows.length)*100);
+  });
+}
+function avgItemsPerOrderTrend(){
+  return trendByDay(rangeOrders().filter(o=>o.created_at), rows=>{
+    if(!rows.length)return 0;
+    const totalQty=rows.reduce((a,o)=>a+(o.order_items||[]).reduce((b,i)=>b+Number(i.quantity||0),0),0);
+    return totalQty/rows.length;
+  });
+}
 function avgPrepMinutes(){
   const done=rangeOrders().filter(o=>["ready","served","paid"].includes(o.status) && o.updated_at && o.created_at && o.updated_at!==o.created_at);
   if(!done.length)return null;
@@ -857,6 +898,25 @@ function manager(){
           <div class="chart-box"><canvas id="chartAvgTicket"></canvas></div>
         </div>
       </div>
+      <div class="charts-row2">
+        <div class="chart-panel">
+          <h3>${t("اتجاه متوسط وقت التحضير","Prep time trend")}</h3>
+          <div class="cap">${t("متوسط الدقائق من الطلب لجاهزيته يوميًا —","Average minutes from order to ready, per day —")} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartPrepTrend"></canvas></div>
+        </div>
+        <div class="chart-panel">
+          <h3>${t("نسبة الطلبات المتأخرة","Late orders rate")}</h3>
+          <div class="cap">${t(`% الطلبات اللي عدّت ${CONFIG.LATE_MINUTES} دقيقة قبل الجاهزية —`,`% of orders exceeding ${CONFIG.LATE_MINUTES} min before ready —`)} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartLateRate"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-row3">
+        <div class="chart-panel">
+          <h3>${t("متوسط عدد الأصناف لكل طلب","Average items per order")}</h3>
+          <div class="cap">${t("مؤشر على حجم الطلب / نجاح البيع الإضافي —","Order size / upsell indicator —")} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartItemsPerOrder"></canvas></div>
+        </div>
+      </div>
 
       <div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">${rangeLabel(s.range)}</span></div>
       <section class="panel">
@@ -1077,6 +1137,30 @@ function renderCharts(){
     type:"line",
     data:{labels:at.labels,datasets:[{data:at.values,borderColor:"#c23b2b",backgroundColor:"#c23b2b22",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c23b2b",borderWidth:2.5}]},
     options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const pt=prepTimeTrend();
+  const elPT=document.getElementById("chartPrepTrend");
+  if(elPT)s.charts.prepTrend=new Chart(elPT,{
+    type:"line",
+    data:{labels:pt.labels,datasets:[{data:pt.values,borderColor:"#c9862c",backgroundColor:"#c9862c22",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c9862c",borderWidth:2.5}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>`${Math.round(v)} ${t("د","m")}`}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const lr=lateRateTrend();
+  const elLR=document.getElementById("chartLateRate");
+  if(elLR)s.charts.lateRate=new Chart(elLR,{
+    type:"bar",
+    data:{labels:lr.labels,datasets:[{data:lr.values,backgroundColor:"#c23b2b",borderRadius:5,maxBarThickness:26}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,grid:{color:th.grid},ticks:{callback:v=>v+"%"}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const ai=avgItemsPerOrderTrend();
+  const elAI=document.getElementById("chartItemsPerOrder");
+  if(elAI)s.charts.itemsPerOrder=new Chart(elAI,{
+    type:"line",
+    data:{labels:ai.labels,datasets:[{data:ai.values,borderColor:"#2f6f7a",backgroundColor:"#2f6f7a22",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#2f6f7a",borderWidth:2.5}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid}},x:{grid:{display:false}}},maintainAspectRatio:false}
   });
 }
 
