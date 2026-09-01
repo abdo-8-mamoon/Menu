@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#111318">
+<meta name="theme-color" content="#f6f2ea">
 <title>RestoFlow — المنيو</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,18 +14,19 @@
 
 <style>
 :root{
-  --ink:#221a26;
-  --ink-soft:#3a2e40;
-  --paper:#f6f0e4;
-  --card:#fffdf8;
-  --text:#231c22;
-  --muted:#8a7d70;
-  --line:#e6dcc7;
-  --accent:#a9762f;
-  --accent-deep:#7d5620;
-  --dark:#221a26;
-  --good:#2e6b4e;
-  --shadow:0 20px 45px -18px rgba(34,20,20,.28)
+  --ink:#5b564d;
+  --ink-soft:#726c60;
+  --card:#ffffff;
+  --text:#332e28;
+  --text-inverse:#ffffff;
+  --muted:#8a8177;
+  --muted-inverse:#6b6259;
+  --line:#e2ddd2;
+  --accent:#7a1f1f;
+  --accent-deep:#551414;
+  --dark:#5b564d;
+  --good:#3fae78;
+  --shadow:0 30px 65px -24px rgba(0,0,0,.55)
 }
 
 *{box-sizing:border-box}
@@ -33,7 +34,9 @@
 body{
   margin:0;
   font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
-  background:var(--paper);
+  background:
+    radial-gradient(circle at 88% -8%,#7a1f1f14,transparent 45%),
+    #f6f2ea;
   color:var(--text);
   -webkit-font-smoothing:antialiased
 }
@@ -51,9 +54,9 @@ h1,h2,h3,.brand,.price{
   position:sticky;
   top:0;
   z-index:20;
-  background:#fffcf5ea;
+  background:#ffffffee;
   backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--line);
+  border-bottom:1px solid #00000014;
   padding:12px 4vw;
   display:flex;
   gap:12px;
@@ -67,21 +70,22 @@ h1,h2,h3,.brand,.price{
   gap:11px;
   font-weight:700;
   font-size:19px;
-  letter-spacing:.2px
+  letter-spacing:.2px;
+  color:var(--text)
 }
 
 .logo{
   width:42px;
   height:42px;
   border-radius:13px;
-  background:linear-gradient(150deg,#c99a4f,var(--accent-deep));
+  background:linear-gradient(150deg,var(--accent),var(--accent-deep));
   display:grid;
   place-items:center;
-  color:#fff8ea;
+  color:#ffffff;
   font-size:20px;
   font-family:"Markazi Text",serif;
   font-weight:700;
-  box-shadow:0 8px 16px -6px rgba(125,86,32,.55)
+  box-shadow:0 8px 16px -6px rgba(85,20,20,.4)
 }
 
 .actions{
@@ -102,7 +106,7 @@ h1,h2,h3,.brand,.price{
 }
 
 .btn:hover{
-  box-shadow:0 6px 16px -8px rgba(34,20,20,.3)
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.35)
 }
 
 .btn:active{
@@ -117,15 +121,16 @@ h1,h2,h3,.brand,.price{
 }
 
 .primary{
-  background:var(--dark);
-  color:#fbf3e4;
-  border-color:var(--dark)
+  background:var(--ink);
+  color:#ffffff;
+  border-color:#000
 }
 
 .gold{
-  background:linear-gradient(160deg,#bb8638,var(--accent-deep));
-  color:#fff8ea;
-  border-color:var(--accent-deep)
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
+  border-color:var(--accent-deep);
+  font-weight:600
 }
 
 .hero{
@@ -134,19 +139,20 @@ h1,h2,h3,.brand,.price{
   display:flex;
   align-items:center;
   background:
-    radial-gradient(circle at 82% 20%,#c99a4f28,transparent 45%),
-    radial-gradient(circle at 10% 85%,#7d562033,transparent 40%),
-    linear-gradient(155deg,#1c1520,var(--ink));
-  color:#fbf5ea;
+    radial-gradient(circle at 82% 15%,#7a1f1f22,transparent 45%),
+    radial-gradient(circle at 8% 90%,#e2ddd2,transparent 42%),
+    linear-gradient(160deg,#fdfbf7,#f0ebe0);
+  color:var(--text);
   position:relative;
-  overflow:hidden
+  overflow:hidden;
+  border-bottom:1px solid var(--line)
 }
 
 .hero::after{
   content:"";
   position:absolute;
   inset:0;
-  background:linear-gradient(0deg,rgba(34,26,38,.4),transparent 55%);
+  background:linear-gradient(0deg,rgba(0,0,0,0),transparent 55%);
   pointer-events:none
 }
 
@@ -159,23 +165,23 @@ h1,h2,h3,.brand,.price{
   font-size:clamp(38px,6.4vw,72px);
   line-height:1.06;
   margin:0 0 16px;
-  color:#fdf7ea
+  color:var(--text)
 }
 
 .hero p{
   max-width:620px;
-  color:#e4dbca;
+  color:var(--muted);
   font-size:18px;
   line-height:1.85
 }
 
 .badge{
   display:inline-block;
-  border:1px solid #d9b46a4d;
-  background:#00000022;
+  border:1px solid #7a1f1f4d;
+  background:#7a1f1f14;
   border-radius:999px;
   padding:7px 14px;
-  color:#e7c982;
+  color:var(--accent);
   font-size:14px;
   margin-bottom:16px
 }
@@ -198,7 +204,11 @@ h1,h2,h3,.brand,.price{
   margin:0;
   font-weight:600;
   font-size:32px;
-  color:var(--ink)
+  color:var(--text)
+}
+
+.section-title .muted{
+  color:var(--muted)
 }
 
 .muted{
@@ -232,7 +242,7 @@ h1,h2,h3,.brand,.price{
 
 .chip.active{
   background:transparent;
-  color:var(--accent-deep);
+  color:var(--accent);
   border-bottom-color:var(--accent)
 }
 
@@ -253,7 +263,7 @@ h1,h2,h3,.brand,.price{
 
 .food:hover{
   transform:translateY(-4px);
-  box-shadow:0 26px 50px -20px rgba(34,20,20,.35)
+  box-shadow:0 34px 70px -22px rgba(0,0,0,.65)
 }
 
 .food img{
@@ -276,7 +286,7 @@ h1,h2,h3,.brand,.price{
   margin:0 0 6px;
   font-weight:600;
   font-size:21px;
-  color:var(--ink)
+  color:var(--text)
 }
 
 .price{
@@ -298,13 +308,13 @@ h1,h2,h3,.brand,.price{
   left:22px;
   bottom:22px;
   z-index:30;
-  background:var(--ink);
-  color:#fbf3e4;
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
   border:0;
   border-radius:999px;
   padding:14px 20px;
-  box-shadow:0 18px 40px -10px rgba(34,20,20,.55);
-  font-weight:600;
+  box-shadow:0 20px 45px -10px rgba(85,20,20,.45);
+  font-weight:700;
   transition:transform .15s ease
 }
 
@@ -313,7 +323,8 @@ h1,h2,h3,.brand,.price{
 }
 
 .cart span{
-  background:var(--accent);
+  background:var(--ink);
+  color:#ffffff;
   border-radius:999px;
   padding:3px 8px;
   margin-right:6px;
@@ -332,7 +343,7 @@ h1,h2,h3,.brand,.price{
 .modal{
   position:fixed;
   inset:0;
-  background:#1d1520b3;
+  background:#0a0705cc;
   backdrop-filter:blur(3px);
   z-index:50;
   display:grid;
@@ -347,19 +358,19 @@ h1,h2,h3,.brand,.price{
   background:var(--card);
   border-radius:22px;
   padding:24px;
-  box-shadow:0 40px 90px -25px rgba(20,12,10,.5)
+  box-shadow:0 50px 100px -25px rgba(0,0,0,.6)
 }
 
 .modal-card h2{
   font-weight:600;
   font-size:26px;
-  color:var(--ink)
+  color:var(--text)
 }
 
 .close{
   float:left;
   border:0;
-  background:var(--paper);
+  background:#00000012;
   color:var(--muted);
   border-radius:50%;
   width:34px;
@@ -453,7 +464,7 @@ h1,h2,h3,.brand,.price{
 
 .qr-scan-box{text-align:center}
 #cashQrReader{width:100%;max-width:420px;margin:16px auto;overflow:hidden;border-radius:18px;border:1px solid var(--line)}
-.qr-scan-status{padding:12px;border-radius:12px;background:var(--paper);color:var(--muted);font-weight:600;margin-top:10px}
+.qr-scan-status{padding:12px;border-radius:12px;background:#f3ecdd;color:var(--muted);font-weight:600;margin-top:10px}
 .qr-scan-actions{display:flex;gap:8px;margin-top:12px}
 .qr-scan-actions .btn{flex:1}
 
@@ -461,7 +472,7 @@ h1,h2,h3,.brand,.price{
   padding:14px;
   margin-top:12px;
   border-radius:14px;
-  background:#f7ecd6;
+  background:#f2e2c4;
   color:var(--accent-deep);
   text-align:center;
   font-weight:600
@@ -1500,9 +1511,13 @@ function ordersModal(){
   const os=
     s.orders.filter(
       o=>
-        !s.table ||
-        Number(o.table_number)===
-        Number(s.table)
+        (
+          !s.table ||
+          Number(o.table_number)===
+          Number(s.table)
+        ) &&
+        o.payment_status!=="paid" &&
+        o.status!=="paid"
     );
 
 
@@ -2285,7 +2300,7 @@ function bill(o){
             }
 
             .price{
-              color:#8d6425
+              color:#551414
             }
 
             button,.actions{
