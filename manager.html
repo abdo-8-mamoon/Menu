@@ -162,6 +162,18 @@ input{font:inherit}
 .chip.active{background:var(--ink);color:var(--amber);border-color:var(--ink)}
 .list-note{color:var(--muted);font-size:12px;padding:2px 2px 4px}
 
+/* ============ MONTHLY COMPARISON ============ */
+.month-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-top:1px dashed var(--line-soft)}
+.month-row:first-child{border-top:none}
+.month-row .m-label{font-weight:700;font-size:14.5px}
+.month-row .m-sub{color:var(--muted);font-size:12px;margin-top:2px}
+.month-row .m-right{text-align:end}
+.month-row .m-rev{font-family:var(--font-num);font-weight:700;font-size:15px}
+.delta-mini{font-family:var(--font-num);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:3px;margin-top:4px}
+.delta-mini.up{background:#e3f1e6;color:#276b3f}
+.delta-mini.down{background:var(--ember-tint);color:var(--ember-dim)}
+[data-theme="dark"] .delta-mini.up{background:#1e3324;color:#8fdba9}
+
 /* ============ LEDGER: ORDERS ============ */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 12px;margin-top:14px}
 .orders{display:flex;flex-direction:column}
@@ -235,11 +247,13 @@ const CONFIG={
   LATE_MINUTES:15, // an active order (new/preparing/ready) older than this is flagged late
   RANGE_PAGE_SIZE:1000,   // rows per page when paging through a date range
   RANGE_MAX_ROWS:5000,    // safety cap per range query before we warn about truncation
-  EXPORT_MAX_ROWS:20000   // safety cap specifically for CSV export (can be larger)
+  EXPORT_MAX_ROWS:20000,  // safety cap specifically for CSV export (can be larger)
+  MONTHLY_LOOKBACK_MONTHS:12 // how many past months to show in the monthly comparison
 };
 
 let s={
   lang:CONFIG.DEFAULT_LANGUAGE, sb:null, charts:{}, openTable:null,
+  view:"dashboard", // "dashboard" | "months" | "tables" | "qr"
   range:"all", search:"", statusFilter:"all",
   theme: localStorage.getItem("rf_theme") || "light",
   sound:true, lateIds:new Set(),
@@ -249,6 +263,9 @@ let s={
   rangeTruncated:false,   // true if the range query hit RANGE_MAX_ROWS
   prevRevenue:0,          // paid revenue for the period right before the selected range (for the delta badge)
   weekRevenue:[],         // always-trailing-7-days paid orders, independent of the selected range
+  monthlyData:[],         // paid orders over the last MONTHLY_LOOKBACK_MONTHS months, for month-over-month comparison
+  monthlyTruncated:false,
+  selectedMonth:null,     // key 'YYYY-MM' of the month currently shown in the monthly comparison
   tableHistory:{table:null, orders:[], loading:false, truncated:false},
 
   loading:{live:false, range:false},
@@ -367,6 +384,20 @@ async function fetchWeekRevenue(){
   }catch(e){ /* non-fatal */ }
 }
 
+/* ---------------- last N months of paid revenue, for the month-over-month comparison section ---------------- */
+async function fetchMonthlyRevenue(){
+  if(!s.sb)return;
+  const start=new Date(); start.setMonth(start.getMonth()-(CONFIG.MONTHLY_LOOKBACK_MONTHS-1)); start.setDate(1); start.setHours(0,0,0,0);
+  try{
+    const {rows,truncated}=await fetchAllPaged((from,to)=>s.sb.from("orders").select("total,status,created_at")
+      .eq("status","paid").gte("created_at",start.toISOString()).range(from,to),
+      {pageSize:CONFIG.RANGE_PAGE_SIZE,maxRows:10000});
+    s.monthlyData=rows; s.monthlyTruncated=truncated;
+    const keys=monthlyBreakdown().map(m=>m.key);
+    if(!s.selectedMonth || !keys.includes(s.selectedMonth)) s.selectedMonth=keys[keys.length-1]||null;
+  }catch(e){ /* non-fatal — the monthly section just stays empty */ }
+}
+
 /* ---------------- full history for one table, fetched on demand when its modal opens ---------------- */
 async function fetchTableHistory(n){
   s.tableHistory={table:n,orders:[],loading:true,truncated:false};
@@ -401,7 +432,7 @@ function tickLate(){
 
 /* ---------------- orchestration ---------------- */
 async function refreshAll(){
-  await Promise.all([fetchLiveOrders(), fetchRangeOrders(s.range), fetchPrevRevenue(s.range), fetchWeekRevenue()]);
+  await Promise.all([fetchLiveOrders(), fetchRangeOrders(s.range), fetchPrevRevenue(s.range), fetchWeekRevenue(), fetchMonthlyRevenue()]);
   s.lastSync=new Date();
   checkLateAlerts();
   render();
@@ -460,6 +491,30 @@ function revenueByDay(){
   });
   return {labels,values};
 }
+function monthlyBreakdown(){
+  const map=new Map();
+  s.monthlyData.forEach(o=>{
+    const d=new Date(o.created_at);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    const cur=map.get(key)||{key,date:new Date(d.getFullYear(),d.getMonth(),1),revenue:0,count:0};
+    cur.revenue+=Number(o.total||0); cur.count+=1;
+    map.set(key,cur);
+  });
+  const list=[...map.values()].sort((a,b)=>a.date-b.date);
+  return list.map((m,i)=>({...m, prevRevenue:i>0?list[i-1].revenue:null}));
+}
+function monthRow(m){
+  const delta=m.prevRevenue==null?null:(m.prevRevenue===0?(m.revenue>0?100:null):((m.revenue-m.prevRevenue)/m.prevRevenue)*100);
+  const label=m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"long",year:"numeric"});
+  const avg=m.count?m.revenue/m.count:0;
+  return `<div class="month-row">
+    <div><div class="m-label">${label}</div><div class="m-sub">${m.count} ${t("طلب مدفوع","paid orders")} • ${t("متوسط الفاتورة","avg. ticket")} ${money(avg)}</div></div>
+    <div class="m-right">
+      <div class="m-rev">${money(m.revenue)}</div>
+      ${delta==null?"":`<div class="delta-mini ${delta>=0?"up":"down"}">${delta>=0?"▲":"▼"} ${Math.abs(delta).toFixed(1)}%</div>`}
+    </div>
+  </div>`;
+}
 function statusCounts(){
   const keys=["new","preparing","ready","served","paid"];
   const colors=["#2f6f7a","#c9862c","#c23b2b","#a8b2ad","#3f9660"];
@@ -481,6 +536,43 @@ function peakHours(){
   rangeOrders().forEach(o=>{ if(o.created_at) counts[new Date(o.created_at).getHours()]++; });
   const labels=counts.map((_,h)=>`${String(h).padStart(2,"0")}:00`);
   return {labels,values:counts};
+}
+function topTablesByRevenue(){
+  const map=new Map();
+  rangeOrders().filter(o=>o.status==="paid").forEach(o=>{
+    const n=o.table_number;
+    map.set(n,(map.get(n)||0)+Number(o.total||0));
+  });
+  const sorted=[...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);
+  return {labels:sorted.map(([n])=>`${t("ترابيزة","Table")} ${n}`),values:sorted.map(([,v])=>v)};
+}
+function revenueByWeekday(){
+  const sums=Array(7).fill(0);
+  const labels=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(2023,0,1+i); // Jan 1 2023 was a Sunday, so index 0..6 lines up with Date#getDay()
+    labels.push(d.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{weekday:"short"}));
+  }
+  rangeOrders().filter(o=>o.status==="paid" && o.created_at).forEach(o=>{
+    sums[new Date(o.created_at).getDay()]+=Number(o.total||0);
+  });
+  return {labels,values:sums};
+}
+function avgTicketTrend(){
+  const map=new Map();
+  rangeOrders().filter(o=>o.status==="paid" && o.created_at).forEach(o=>{
+    const d=new Date(o.created_at);
+    const key=d.toISOString().slice(0,10);
+    const cur=map.get(key)||{date:new Date(d.getFullYear(),d.getMonth(),d.getDate()),sum:0,count:0};
+    cur.sum+=Number(o.total||0); cur.count+=1;
+    map.set(key,cur);
+  });
+  let list=[...map.values()].sort((a,b)=>a.date-b.date);
+  if(list.length>14) list=list.slice(-14); // keep the trend readable
+  return {
+    labels:list.map(x=>x.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",day:"numeric"})),
+    values:list.map(x=>x.count?x.sum/x.count:0)
+  };
 }
 function avgPrepMinutes(){
   const done=rangeOrders().filter(o=>["ready","served","paid"].includes(o.status) && o.updated_at && o.created_at && o.updated_at!==o.created_at);
@@ -549,6 +641,75 @@ function header(){
   </header>`;
 }
 
+function navBar(){
+  const views=[
+    ["dashboard","🏠",t("لوحة التحكم","Dashboard")],
+    ["months","📅",t("الشهور","Months")],
+    ["tables","🍽",t("الترابيزات","Tables")],
+    ["qr","🔗",t("QR Codes","QR Codes")]
+  ];
+  return `<div class="container" style="padding-bottom:0">
+    <div class="segmented" style="margin-top:16px">
+      ${views.map(([key,icon,label])=>`<button data-view="${key}" class="${s.view===key?"active":""}">${icon} ${label}</button>`).join("")}
+    </div>
+  </div>`;
+}
+
+function monthsView(){
+  const mb=monthlyBreakdown();
+  const chips=mb.slice().reverse().map(m=>`<button class="chip ${m.key===s.selectedMonth?"active":""}" data-month="${m.key}">${m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"numeric"})}</button>`).join("");
+  const active=mb.find(m=>m.key===s.selectedMonth)||mb[mb.length-1];
+  return header()+navBar()+`<main class="container">
+    <div class="section-title"><h2>${t("مقارنة الشهور","Monthly comparison")}</h2><span class="muted">${t(`آخر ${CONFIG.MONTHLY_LOOKBACK_MONTHS} شهر`,`Last ${CONFIG.MONTHLY_LOOKBACK_MONTHS} months`)}</span></div>
+    ${s.error?`<div class="banner err"><span>⚠</span><span>${t("حصل خطأ في تحميل البيانات:","Error loading data:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
+    <div class="chart-panel">
+      <h3>${t("الإيرادات الشهرية","Monthly revenue")}</h3>
+      <div class="cap">${t("إجمالي الطلبات المدفوعة لكل شهر","Total paid orders per month")}</div>
+      <div class="chart-box tall"><canvas id="chartMonthly"></canvas></div>
+    </div>
+    <section class="panel" style="margin-top:14px">
+      ${s.monthlyTruncated?`<div class="list-note">${t("البيانات مبنية على أحدث الطلبات المطابقة فقط، وممكن ما تشملش كل الطلبات لو الحجم كبير جدًا.","Based on the most recent matching orders only; may not include everything if volume is very high.")}</div>`:""}
+      ${!mb.length?`<div class="empty-note">${t("لسه مفيش بيانات شهرية كافية للمقارنة.","Not enough monthly data yet for a comparison.")}</div>`
+        :`<div class="chips" style="padding-bottom:12px">${chips}</div>${monthRow(active)}`}
+    </section>
+  </main>
+  <footer>RestoFlow Manager</footer>`;
+}
+
+function tablesView(){
+  const activeTables=new Set(s.liveOrders.map(o=>Number(o.table_number))).size;
+  return header()+navBar()+`<main class="container">
+    <div class="section-title"><h2>${t("الترابيزات","Tables")}</h2><span class="muted">${t(`${CONFIG.TABLES-activeTables} متاحة الآن`,`${CONFIG.TABLES-activeTables} available now`)}</span></div>
+    ${s.error?`<div class="banner err"><span>⚠</span><span>${t("حصل خطأ في تحميل البيانات:","Error loading data:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
+    <section class="panel" style="padding-top:14px">
+      <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>{
+        const n=i+1;
+        const isActive=s.liveOrders.some(o=>Number(o.table_number)===n);
+        const count=s.rangeOrders.filter(o=>Number(o.table_number)===n).length;
+        return `<div class="table-card ${isActive?"active":""}">
+          <strong>${t("ترابيزة","Table")} ${n}</strong>
+          <small>${isActive?t("نشطة","Active"):t("متاحة","Available")}</small>
+          <button class="btn table-orders-btn" data-tableorders="${n}">${t("طلباتها","Orders")}${count?` (${count})`:""}</button>
+        </div>`;
+      }).join("")}</div>
+    </section>
+  </main>
+  <div class="modal-veil" id="tableModalVeil"></div>
+  <div class="modal" id="tableModal" role="dialog" aria-modal="true"></div>
+  <footer>RestoFlow Manager</footer>`;
+}
+
+function qrView(){
+  return header()+navBar()+`<main class="container">
+    <div class="section-title"><h2>QR Codes</h2></div>
+    <section class="panel" style="padding-top:14px">
+      <p class="muted" style="margin-top:0">${t("كل ترابيزة لها لينك مستقل لصفحة المنيو. عند مسح الـQR يفتح المنيو مباشرة على رقم الترابيزة.","Each table has its own link to the menu page. Scanning its QR opens the menu directly for that table.")}</p>
+      <div id="qrArea"></div>
+    </section>
+  </main>
+  <footer>RestoFlow Manager</footer>`;
+}
+
 function rangeLabel(r){ return {today:t("اليوم","Today"),week:t("آخر ٧ أيام","Last 7 days"),month:t("هذا الشهر","This month"),all:t("كل الفترات","All time")}[r]; }
 
 function manager(){
@@ -564,7 +725,7 @@ function manager(){
   const scopeLoading=s.loading.range;
   const list=ordersForList();
 
-  return header()+`<main class="container">
+  return header()+navBar()+`<main class="container">
     <div class="rangebar">
       <div class="segmented">
         ${["today","week","month","all"].map(r=>`<button data-range="${r}" class="${s.range===r?"active":""}">${rangeLabel(r)}</button>`).join("")}
@@ -640,6 +801,25 @@ function manager(){
           <div class="chart-box"><canvas id="chartPeak"></canvas></div>
         </div>
       </div>
+      <div class="charts-row2">
+        <div class="chart-panel">
+          <h3>${t("أفضل الترابيزات إيرادًا","Top tables by revenue")}</h3>
+          <div class="cap">${t("أعلى 8 ترابيزات دخلًا —","Top 8 tables by revenue —")} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartTopTables"></canvas></div>
+        </div>
+        <div class="chart-panel">
+          <h3>${t("الإيرادات حسب أيام الأسبوع","Revenue by day of week")}</h3>
+          <div class="cap">${t("مجموع الإيرادات لكل يوم —","Total revenue per weekday —")} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartWeekday"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-row3">
+        <div class="chart-panel">
+          <h3>${t("متوسط الفاتورة عبر الوقت","Average ticket over time")}</h3>
+          <div class="cap">${t("متوسط قيمة الطلب المدفوع يوميًا (آخر 14 يوم في الفترة المختارة) —","Daily average paid-order value (last 14 days within the selected range) —")} ${rangeLabel(s.range)}</div>
+          <div class="chart-box"><canvas id="chartAvgTicket"></canvas></div>
+        </div>
+      </div>
 
       <div class="section-title"><h2>${t("الطلبات","Orders")}</h2><span class="muted">${rangeLabel(s.range)}</span></div>
       <section class="panel">
@@ -654,29 +834,7 @@ function manager(){
         <div class="orders">${list.length?list.slice(0,60).map(orderCard).join(""):`<div class="empty-note">${t("لا توجد طلبات مطابقة.","No matching orders.")}</div>`}</div>
       </section>
     </div>
-
-    <div class="section-title"><h2>${t("الترابيزات","Tables")}</h2></div>
-    <section class="panel" style="padding-top:14px">
-      <div class="table-grid">${Array.from({length:CONFIG.TABLES},(_,i)=>{
-        const n=i+1;
-        const isActive=s.liveOrders.some(o=>Number(o.table_number)===n);
-        const count=s.rangeOrders.filter(o=>Number(o.table_number)===n).length;
-        return `<div class="table-card ${isActive?"active":""}">
-          <strong>${t("ترابيزة","Table")} ${n}</strong>
-          <small>${isActive?t("نشطة","Active"):t("متاحة","Available")}</small>
-          <button class="btn table-orders-btn" data-tableorders="${n}">${t("طلباتها","Orders")}${count?` (${count})`:""}</button>
-        </div>`;
-      }).join("")}</div>
-    </section>
-
-    <div class="section-title"><h2>QR Codes</h2><button class="btn dark" id="showQR">${t("عرض كل الـQR","Show all QR codes")}</button></div>
-    <section class="panel" style="padding-top:14px">
-      <p class="muted" style="margin-top:0">${t("كل ترابيزة لها لينك مستقل لصفحة المنيو. عند مسح الـQR يفتح المنيو مباشرة على رقم الترابيزة.","Each table has its own link to the menu page. Scanning its QR opens the menu directly for that table.")}</p>
-      <div id="qrArea"></div>
-    </section>
   </main>
-  <div class="modal-veil" id="tableModalVeil"></div>
-  <div class="modal" id="tableModal" role="dialog" aria-modal="true"></div>
   <footer>RestoFlow Manager</footer>`;
 }
 
@@ -714,16 +872,19 @@ async function updateStatus(id,status){
 
 function bind(){
   document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
+  document.querySelectorAll("[data-view]").forEach(b=>{
+    b.onclick=()=>{ s.view=b.dataset.view; render(); };
+  });
   document.getElementById("themeToggle")?.addEventListener("click",()=>{
     s.theme=s.theme==="dark"?"light":"dark"; localStorage.setItem("rf_theme",s.theme); render();
   });
   document.getElementById("soundToggle")?.addEventListener("change",e=>{s.sound=e.target.checked; if(s.sound)beep();});
   document.querySelectorAll("[data-status]").forEach(b=>{const [id,status]=b.dataset.status.split(":");b.onclick=()=>updateStatus(id,status)});
-  document.getElementById("showQR")?.addEventListener("click",renderQR);
   document.querySelectorAll("[data-tableorders]").forEach(b=>{ b.onclick=()=>{ const n=Number(b.dataset.tableorders); s.openTable=n; fetchTableHistory(n); }; });
   document.getElementById("tableModalVeil")?.addEventListener("click",closeTableModal);
   document.querySelectorAll("[data-range]").forEach(b=>{ b.onclick=()=>{ if(b.dataset.range!==s.range) setRange(b.dataset.range); }; });
   document.querySelectorAll("[data-statuschip]").forEach(b=>{ b.onclick=()=>{s.statusFilter=b.dataset.statuschip;render()}; });
+  document.querySelectorAll("[data-month]").forEach(b=>{ b.onclick=()=>{ s.selectedMonth=b.dataset.month; render(); }; });
   document.getElementById("exportCsv")?.addEventListener("click",exportCSV);
   document.getElementById("manualRefresh")?.addEventListener("click",()=>{ if(s.sb) refreshAll(); });
   document.getElementById("dismissErr")?.addEventListener("click",()=>{ s.error=null; render(); });
@@ -841,6 +1002,15 @@ function renderCharts(){
     options:{cutout:"64%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,padding:14}}},maintainAspectRatio:false}
   });
 
+  const mb=monthlyBreakdown();
+  const elMonthly=document.getElementById("chartMonthly");
+  if(elMonthly)s.charts.monthly=new Chart(elMonthly,{
+    type:"bar",
+    data:{labels:mb.map(m=>m.date.toLocaleDateString(s.lang==="ar"?"ar-EG":"en-US",{month:"short",year:"2-digit"})),
+      datasets:[{data:mb.map(m=>m.revenue),backgroundColor:"#2f6f7a",borderRadius:6,maxBarThickness:34}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
   const pk=peakHours();
   const elPeak=document.getElementById("chartPeak");
   if(elPeak)s.charts.peak=new Chart(elPeak,{
@@ -848,16 +1018,45 @@ function renderCharts(){
     data:{labels:pk.labels,datasets:[{data:pk.values,backgroundColor:"#c23b2b",borderRadius:4,maxBarThickness:18}]},
     options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{precision:0}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}}},maintainAspectRatio:false}
   });
+
+  const tt=topTablesByRevenue();
+  const elTT=document.getElementById("chartTopTables");
+  if(elTT)s.charts.topTables=new Chart(elTT,{
+    type:"bar",
+    data:{labels:tt.labels,datasets:[{data:tt.values,backgroundColor:"#c9862c",borderRadius:5,maxBarThickness:22}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:th.grid}},y:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const wd=revenueByWeekday();
+  const elWD=document.getElementById("chartWeekday");
+  if(elWD)s.charts.weekday=new Chart(elWD,{
+    type:"bar",
+    data:{labels:wd.labels,datasets:[{data:wd.values,backgroundColor:"#2f6f7a",borderRadius:6,maxBarThickness:34}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  const at=avgTicketTrend();
+  const elAT=document.getElementById("chartAvgTicket");
+  if(elAT)s.charts.avgTicket=new Chart(elAT,{
+    type:"line",
+    data:{labels:at.labels,datasets:[{data:at.values,borderColor:"#c23b2b",backgroundColor:"#c23b2b22",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#c23b2b",borderWidth:2.5}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:th.grid},ticks:{callback:v=>v>=1000?(v/1000)+"k":v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
 }
 
 function render(){
   document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
   document.documentElement.setAttribute("data-theme",s.theme);
-  document.getElementById("app").innerHTML=manager();
+  document.getElementById("app").innerHTML =
+    s.view==="months" ? monthsView() :
+    s.view==="tables" ? tablesView() :
+    s.view==="qr"     ? qrView()     :
+    manager();
   bind();
   renderCharts();
   renderModal();
   tickLate();
+  if(s.view==="qr") renderQR();
 }
 
 document.addEventListener("keydown",e=>{ if(e.key==="Escape" && s.openTable!=null) closeTableModal(); });
