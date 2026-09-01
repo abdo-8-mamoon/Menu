@@ -3,75 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0d12">
+<meta name="theme-color" content="#10141a">
 <title>RestoFlow — شاشة المطبخ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0b0d12;--panel:#12151c;--panel2:#171b24;--line:#252a35;--text:#f4f5f7;--muted:#8991a3;
-  --gold:#e0a83f;--red:#ef4444;--redglow:#ef444433;--amber:#f59e0b;--amberglow:#f59e0b33;
-  --green:#22c55e;--greenglow:#22c55e33;--blue:#3b82f6;
+  --bg:#10141a;
+  --rail:#0c0f14;
+  --panel:#171d25;
+  --panel2:#1d242e;
+  --line:#2a3341;
+  --line-soft:#242c38;
+  --text:#eef1f6;
+  --muted:#7d899b;
+  --muted-dim:#57626f;
+  --brass:#e8ac4d;
+  --brass-dim:#8a6a2f;
+  --incoming:#5ea7e8;
+  --active:#f0ab2e;
+  --complete:#2fd4a5;
+  --ok:#2fd4a5;
+  --warn:#f0ab2e;
+  --late:#fb4d5c;
+  --late-glow:#fb4d5c3d;
+  --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
+  --font-num:'JetBrains Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;font-family:'Tahoma',Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+body{
+  margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);overflow-x:hidden;
+  background-image:
+    radial-gradient(1200px 500px at 15% -10%, #1c2734 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #1a1f2a 0%, transparent 55%);
+}
 button{font:inherit;cursor:pointer}
 
-/* top bar */
-.top{position:sticky;top:0;z-index:30;background:#0b0d12ee;backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:19px}
-.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#e0a83f,#8c5f20);display:grid;place-items:center;color:#111;font-size:21px;font-weight:900}
-.brand small{display:block;color:var(--muted);font-weight:500;font-size:12px}
-.clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:22px;letter-spacing:1px;color:var(--gold)}
-.top-actions{display:flex;gap:8px;align-items:center}
-.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 15px;border-radius:11px;font-weight:700}
+/* ============ TOP RAIL ============ */
+.top{
+  position:sticky;top:0;z-index:30;background:var(--rail)f2;backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);padding:0;
+}
+.top-inner{padding:14px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.hazard{height:4px;width:100%;background:repeating-linear-gradient(-45deg,var(--brass) 0 14px,#1a1f2a 14px 28px);opacity:.55}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(155deg,#f2c579,var(--brass-dim));display:grid;place-items:center;color:#171308;font-size:22px;font-weight:800;box-shadow:0 4px 14px #e8ac4d33;flex:none}
+.brand-text b{font-size:19px;font-weight:700;letter-spacing:.2px;display:block}
+.brand-text small{color:var(--muted);font-weight:500;font-size:12.5px;display:block;margin-top:1px}
+.clock{font-family:var(--font-num);font-weight:700;font-size:23px;letter-spacing:1px;color:var(--brass);background:var(--panel);border:1px solid var(--line);padding:7px 16px;border-radius:9px}
+.top-actions{display:flex;gap:9px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 15px;border-radius:10px;font-weight:600;font-size:14px;transition:.15s}
+.btn:hover{border-color:var(--muted-dim)}
 .btn:active{transform:scale(.96)}
-.btn.gold{background:var(--gold);color:#111;border-color:var(--gold)}
-.btn.ghost{background:transparent}
-.snd{display:flex;align-items:center;gap:8px}
-.snd input{width:18px;height:18px}
+.btn.brass{background:var(--brass);color:#1c1406;border-color:var(--brass);font-weight:700}
+.snd{display:flex;align-items:center;gap:9px;user-select:none}
+.snd input{width:17px;height:17px;accent-color:var(--brass)}
 
-/* stats strip */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 22px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
-.stat .lbl{color:var(--muted);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
-.stat b{display:block;font-size:34px;margin-top:4px;font-variant-numeric:tabular-nums}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-.dot.new{background:var(--red)}.dot.prep{background:var(--amber)}.dot.ready{background:var(--green)}.dot.all{background:var(--blue)}
+/* ============ STATS RAIL ============ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 24px 6px}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 17px;
+  border-top:3px solid var(--stat-c,var(--brass));position:relative;
+}
+.stat.incoming{--stat-c:var(--incoming)}
+.stat.active{--stat-c:var(--active)}
+.stat.complete{--stat-c:var(--complete)}
+.stat.total{--stat-c:var(--brass)}
+.stat .lbl{color:var(--muted);font-size:12.5px;font-weight:600}
+.stat b{display:block;font-family:var(--font-num);font-size:32px;margin-top:6px;font-weight:700;color:var(--text)}
 
-/* board */
-.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 22px 26px}
-.col{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px;min-height:200px;display:flex;flex-direction:column}
-.col-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
-.col-head h2{margin:0;font-size:17px;display:flex;align-items:center;gap:9px}
-.col-count{background:var(--panel2);border-radius:999px;padding:3px 11px;font-weight:800;font-size:14px}
-.col-body{display:flex;flex-direction:column;gap:12px;flex:1}
-.empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:14px}
+/* ============ BOARD ============ */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 24px 28px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;min-height:220px}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 13px;margin-bottom:13px;border-bottom:1px solid var(--line-soft)}
+.col-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px}
+.col-flag{width:9px;height:9px;border-radius:2px;flex:none}
+.col.new .col-flag{background:var(--incoming)}
+.col.preparing .col-flag{background:var(--active)}
+.col.ready .col-flag{background:var(--complete)}
+.col-count{font-family:var(--font-num);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.col-body{display:flex;flex-direction:column;gap:11px;flex:1}
+.empty{text-align:center;color:var(--muted-dim);padding:44px 10px;font-size:13.5px}
 
-/* order card */
-.card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:15px;position:relative;overflow:hidden;transition:.2s}
-.card.urg-ok{border-left:5px solid var(--green)}
-.card.urg-warn{border-left:5px solid var(--amber);box-shadow:0 0 0 1px var(--amberglow)}
-.card.urg-late{border-left:5px solid var(--red);box-shadow:0 0 22px var(--redglow)}
-.card.flash{animation:flashIn .9s ease 2}
-@keyframes flashIn{0%,100%{background:var(--panel2)}50%{background:#3a2410}}
-.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
-.tnum{font-size:22px;font-weight:900}
-.oid{color:var(--muted);font-size:12px}
-.timer{font-variant-numeric:tabular-nums;font-weight:900;font-size:15px;padding:4px 10px;border-radius:999px;background:var(--panel);white-space:nowrap}
-.timer.urg-ok{color:var(--green)}.timer.urg-warn{color:var(--amber)}.timer.urg-late{color:var(--red)}
-.items{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:6px}
-.items li{display:flex;justify-content:space-between;gap:8px;font-size:15px;border-bottom:1px dashed var(--line);padding-bottom:6px}
-.items li:last-child{border-bottom:0;padding-bottom:0}
-.iqty{background:var(--gold);color:#111;font-weight:900;border-radius:8px;padding:1px 8px;font-size:13px;min-width:26px;text-align:center}
-.card-actions{display:flex;gap:8px}
-.card-actions .btn{flex:1;padding:12px 8px;font-size:14px;text-align:center}
-.act-start{background:var(--amber);border-color:var(--amber);color:#111}
-.act-ready{background:var(--green);border-color:var(--green);color:#0a1f13}
+/* ============ TICKET CARD ============ */
+.card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  transition:box-shadow .25s, border-color .25s;
+}
+.card.urg-ok{box-shadow:inset 3px 0 0 var(--ok)}
+.card.urg-warn{box-shadow:inset 3px 0 0 var(--warn)}
+.card.urg-late{box-shadow:inset 3px 0 0 var(--late), 0 0 0 1px var(--late-glow);border-color:#fb4d5c55}
+.card.flash{animation:flashIn .85s ease 2}
+@keyframes flashIn{0%,100%{background:var(--panel2)}50%{background:#3a2b12}}
+
+.ticket-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;gap:10px}
+.tnum{font-size:20px;font-weight:700}
+.oid{font-family:var(--font-num);color:var(--muted);font-size:11.5px;margin-top:2px}
+.timer{
+  font-family:var(--font-num);font-weight:700;font-size:15px;padding:5px 11px;border-radius:8px;
+  background:var(--rail);border:1px solid var(--line);white-space:nowrap;letter-spacing:.5px;
+}
+.timer.urg-ok{color:var(--ok)}.timer.urg-warn{color:var(--warn)}.timer.urg-late{color:var(--late)}
+
+.perf{height:12px;background:
+  radial-gradient(circle 4.5px at 12px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 28px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 44px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 60px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 76px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 92px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 108px 50%, var(--panel) 99%, transparent 100%),
+  radial-gradient(circle 4.5px at 124px 50%, var(--panel) 99%, transparent 100%);
+  background-repeat:repeat-x;background-color:var(--panel2);border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);
+}
+
+.items{list-style:none;margin:0;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.items li{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14.5px}
+.iqty{font-family:var(--font-num);background:var(--rail);border:1px solid var(--line);color:var(--brass);font-weight:700;border-radius:7px;padding:2px 9px;font-size:12.5px;min-width:28px;text-align:center;flex:none}
+
+.card-actions{display:flex;gap:8px;padding:0 14px 14px}
+.card-actions .btn{flex:1;padding:12px 8px;font-size:14px;text-align:center;border-radius:9px}
+.act-start{background:var(--active);border-color:var(--active);color:#241905;font-weight:700}
+.act-ready{background:var(--complete);border-color:var(--complete);color:#062820;font-weight:700}
 .act-served{background:var(--panel);color:var(--text)}
 
 @media(max-width:1000px){.board{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.top{padding:12px 14px}.stats{padding:14px}.board{padding:0 14px 20px}.clock{font-size:17px}}
+@media(max-width:520px){.top-inner{padding:12px 14px}.stats{padding:14px 14px 4px}.board{padding:14px 14px 20px}.clock{font-size:16px;padding:6px 11px}.brand-text small{display:none}}
 </style>
 </head>
 <body><div id="app"></div>
@@ -80,7 +140,7 @@ const CONFIG={
   SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
   RESTAURANT_NAME:"RestoFlow", DEFAULT_LANGUAGE:"ar",
-  WARN_MINUTES:8,   // yellow after this many minutes
+  WARN_MINUTES:8,   // amber after this many minutes
   LATE_MINUTES:15   // red after this many minutes
 };
 
@@ -88,7 +148,7 @@ let s={lang:CONFIG.DEFAULT_LANGUAGE,orders:[],sb:null,sound:true,knownIds:new Se
 
 const t=(a,e)=>s.lang==="ar"?a:e;
 
-/* ---- sound alert (no external files, generated tone) ---- */
+/* ---- sound alert (generated tone, no external files) ---- */
 let audioCtx=null;
 function beep(){
   if(!s.sound)return;
@@ -156,14 +216,18 @@ function fmtElapsed(dateStr){
 
 function header(){
   return `<header class="top">
-    <div class="brand"><div class="logo">R</div><div>${CONFIG.RESTAURANT_NAME}
-      <small>${t("شاشة عرض المطبخ","Kitchen Display System")}</small>
-    </div></div>
-    <div class="clock" id="clock"></div>
-    <div class="top-actions">
-      <label class="snd btn ghost"><input type="checkbox" id="soundToggle" ${s.sound?"checked":""}> 🔔 ${t("صوت التنبيه","Alert sound")}</label>
-      <button class="btn" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div class="brand-text"><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة عرض المطبخ","Kitchen Display System")}</small></div>
+      </div>
+      <div class="clock" id="clock"></div>
+      <div class="top-actions">
+        <label class="snd btn"><input type="checkbox" id="soundToggle" ${s.sound?"checked":""}> 🔔 ${t("صوت التنبيه","Alerts")}</label>
+        <button class="btn brass" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+      </div>
     </div>
+    <div class="hazard"></div>
   </header>`;
 }
 
@@ -172,23 +236,23 @@ function statsBar(){
   const p=s.orders.filter(o=>o.status==="preparing").length;
   const rd=s.orders.filter(o=>o.status==="ready").length;
   return `<section class="stats">
-    <div class="stat"><div class="lbl"><span class="dot new"></span>${t("طلبات جديدة","New orders")}</div><b>${n}</b></div>
-    <div class="stat"><div class="lbl"><span class="dot prep"></span>${t("قيد التحضير","Preparing")}</div><b>${p}</b></div>
-    <div class="stat"><div class="lbl"><span class="dot ready"></span>${t("جاهز للتقديم","Ready")}</div><b>${rd}</b></div>
-    <div class="stat"><div class="lbl"><span class="dot all"></span>${t("إجمالي الطابور","Total in queue")}</div><b>${n+p+rd}</b></div>
+    <div class="stat incoming"><div class="lbl">${t("طلبات جديدة","New orders")}</div><b>${n}</b></div>
+    <div class="stat active"><div class="lbl">${t("قيد التحضير","Preparing")}</div><b>${p}</b></div>
+    <div class="stat complete"><div class="lbl">${t("جاهز للتقديم","Ready")}</div><b>${rd}</b></div>
+    <div class="stat total"><div class="lbl">${t("إجمالي الطابور","Total in queue")}</div><b>${n+p+rd}</b></div>
   </section>`;
 }
 
 function board(){
   const cols=[
-    {key:"new",   title:t("🆕 جديد","🆕 New"),         data:s.orders.filter(o=>o.status==="new")},
-    {key:"preparing",title:t("🔥 قيد التحضير","🔥 Preparing"),data:s.orders.filter(o=>o.status==="preparing")},
-    {key:"ready", title:t("✅ جاهز","✅ Ready"),         data:s.orders.filter(o=>o.status==="ready")}
+    {key:"new",title:t("جديد","New"),data:s.orders.filter(o=>o.status==="new")},
+    {key:"preparing",title:t("قيد التحضير","Preparing"),data:s.orders.filter(o=>o.status==="preparing")},
+    {key:"ready",title:t("جاهز","Ready"),data:s.orders.filter(o=>o.status==="ready")}
   ];
   return `<section class="board">
     ${cols.map(c=>`
-      <div class="col">
-        <div class="col-head"><h2>${c.title}</h2><span class="col-count">${c.data.length}</span></div>
+      <div class="col ${c.key}">
+        <div class="col-head"><div class="col-title"><span class="col-flag"></span>${c.title}</div><span class="col-count">${c.data.length}</span></div>
         <div class="col-body">
           ${c.data.length ? c.data.map(orderCard).join("") : `<div class="empty">${t("لا توجد طلبات","No orders")}</div>`}
         </div>
@@ -201,15 +265,16 @@ function orderCard(o){
   const urg=urgency(o.created_at);
   const flashing=s.flashIds.has(String(o.id));
   let actionBtn="";
-  if(o.status==="new")actionBtn=`<button class="btn act-start" data-status="${o.id}:preparing">▶️ ${t("ابدأ التحضير","Start")}</button>`;
-  if(o.status==="preparing")actionBtn=`<button class="btn act-ready" data-status="${o.id}:ready">✅ ${t("جاهز","Ready")}</button>`;
-  if(o.status==="ready")actionBtn=`<button class="btn act-served" data-status="${o.id}:served">📦 ${t("تم التقديم","Served")}</button>`;
+  if(o.status==="new")actionBtn=`<button class="btn act-start" data-status="${o.id}:preparing">${t("ابدأ التحضير","Start")}</button>`;
+  if(o.status==="preparing")actionBtn=`<button class="btn act-ready" data-status="${o.id}:ready">${t("جاهز","Ready")}</button>`;
+  if(o.status==="ready")actionBtn=`<button class="btn act-served" data-status="${o.id}:served">${t("تم التقديم","Served")}</button>`;
 
   return `<div class="card ${urg} ${flashing?"flash":""}" data-order-id="${o.id}" data-created="${o.created_at||""}">
-    <div class="card-head">
+    <div class="ticket-head">
       <div><div class="tnum">${t("ترابيزة","Table")} ${o.table_number||"—"}</div><div class="oid">#${o.id}</div></div>
       <div class="timer ${urg}" data-timer="${o.id}">${fmtElapsed(o.created_at)}</div>
     </div>
+    <div class="perf"></div>
     <ul class="items">
       ${(o.order_items||[]).length ? (o.order_items||[]).map(i=>`<li><span>${i.name_ar||i.name||i.name_en||t("صنف","Item")}</span><span class="iqty">×${i.quantity}</span></li>`).join("") : `<li><span class="muted">${t("لا توجد تفاصيل","No item details")}</span></li>`}
     </ul>
