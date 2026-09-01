@@ -26,7 +26,77 @@
   --accent-deep:#551414;
   --dark:#5b564d;
   --good:#3fae78;
-  --shadow:0 30px 65px -24px rgba(0,0,0,.55)
+  --shadow:0 30px 65px -24px rgba(0,0,0,.55);
+  --bg-grad:
+    radial-gradient(circle at 88% -8%,#7a1f1f14,transparent 45%),
+    #f6f2ea;
+  --hero-grad:
+    radial-gradient(circle at 82% 15%,#7a1f1f22,transparent 45%),
+    radial-gradient(circle at 8% 90%,#e2ddd2,transparent 42%),
+    linear-gradient(160deg,#fdfbf7,#f0ebe0);
+  --top-bg:#ffffffee;
+  --modal-bg:#0a0705cc;
+  --step-bg:var(--line);
+  --status-new-bg:#f5e6c7;
+  --status-new-fg:#8d5f10;
+  --status-prep-bg:#e4e6f5;
+  --status-prep-fg:#3d4c9b;
+  --status-ready-bg:#dcf0e4;
+  --status-ready-fg:#1f6b45;
+  --status-served-bg:#eae5db;
+  --status-served-fg:#66594c;
+  --status-paid-bg:#dcf0e4;
+  --status-paid-fg:#1f6b45;
+  --qr-status-bg:#f3ecdd;
+  --payment-loading-bg:#f2e2c4;
+  --paid-banner-bg:#e5f8ed;
+  --paid-banner-fg:#167045;
+  --pending-banner-bg:#fff7e8;
+  --pending-banner-fg:#8d6425;
+  color-scheme:light
+}
+
+:root.dark{
+  --ink:#e7e2d6;
+  --ink-soft:#c9c2b3;
+  --card:#221f1a;
+  --text:#f2ede2;
+  --text-inverse:#221f1a;
+  --muted:#a89f90;
+  --muted-inverse:#8f8779;
+  --line:#3a352c;
+  --accent:#c25a5a;
+  --accent-deep:#9c3d3d;
+  --dark:#e7e2d6;
+  --good:#4fc98c;
+  --shadow:0 30px 65px -24px rgba(0,0,0,.75);
+  --bg-grad:
+    radial-gradient(circle at 88% -8%,#c25a5a1f,transparent 45%),
+    #16140f;
+  --hero-grad:
+    radial-gradient(circle at 82% 15%,#c25a5a2a,transparent 45%),
+    radial-gradient(circle at 8% 90%,#231f18,transparent 42%),
+    linear-gradient(160deg,#1b1812,#100e0a);
+  --top-bg:#171410ee;
+  --modal-bg:#000000d9;
+  --step-bg:var(--line);
+  --status-new-bg:#4a3a17;
+  --status-new-fg:#f0c467;
+  --status-prep-bg:#2a2c47;
+  --status-prep-fg:#aeb4ee;
+  --status-ready-bg:#173829;
+  --status-ready-fg:#7fe0ac;
+  --status-served-bg:#332f27;
+  --status-served-fg:#cfc6b6;
+  --status-paid-bg:#173829;
+  --status-paid-fg:#7fe0ac;
+  --qr-status-bg:#241f17;
+  --payment-loading-bg:#3a2c14;
+  --paid-banner-bg:#132c20;
+  --paid-banner-fg:#6fe0a4;
+  --pending-banner-bg:#332711;
+  --pending-banner-fg:#f0c467;
+  color-scheme:dark
 }
 
 *{box-sizing:border-box}
@@ -34,11 +104,10 @@
 body{
   margin:0;
   font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 88% -8%,#7a1f1f14,transparent 45%),
-    #f6f2ea;
+  background:var(--bg-grad);
   color:var(--text);
-  -webkit-font-smoothing:antialiased
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .25s ease,color .25s ease
 }
 
 button{
@@ -54,9 +123,9 @@ h1,h2,h3,.brand,.price{
   position:sticky;
   top:0;
   z-index:20;
-  background:#ffffffee;
+  background:var(--top-bg);
   backdrop-filter:blur(18px);
-  border-bottom:1px solid #00000014;
+  border-bottom:1px solid var(--line);
   padding:12px 4vw;
   display:flex;
   gap:12px;
@@ -97,20 +166,30 @@ h1,h2,h3,.brand,.price{
 
 .btn{
   font-family:inherit;
+  font-size:15px;
+  font-weight:600;
+  line-height:1;
   border:1px solid var(--line);
   background:var(--card);
   color:var(--text);
-  padding:10px 15px;
+  padding:12px 18px;
   border-radius:12px;
-  transition:transform .15s ease,box-shadow .15s ease,background-color .15s ease
+  white-space:nowrap;
+  transition:transform .15s ease,box-shadow .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease
 }
 
 .btn:hover{
+  border-color:var(--ink-soft);
   box-shadow:0 6px 16px -8px rgba(0,0,0,.35)
 }
 
 .btn:active{
   transform:translateY(1px)
+}
+
+.btn:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
 }
 
 .btn:disabled{
@@ -122,8 +201,8 @@ h1,h2,h3,.brand,.price{
 
 .primary{
   background:var(--ink);
-  color:#ffffff;
-  border-color:#000
+  color:var(--text-inverse);
+  border-color:var(--ink)
 }
 
 .gold{
@@ -133,15 +212,16 @@ h1,h2,h3,.brand,.price{
   font-weight:600
 }
 
+.gold:hover{
+  box-shadow:0 10px 22px -10px rgba(122,31,31,.55)
+}
+
 .hero{
   min-height:340px;
   padding:60px 7vw;
   display:flex;
   align-items:center;
-  background:
-    radial-gradient(circle at 82% 15%,#7a1f1f22,transparent 45%),
-    radial-gradient(circle at 8% 90%,#e2ddd2,transparent 42%),
-    linear-gradient(160deg,#fdfbf7,#f0ebe0);
+  background:var(--hero-grad);
   color:var(--text);
   position:relative;
   overflow:hidden;
@@ -217,33 +297,49 @@ h1,h2,h3,.brand,.price{
 
 .categories{
   display:flex;
-  gap:6px;
-  overflow:auto;
-  padding-bottom:10px;
-  border-bottom:1px solid var(--line)
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:4px 2px 14px;
+  scrollbar-width:none
+}
+
+.categories::-webkit-scrollbar{
+  display:none
 }
 
 .chip{
+  flex:none;
   white-space:nowrap;
-  padding:10px 4px;
-  margin:0 10px;
-  border:0;
-  border-bottom:2px solid transparent;
-  background:transparent;
-  color:var(--muted);
-  border-radius:0;
+  padding:10px 20px;
+  margin:0;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink-soft);
+  border-radius:999px;
+  font-size:15px;
   font-weight:500;
-  transition:color .15s ease,border-color .15s ease
+  box-shadow:0 3px 10px -6px rgba(0,0,0,.2);
+  transition:color .15s ease,background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease
 }
 
 .chip:hover{
-  color:var(--text)
+  color:var(--text);
+  border-color:var(--ink-soft);
+  transform:translateY(-1px)
+}
+
+.chip:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
 }
 
 .chip.active{
-  background:transparent;
-  color:var(--accent);
-  border-bottom-color:var(--accent)
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
+  border-color:var(--accent-deep);
+  font-weight:600;
+  box-shadow:0 10px 20px -10px rgba(122,31,31,.55)
 }
 
 .menu{
@@ -324,7 +420,7 @@ h1,h2,h3,.brand,.price{
 
 .cart span{
   background:var(--ink);
-  color:#ffffff;
+  color:var(--text-inverse);
   border-radius:999px;
   padding:3px 8px;
   margin-right:6px;
@@ -343,7 +439,7 @@ h1,h2,h3,.brand,.price{
 .modal{
   position:fixed;
   inset:0;
-  background:#0a0705cc;
+  background:var(--modal-bg);
   backdrop-filter:blur(3px);
   z-index:50;
   display:grid;
@@ -370,7 +466,7 @@ h1,h2,h3,.brand,.price{
 .close{
   float:left;
   border:0;
-  background:#00000012;
+  background:color-mix(in srgb, var(--text) 8%, transparent);
   color:var(--muted);
   border-radius:50%;
   width:34px;
@@ -411,7 +507,7 @@ h1,h2,h3,.brand,.price{
 .step{
   height:7px;
   border-radius:9px;
-  background:var(--line)
+  background:var(--step-bg)
 }
 
 .step.on{
@@ -427,28 +523,28 @@ h1,h2,h3,.brand,.price{
 }
 
 .s-new{
-  background:#f5e6c7;
-  color:#8d5f10
+  background:var(--status-new-bg);
+  color:var(--status-new-fg)
 }
 
 .s-prep{
-  background:#e4e6f5;
-  color:#3d4c9b
+  background:var(--status-prep-bg);
+  color:var(--status-prep-fg)
 }
 
 .s-ready{
-  background:#dcf0e4;
-  color:#1f6b45
+  background:var(--status-ready-bg);
+  color:var(--status-ready-fg)
 }
 
 .s-served{
-  background:#eae5db;
-  color:#66594c
+  background:var(--status-served-bg);
+  color:var(--status-served-fg)
 }
 
 .s-paid{
-  background:#dcf0e4;
-  color:#1f6b45
+  background:var(--status-paid-bg);
+  color:var(--status-paid-fg)
 }
 
 .invoice-actions{
@@ -464,7 +560,7 @@ h1,h2,h3,.brand,.price{
 
 .qr-scan-box{text-align:center}
 #cashQrReader{width:100%;max-width:420px;margin:16px auto;overflow:hidden;border-radius:18px;border:1px solid var(--line)}
-.qr-scan-status{padding:12px;border-radius:12px;background:#f3ecdd;color:var(--muted);font-weight:600;margin-top:10px}
+.qr-scan-status{padding:12px;border-radius:12px;background:var(--qr-status-bg);color:var(--muted);font-weight:600;margin-top:10px}
 .qr-scan-actions{display:flex;gap:8px;margin-top:12px}
 .qr-scan-actions .btn{flex:1}
 
@@ -472,7 +568,7 @@ h1,h2,h3,.brand,.price{
   padding:14px;
   margin-top:12px;
   border-radius:14px;
-  background:#f2e2c4;
+  background:var(--payment-loading-bg);
   color:var(--accent-deep);
   text-align:center;
   font-weight:600
@@ -519,7 +615,7 @@ const MENU=[
     name_en:"Classic Burger",
     cat:"burgers",
     price:185,
-    description_ar:"قطعة لحم بقري مشوية مع خس وطماطم وصوص البيت في خبز طازة",
+    description_ar:"قطعة لحم بقري مشوية، مع الخس والطماطم وصلصة المطعم الخاصة، داخل خبز طازج",
     description_en:"Grilled beef patty with lettuce, tomato and house sauce in a fresh bun",
     img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=85"
   },
@@ -529,7 +625,7 @@ const MENU=[
     name_en:"Cheese Burger",
     cat:"burgers",
     price:215,
-    description_ar:"زي الكلاسيك بالظبط، لكن بشرائح جبن شيدر دايبة على اللحمة الساخنة",
+    description_ar:"البرجر الكلاسيكي، مضافاً إليه شرائح من جبن الشيدر الذائب",
     description_en:"Our classic burger topped with melted cheddar cheese",
     img:"https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=900&q=85"
   },
@@ -539,7 +635,7 @@ const MENU=[
     name_en:"Margherita Pizza",
     cat:"pizza",
     price:190,
-    description_ar:"صلصة طماطم إيطالي وجبن موزاريلا وريحان طازة على عجينة رفيعة",
+    description_ar:"صلصة طماطم إيطالية، جبن موزاريلا وريحان طازج، فوق عجينة رقيقة",
     description_en:"Italian tomato sauce, mozzarella and fresh basil on a thin crust",
     img:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85"
   },
@@ -549,7 +645,7 @@ const MENU=[
     name_en:"Pepperoni Pizza",
     cat:"pizza",
     price:230,
-    description_ar:"مارغريتا مغطاة بشرائح بيبروني حارة ومقرمشة فوق الجبنة",
+    description_ar:"بيتزا المارغريتا، مغطاة بشرائح بيبروني حارة ومقرمشة",
     description_en:"Margherita topped with crispy, spicy pepperoni slices",
     img:"https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=85"
   },
@@ -559,7 +655,7 @@ const MENU=[
     name_en:"Alfredo Pasta",
     cat:"pasta",
     price:205,
-    description_ar:"باستا فيتوتشيني بصوص كريمة غني وجبن بارميزان",
+    description_ar:"باستا فيتوتشيني، بصلصة كريمية غنية وجبن البارميزان",
     description_en:"Fettuccine tossed in a rich, creamy parmesan sauce",
     img:"https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=900&q=85"
   },
@@ -569,7 +665,7 @@ const MENU=[
     name_en:"Grilled Chicken",
     cat:"mains",
     price:260,
-    description_ar:"صدر فراخ متبل ومشوي على الفحم، بيتقدم مع خضار جانبية",
+    description_ar:"صدر دجاج متبل ومشوي على الفحم، يقدَّم مع طبق من الخضروات",
     description_en:"Charcoal-grilled seasoned chicken breast, served with vegetables",
     img:"https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=900&q=85"
   },
@@ -579,7 +675,7 @@ const MENU=[
     name_en:"Caesar Salad",
     cat:"salads",
     price:145,
-    description_ar:"خس وفراخ مشوية وجبن بارميزان وقطع خبز محمصة مع صوص سيزر",
+    description_ar:"خس، دجاج مشوي، جبن بارميزان وقطع خبز محمّصة، مع صلصة السيزر",
     description_en:"Grilled chicken, parmesan and croutons tossed in Caesar dressing",
     img:"https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=900&q=85"
   },
@@ -589,7 +685,7 @@ const MENU=[
     name_en:"Cheesecake",
     cat:"desserts",
     price:120,
-    description_ar:"تشيز كيك كلاسيك بقاعدة بسكويت وطبقة كريمة جبن ناعمة",
+    description_ar:"تشيز كيك كلاسيكي، بقاعدة من البسكويت وطبقة ناعمة من كريمة الجبن",
     description_en:"Classic cheesecake with a biscuit base and smooth cream cheese layer",
     img:"https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=85"
   },
@@ -599,7 +695,7 @@ const MENU=[
     name_en:"Molten Cake",
     cat:"desserts",
     price:135,
-    description_ar:"كيكة شوكولاتة ساخنة بقلب سايل من الشوكولاتة الغامقة",
+    description_ar:"كيكة شوكولاتة ساخنة، بقلب سائل من الشوكولاتة الداكنة",
     description_en:"Warm chocolate cake with a molten dark chocolate center",
     img:"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=85"
   },
@@ -609,7 +705,7 @@ const MENU=[
     name_en:"Mango Juice",
     cat:"drinks",
     price:75,
-    description_ar:"عصير مانجو طازة 100% من غير أي إضافات",
+    description_ar:"عصير مانجو طازج، بنسبة 100% من غير أي إضافات",
     description_en:"100% fresh mango juice, no additives",
     img:"https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=900&q=85"
   }
@@ -617,13 +713,13 @@ const MENU=[
 
 const CAT={
   all:["الكل","All"],
-  burgers:["برجر","Burgers"],
-  pizza:["بيتزا","Pizza"],
-  pasta:["مكرونة","Pasta"],
-  mains:["رئيسي","Mains"],
-  salads:["سلطات","Salads"],
-  desserts:["حلويات","Desserts"],
-  drinks:["مشروبات","Drinks"]
+  burgers:["البرجر","Burgers"],
+  pizza:["البيتزا","Pizza"],
+  pasta:["المكرونة","Pasta"],
+  mains:["الأطباق الرئيسية","Mains"],
+  salads:["السلطات","Salads"],
+  desserts:["الحلويات","Desserts"],
+  drinks:["المشروبات","Drinks"]
 };
 
 const params=new URLSearchParams(location.search);
@@ -656,6 +752,10 @@ const name=x=>
 
 
 async function init(){
+
+  const savedTheme=localStorage.getItem("restoflow_theme");
+  s.dark=savedTheme==="dark";
+  applyTheme();
 
   if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
 
@@ -710,6 +810,19 @@ async function init(){
 
   render();
   setTimeout(handlePaymentReturn, 500);
+}
+
+
+function applyTheme(){
+  document.documentElement.classList.toggle("dark", s.dark);
+
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta){
+    meta.setAttribute(
+      "content",
+      s.dark ? "#16140f" : "#f6f2ea"
+    );
+  }
 }
 
 
@@ -773,7 +886,7 @@ function header(){
             style="display:block;font-weight:400"
           >
             ${t(
-              "تجربة مطعم أذكى",
+              "تجربة طعام أكثر ذكاءً",
               "Smarter restaurant experience"
             )}
           </small>
@@ -808,23 +921,23 @@ function customer(){
     <div>
 
       <span class="badge">
-        TABLE ${s.table||"—"} •
+        ${t("الترابيزة","TABLE")} ${s.table||"—"} •
         ${t(
-          "اطلب من موبايلك",
+          "اطلب من هاتفك",
           "ORDER FROM YOUR PHONE"
         )}
       </span>
 
       <h1>
         ${t(
-          "منيو المطعم<br>بين إيديك.",
+          "قائمة المطعم<br>بين يديك.",
           "Your menu.<br>In your hands."
         )}
       </h1>
 
       <p>
         ${t(
-          "اختار أكلك، عدّل طلبك، تابع حالة المطبخ، وشوف الفاتورة — كل ده من نفس الـQR.",
+          "اختر طلبك، عدّله كما تشاء، تابع حالة تحضيره في المطبخ، واطّلع على فاتورتك — كل ذلك من خلال رمز الاستجابة السريعة نفسه.",
           "Choose, customize, track and view your bill — all from the same QR."
         )}
       </p>
@@ -841,12 +954,12 @@ function customer(){
       <div>
 
         <h2>
-          ${t("المنيو","Menu")}
+          ${t("القائمة","Menu")}
         </h2>
 
         <div class="muted">
           ${t(
-            "طازة، سريع، وعلى مزاجك",
+            "أطباق طازجة تُحضَّر بسرعة وتُقدَّم على ذوقك",
             "Fresh, fast, your way"
           )}
         </div>
@@ -916,7 +1029,7 @@ function customer(){
   <footer>
     RestoFlow •
     ${t(
-      "نظام طلبات المطاعم",
+      "نظام إدارة طلبات المطاعم",
       "Restaurant ordering system"
     )}
   </footer>
@@ -946,7 +1059,7 @@ function food(x){
             s.lang==="ar"
               ?(
                 x.description_ar||
-                "اختيار شهي من الشيف"
+                "اختيار شهي من إعداد الشيف"
               )
               :(
                 x.description_en||
@@ -997,11 +1110,12 @@ function bind(){
       ()=>{
         s.dark=!s.dark;
 
-        document.body.style.filter=
-          s.dark
-            ?"invert(.92) hue-rotate(180deg)"
-            :"none";
+        localStorage.setItem(
+          "restoflow_theme",
+          s.dark?"dark":"light"
+        );
 
+        applyTheme();
         render();
       }
     );
@@ -1159,7 +1273,7 @@ function cartModal(){
       id="send"
     >
       ${t(
-        "إرسال للمطبخ",
+        "إرسال الطلب إلى المطبخ",
         "Send to kitchen"
       )}
     </button>
@@ -1215,7 +1329,7 @@ async function place(d){
 
     alert(
       t(
-        "هذا الرابط ليس مربوطاً بترابيزة.",
+        "هذا الرابط غير مرتبط بترابيزة.",
         "This link is not assigned to a table."
       )
     );
@@ -1290,7 +1404,10 @@ async function place(d){
     if(sr.error){
 
       alert(
-        "خطأ في جلب جلسة الترابيزة: "+
+        t(
+          "حدث خطأ أثناء جلب جلسة الترابيزة: ",
+          "Error fetching the table session: "
+        )+
         sr.error.message
       );
 
@@ -1318,7 +1435,10 @@ async function place(d){
       if(ns.error){
 
         alert(
-          "خطأ في إنشاء جلسة الترابيزة: "+
+          t(
+            "حدث خطأ أثناء إنشاء جلسة الترابيزة: ",
+            "Error creating the table session: "
+          )+
           ns.error.message
         );
 
@@ -1398,7 +1518,7 @@ function tracking(o){
     <h2 id="trackTitle">
 
       ${t(
-        "طلبك وصل للمطبخ 🔥",
+        "وصل طلبك إلى المطبخ 🔥",
         "Your order is in the kitchen 🔥"
       )}
 
@@ -1407,7 +1527,7 @@ function tracking(o){
 
     <p>
       #${o.id} •
-      ${t("ترابيزة","Table")}
+      ${t("الترابيزة","Table")}
       ${o.table_number}
     </p>
 
@@ -1478,7 +1598,7 @@ function drawTrack(d,status){
     ],
 
     preparing:[
-      "جاري التحضير",
+      "جارٍ التحضير",
       "Preparing"
     ],
 
@@ -1623,7 +1743,7 @@ function ordersModal(){
         :`
           <p class="muted">
             ${t(
-              "لا توجد طلبات حالياً.",
+              "لا توجد طلبات في الوقت الحالي.",
               "No orders yet."
             )}
           </p>
@@ -1666,7 +1786,7 @@ function ordersModal(){
 
 function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
   if(!s.sb){
-    alert(t("Supabase غير متصل.","Supabase is not connected."));
+    alert(t("تعذّر الاتصال بقاعدة البيانات Supabase.","Supabase is not connected."));
     originalBtn.disabled=false;
     return;
   }
@@ -1674,7 +1794,7 @@ function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
   originalBtn.disabled=true;
   note.className="payment-loading";
   note.textContent=t(
-    "تم مسح QR الجرسون ✓ جاري تسجيل الدفع كاش...",
+    "تم مسح رمز الجرسون بنجاح ✓، جارٍ تسجيل الدفع نقداً...",
     "Waiter QR scanned ✓ Registering cash payment..."
   );
 
@@ -1705,14 +1825,14 @@ function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
 async function cashQrScanner(o,invoiceModal,note,originalBtn){
   const scanModal=modal(`
     <div class="qr-scan-box" dir="${s.lang==="ar"?"rtl":"ltr"}">
-      <h2>${t("تأكيد الدفع كاش","Confirm cash payment")}</h2>
+      <h2>${t("تأكيد الدفع النقدي","Confirm cash payment")}</h2>
       <p class="muted">${t(
-        "افتح الكاميرا وامسح QR الجرسون المطبوع.",
+        "يرجى تفعيل الكاميرا ومسح رمز الجرسون المطبوع.",
         "Open the camera and scan the printed waiter QR."
       )}</p>
       <div id="cashQrReader"></div>
       <div id="cashQrStatus" class="qr-scan-status">${t(
-        "وجه الكاميرا ناحية QR الجرسون...",
+        "يرجى توجيه الكاميرا نحو رمز الجرسون...",
         "Point the camera at the waiter QR..."
       )}</div>
       <div class="qr-scan-actions">
@@ -1737,7 +1857,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
     originalBtn.disabled=false;
     note.className="muted";
     note.textContent=t(
-      "لم يتم تسجيل الكاش. يمكنك المحاولة مرة أخرى.",
+      "لم يتم تسجيل الدفع النقدي. يمكنك إعادة المحاولة.",
       "Cash was not registered. You can try again."
     );
   };
@@ -1746,7 +1866,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
 
   if(typeof Html5Qrcode==="undefined"){
     scanModal.querySelector("#cashQrStatus").textContent=t(
-      "تعذر تحميل قارئ QR. تأكد من الإنترنت ثم حاول مرة أخرى.",
+      "تعذّر تحميل قارئ رمز الاستجابة السريعة. يرجى التحقق من الاتصال بالإنترنت ثم إعادة المحاولة.",
       "QR scanner could not load. Check your internet connection and try again."
     );
     return;
@@ -1779,7 +1899,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
 
         if(!valid){
           scanModal.querySelector("#cashQrStatus").textContent=t(
-            "ده مش QR الجرسون الخاص بـ RestoFlow. جرّب تاني.",
+            "هذا ليس رمز الجرسون الخاص بنظام RestoFlow. يرجى إعادة المحاولة.",
             "This is not the RestoFlow waiter QR. Please try again."
           );
           return;
@@ -1787,7 +1907,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
 
         finished=true;
         scanModal.querySelector("#cashQrStatus").textContent=t(
-          "تم التعرف على QR الجرسون ✓",
+          "تم التعرّف على رمز الجرسون ✓",
           "Waiter QR recognized ✓"
         );
 
@@ -1805,7 +1925,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
     console.error("QR camera error:",error);
     scanModal.querySelector("#cashQrStatus").textContent=
       error?.message||t(
-        "مش قادر أفتح الكاميرا. اسمح للموقع باستخدام الكاميرا ثم حاول مرة أخرى.",
+        "تعذّر تشغيل الكاميرا. يرجى السماح للموقع باستخدام الكاميرا ثم إعادة المحاولة.",
         "Could not open the camera. Allow camera access and try again."
       );
   }
@@ -1851,7 +1971,7 @@ function bill(o){
     <div
       id="invoice"
       dir="${s.lang==="ar"?"rtl":"ltr"}"
-      style="background:#fff;padding:4px"
+      style="background:var(--card);padding:4px"
     >
 
       <div
@@ -1979,7 +2099,7 @@ function bill(o){
                 )
                 :cashPending
                   ?t(
-                    "في انتظار تأكيد الكاشير",
+                    "بانتظار تأكيد الكاشير",
                     "Waiting for cashier confirmation"
                   )
                   :t(
@@ -2044,7 +2164,7 @@ function bill(o){
             :`
               <p class="muted">
                 ${t(
-                  "لا توجد تفاصيل للأصناف",
+                  "لا تتوفر تفاصيل لأصناف هذا الطلب",
                   "No item details available"
                 )}
               </p>
@@ -2085,8 +2205,8 @@ function bill(o){
               style="
                 padding:14px;
                 border-radius:14px;
-                background:#e5f8ed;
-                color:#167045;
+                background:var(--paid-banner-bg);
+                color:var(--paid-banner-fg);
                 font-weight:800;
                 text-align:center
               "
@@ -2107,15 +2227,15 @@ function bill(o){
                 style="
                   padding:16px;
                   border-radius:14px;
-                  background:#fff7e8;
-                  color:#8d6425;
+                  background:var(--pending-banner-bg);
+                  color:var(--pending-banner-fg);
                   font-weight:800;
                   text-align:center
                 "
               >
                 💵
                 ${t(
-                  "تم اختيار الدفع كاش. في انتظار تأكيد الكاشير للدفع.",
+                  "تم اختيار الدفع النقدي، وطلبك بانتظار تأكيد الكاشير.",
                   "Cash selected. Waiting for cashier confirmation."
                 )}
               </div>
@@ -2123,7 +2243,7 @@ function bill(o){
           :`
             <h3>
               ${t(
-                "اختار طريقة الدفع",
+                "يرجى اختيار طريقة الدفع",
                 "Choose payment method"
               )}
             </h3>
@@ -2140,7 +2260,7 @@ function bill(o){
               >
                 💵
                 ${t(
-                  "كاش",
+                  "نقداً",
                   "Cash"
                 )}
               </button>
@@ -2152,7 +2272,7 @@ function bill(o){
               >
                 📱
                 ${t(
-                  "محفظة",
+                  "المحفظة الإلكترونية",
                   "Wallet"
                 )}
               </button>
@@ -2164,7 +2284,7 @@ function bill(o){
               >
                 💳
                 ${t(
-                  "الدفع بالكارت",
+                  "الدفع بالبطاقة",
                   "Pay by Card"
                 )}
               </button>
@@ -2247,7 +2367,7 @@ function bill(o){
 
         alert(
           t(
-            "اسمح بالنوافذ المنبثقة للطباعة.",
+            "يرجى السماح بالنوافذ المنبثقة لإتمام عملية الطباعة.",
             "Allow popups to print the invoice."
           )
         );
@@ -2389,7 +2509,7 @@ function bill(o){
             if(paymentMethod === "wallet"){
               walletNumber = window.prompt(
                 t(
-                  "اكتب رقم المحفظة (مثال: 01010101010)",
+                  "يرجى إدخال رقم المحفظة (مثال: 01010101010)",
                   "Enter wallet number (example: 01010101010)"
                 ),
                 ""
@@ -2400,7 +2520,7 @@ function bill(o){
               if(!/^01\d{9}$/.test(walletNumber)){
                 note.className="muted";
                 note.textContent=t(
-                  "رقم المحفظة غير صحيح. اكتب رقم مصري 11 رقم يبدأ بـ 01.",
+                  "رقم المحفظة غير صحيح. يرجى إدخال رقم مصري مكوّن من 11 رقماً يبدأ بـ 01.",
                   "Invalid wallet number. Enter an 11-digit Egyptian number starting with 01."
                 );
                 return;
@@ -2411,7 +2531,7 @@ function bill(o){
 
               note.textContent=
                 t(
-                  "Supabase غير متصل.",
+                  "تعذّر الاتصال بقاعدة البيانات Supabase.",
                   "Supabase is not connected."
                 );
 
@@ -2428,7 +2548,7 @@ function bill(o){
 
             note.textContent=
               t(
-                "جاري تجهيز الدفع الآمن...",
+                "جارٍ تجهيز عملية الدفع الآمن...",
                 "Preparing secure payment..."
               );
 
@@ -2565,7 +2685,7 @@ function bill(o){
               note.textContent=
                 error?.message||
                 t(
-                  "حدث خطأ أثناء تجهيز الدفع.",
+                  "حدث خطأ أثناء تجهيز عملية الدفع.",
                   "Payment initialization failed."
                 );
 
@@ -2585,7 +2705,7 @@ function bill(o){
             if(!s.sb){
               note.textContent=
                 t(
-                  "Supabase غير متصل.",
+                  "تعذّر الاتصال بقاعدة البيانات Supabase.",
                   "Supabase is not connected."
                 );
               return;
@@ -2594,7 +2714,7 @@ function bill(o){
             btn.disabled=true;
             note.className="payment-loading";
             note.textContent=t(
-              "افتح الكاميرا وامسح QR الجرسون...",
+              "يرجى تفعيل الكاميرا ومسح رمز الجرسون...",
               "Open the camera and scan the waiter QR..."
             );
 
@@ -2610,7 +2730,7 @@ function bill(o){
 
             note.textContent=
               t(
-                "Supabase غير متصل.",
+                "تعذّر الاتصال بقاعدة البيانات Supabase.",
                 "Supabase is not connected."
               );
 
@@ -2749,7 +2869,7 @@ async function handlePaymentReturn(){
     paymentReturnMessage(
       "error",
       t(
-        "تعذر تحديد الطلب.",
+        "تعذّر تحديد الطلب.",
         "Could not determine the order."
       )
     );
@@ -2765,7 +2885,7 @@ async function handlePaymentReturn(){
     paymentReturnMessage(
       "error",
       t(
-        "تعذر العثور على الطلب.",
+        "تعذّر العثور على الطلب.",
         "The order could not be found."
       )
     );
@@ -2866,11 +2986,11 @@ async function handlePaymentReturn(){
     paymentReturnMessage(
       "failed",
       t(
-        "لم يتم الدفع",
+        "تعذّر إتمام عملية الدفع",
         "Payment failed"
       ),
       t(
-        "Paymob أكد أن العملية لم تكتمل. يمكنك إعادة المحاولة.",
+        "أفادت Paymob بأن العملية لم تكتمل. يمكنك إعادة المحاولة.",
         "Paymob reported that the payment was not completed. You can try again."
       ),
       order
@@ -2881,11 +3001,11 @@ async function handlePaymentReturn(){
   paymentReturnMessage(
     "pending",
     t(
-      "جاري تأكيد الدفع...",
+      "جارٍ تأكيد عملية الدفع...",
       "Confirming payment..."
     ),
     t(
-      "تم الرجوع من Paymob، لكن تأكيد السيرفر لم يصل بعد.",
+      "تم الرجوع من Paymob، إلا أن تأكيد الخادم لم يصل بعد.",
       "You returned from Paymob, but the server confirmation has not arrived yet."
     ),
     order
@@ -2958,7 +3078,7 @@ function paymentReturnMessage(
             >
               ↻
               ${t(
-                "حاول مرة أخرى",
+                "إعادة المحاولة",
                 "Try again"
               )}
             </button>
@@ -2975,7 +3095,7 @@ function paymentReturnMessage(
             >
               ⟳
               ${t(
-                "تحقق من الدفع",
+                "التحقق من حالة الدفع",
                 "Check payment"
               )}
             </button>
@@ -3024,18 +3144,18 @@ function cashier(){
       <div class="section-title">
         <div>
           <h2>
-            ${t("شاشة الكاشير","Cashier Dashboard")}
+            ${t("لوحة تحكم الكاشير","Cashier Dashboard")}
           </h2>
           <div class="muted">
             ${t(
-              "أكد الدفع الكاش بعد استلام المبلغ من العميل.",
+              "يرجى تأكيد الدفع النقدي بعد استلام المبلغ من العميل.",
               "Confirm cash payments after receiving the money from the customer."
             )}
           </div>
         </div>
 
         <span class="badge">
-          ${pending.length} ${t("طلبات معلقة","pending")}
+          ${pending.length} ${t("طلبات بانتظار التأكيد","pending")}
         </span>
       </div>
 
@@ -3049,7 +3169,7 @@ function cashier(){
               </div>
             </div>
             <span class="status s-new">
-              ${t("في انتظار الكاش","Cash pending")}
+              ${t("بانتظار الدفع النقدي","Cash pending")}
             </span>
           </div>
 
@@ -3064,14 +3184,14 @@ function cashier(){
               🧾 ${t("الفاتورة","Invoice")}
             </button>
             <button class="btn gold" data-cash-confirm="${o.id}">
-              ✓ ${t("تأكيد استلام الكاش","Confirm cash received")}
+              ✓ ${t("تأكيد استلام المبلغ","Confirm cash received")}
             </button>
           </div>
         </div>
       `).join("") : `
         <div class="panel" style="text-align:center;padding:40px">
           <div style="font-size:42px">💵</div>
-          <h3>${t("لا توجد مدفوعات كاش معلقة","No pending cash payments")}</h3>
+          <h3>${t("لا توجد مدفوعات نقدية بانتظار التأكيد","No pending cash payments")}</h3>
         </div>
       `}
 
@@ -3095,7 +3215,7 @@ function bindCashier(){
 
       const ok=confirm(
         t(
-          `هل استلمت مبلغ ${money(o.total)} من الترابيزة ${o.table_number}؟`,
+          `هل تم استلام مبلغ ${money(o.total)} من الترابيزة رقم ${o.table_number}؟`,
           `Did you receive ${money(o.total)} from table ${o.table_number}?`
         )
       );
@@ -3103,7 +3223,7 @@ function bindCashier(){
       if(!ok) return;
 
       btn.disabled=true;
-      btn.textContent=t("جاري التأكيد...","Confirming...");
+      btn.textContent=t("جارٍ التأكيد...","Confirming...");
 
       const r=await s.sb
         .from("orders")
@@ -3117,7 +3237,7 @@ function bindCashier(){
 
       if(r.error){
         btn.disabled=false;
-        btn.textContent=t("تأكيد استلام الكاش","Confirm cash received");
+        btn.textContent=t("تأكيد استلام المبلغ","Confirm cash received");
         alert(r.error.message);
         return;
       }
