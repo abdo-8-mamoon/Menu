@@ -1536,17 +1536,21 @@ function ordersModal(){
 function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
   if(!s.sb){
     alert(t("Supabase غير متصل.","Supabase is not connected."));
+    originalBtn.disabled=false;
     return;
   }
+
   originalBtn.disabled=true;
   note.className="payment-loading";
   note.textContent=t(
-    "تم مسح QR الجرسون. جاري تسجيل طلب الكاش...",
-    "Waiter QR scanned. Registering cash request..."
+    "تم مسح QR الجرسون ✓ جاري تسجيل الدفع كاش...",
+    "Waiter QR scanned ✓ Registering cash payment..."
   );
+
   s.sb.from("orders").update({
-    payment_status:"pending_cash",
-    payment_method:"cash"
+    payment_status:"paid",
+    payment_method:"cash",
+    paid_at:new Date().toISOString()
   }).eq("id",o.id).then(r=>{
     if(r.error){
       originalBtn.disabled=false;
@@ -1554,8 +1558,13 @@ function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
       note.textContent=r.error.message;
       return;
     }
-    o.payment_status="pending_cash";
+
+    // Cash is considered paid immediately after the waiter QR is scanned.
+    // Keep the kitchen order status unchanged.
+    o.payment_status="paid";
     o.payment_method="cash";
+    o.paid_at=new Date().toISOString();
+
     invoiceModal.remove();
     render();
     tracking(o);
