@@ -1417,23 +1417,6 @@ function customer(){
 
   </main>
 
-
-  ${
-    s.cart.length
-      ?`
-        <button class="cart" id="cart">
-          🛒 ${t("السلة","Cart")}
-          <span>
-            ${s.cart.reduce(
-              (a,x)=>a+x.qty,
-              0
-            )}
-          </span>
-        </button>
-      `
-      :""
-  }
-
   `;
 }
 
@@ -1554,19 +1537,58 @@ function bind(){
 
 
   document
-    .getElementById("cart")
-    ?.addEventListener(
-      "click",
-      cartModal
-    );
-
-
-  document
     .getElementById("orders")
     ?.addEventListener(
       "click",
       ordersModal
     );
+}
+
+
+function updateCartButton(){
+
+  const count=
+    s.cart.reduce(
+      (a,x)=>a+x.qty,
+      0
+    );
+
+  let btn=
+    document.getElementById("cart");
+
+  if(!s.cart.length){
+    btn?.remove();
+    return;
+  }
+
+  if(btn){
+
+    btn.innerHTML=`
+      🛒 ${t("السلة","Cart")}
+      <span>${count}</span>
+    `;
+
+  }else{
+
+    btn=
+      document.createElement("button");
+
+    btn.className="cart";
+    btn.id="cart";
+
+    btn.innerHTML=`
+      🛒 ${t("السلة","Cart")}
+      <span>${count}</span>
+    `;
+
+    btn.addEventListener(
+      "click",
+      cartModal
+    );
+
+    document.body.appendChild(btn);
+
+  }
 }
 
 
@@ -1593,7 +1615,7 @@ function add(id,qty=1){
     });
   }
 
-  render();
+  updateCartButton();
 
   if(wasEmpty)showOrderReminder();
 }
@@ -1616,7 +1638,7 @@ function setCartItem(id,qty,note=""){
     s.cart.push({id,qty,note:note||""});
   }
 
-  render();
+  updateCartButton();
 
   if(wasEmpty && qty>0)showOrderReminder();
 }
@@ -1964,7 +1986,7 @@ function cartModal(){
 
           d.remove();
 
-          render();
+          updateCartButton();
 
           if(s.cart.length){
             cartModal();
@@ -3878,8 +3900,10 @@ function render(){
 
   if(s.mode==="cashier")
     bindCashier();
-  else
+  else{
     bind();
+    updateCartButton();
+  }
 }
 
 
