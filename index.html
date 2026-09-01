@@ -1796,7 +1796,7 @@ function tracking(o){
 
   let d=modal(`
 
-    <h2 id="trackTitle">
+    <h2>
 
       ${t(
         "وصل طلبك إلى المطبخ 🔥",
@@ -1806,39 +1806,43 @@ function tracking(o){
     </h2>
 
 
-    <p>
+    <p class="muted">
       #${o.id} •
       ${t("الترابيزة","Table")}
       ${o.table_number}
     </p>
 
 
-    <div
-      class="track"
-      id="track"
-    ></div>
-
-
-    <h3 id="trackStatus"></h3>
+    <button
+      class="btn"
+      style="width:100%;margin-top:8px"
+      id="sentConfirm"
+    >
+      ✓
+      ${t(
+        "تم إرسال الطلب إلى المطبخ",
+        "Order sent to the kitchen"
+      )}
+    </button>
 
 
     <button
       class="btn gold"
+      style="width:100%;margin-top:10px"
       id="bill"
     >
+      🧾
       ${t(
-        "عرض الفاتورة",
-        "View bill"
+        "الفاتورة / الدفع",
+        "Bill / Payment"
       )}
     </button>
 
   `);
 
 
-  drawTrack(
-    d,
-    o.status
-  );
+  d.querySelector("#sentConfirm")
+    .onclick=()=>d.remove();
 
 
   d.querySelector("#bill")
@@ -1846,64 +1850,6 @@ function tracking(o){
       d.remove();
       bill(o);
     };
-}
-
-
-function drawTrack(d,status){
-
-  const steps=[
-    "new",
-    "preparing",
-    "ready",
-    "served"
-  ];
-
-  const idx=
-    steps.indexOf(status);
-
-
-  d.querySelector("#track")
-    .innerHTML=
-      steps.map(
-        (_,i)=>
-          `<i class="step ${
-            i<=idx?"on":""
-          }"></i>`
-      ).join("");
-
-
-  const labels={
-    new:[
-      "تم استلام الطلب",
-      "Order received"
-    ],
-
-    preparing:[
-      "جارٍ التحضير",
-      "Preparing"
-    ],
-
-    ready:[
-      "الطلب جاهز",
-      "Order ready"
-    ],
-
-    served:[
-      "تم التقديم",
-      "Served"
-    ]
-  };
-
-
-  d.querySelector("#trackStatus")
-    .textContent=
-      t(
-        labels[status]?.[0]||
-        "تم استلام الطلب",
-
-        labels[status]?.[1]||
-        "Order received"
-      );
 }
 
 
