@@ -560,15 +560,37 @@ async function payOnline(o, d, btn, note){
 
 async function fetchOrderById(orderId){
   if(!s.sb || !orderId) return null;
+
   const {data,error}=await s.sb
     .from("orders")
     .select("*,order_items(*)")
     .eq("id",orderId)
     .maybeSingle();
+
   if(error){
-    console.error("Payment return order error:",error);
+    console.error("Order lookup by ID error:",error);
     return null;
   }
+
+  return data||null;
+}
+
+async function fetchOrderByReference(reference){
+  if(!s.sb || !reference) return null;
+
+  const {data,error}=await s.sb
+    .from("orders")
+    .select("*,order_items(*)")
+    .eq("payment_reference",reference)
+    .order("created_at",{ascending:false})
+    .limit(1)
+    .maybeSingle();
+
+  if(error){
+    console.error("Order lookup by reference error:",error);
+    return null;
+  }
+
   return data||null;
 }
 
@@ -597,6 +619,7 @@ function paymentResultPage(order, state){
       <div class="actions" style="justify-content:center;margin-top:14px">
         ${paid&&order?`<button class="btn primary" id="printAfterPayment">🖨️ ${t("طباعة الفاتورة","Print invoice")}</button>`:""}
         ${failed&&order?`<button class="btn gold" id="retryPayment">↻ ${t("حاول مرة أخرى","Try again")}</button>`:""}
+        ${state==="pending"&&order?`<button class="btn" id="checkPaymentAgain">⟳ ${t("تحقق من الدفع مرة أخرى","Check payment again")}</button>`:""}
       </div>
     </div>
   `);
@@ -607,57 +630,194 @@ function paymentResultPage(order, state){
   if(failed&&order){
     d.querySelector("#retryPayment")?.addEventListener("click",()=>{d.remove();bill(order)});
   }
+
+  if(state==="pending"&&order){
+    d.querySelector("#checkPaymentAgain")?.addEventListener("click",async()=>{
+      d.remove();
+      await handlePaymentReturn();
+    });
+  }
+
   return d;
 }
 
 async function handlePaymentReturn(){
-  const paramsNow=new URLSearchParams(location.search);
-  const isReturn=paramsNow.get("payment")==="return" || paramsNow.get("payment")==="success" || paramsNow.has("success");
+  const paramsNow = new URLSearchParams(location.search);
+
+  const isReturn =
+    paramsNow.get("payment")==="return" ||
+    paramsNow.get("payment")==="success" ||
+    paramsNow.get("success")==="true" ||
+    paramsNow.get("success")==="1" ||
+    paramsNow.has("id") ||
+    paramsNow.has("txn_response_code") ||
+    paramsNow.has("merchant_order_id");
+
   if(!isReturn || !s.sb) return;
 
-  const urlOrderId=paramsNow.get("order_id") || paramsNow.get("merchant_order_id");
-  const orderId=urlOrderId || localStorage.getItem("restoflow_payment_order");
-  if(!orderId) return;
+  const localOrderId =
+    localStorage.getItem("restoflow_payment_order");
 
-  // Give the server-to-server webhook a moment, then poll for the final status.
-  let order=await fetchOrderById(orderId);
-  let tries=0;
-  while(order && order.payment_status!=="paid" && order.status!=="paid" && tries<12){
-    if(order.payment_status==="failed") break;
-    await new Promise(r=>setTimeout(r,1500));
-    order=await fetchOrderById(orderId);
-    tries++;
+  const callbackOrderId =
+    paramsNow.get("order_id");
+
+  const merchantOrderId =
+    paramsNow.get("merchant_order_id");
+
+  const savedReference =
+    localStorage.getItem("restoflow_payment_reference");
+
+  let order = null;
+
+  const orderId =
+    callbackOrderId || localOrderId;
+
+  if(orderId){
+    order = await fetchOrderById(orderId);
+  }
+
+  if(!order && savedReference){
+    order = await fetchOrderByReference(savedReference);
+  }
+
+  if(!order && merchantOrderId && merchantOrderId.startsWith("RF-")){
+    order = await fetchOrderByReference(merchantOrderId);
   }
 
   if(!order){
-    paymentResultPage(null,"failed");
+    paymentResultPage(null,"pending");
     return;
   }
 
-  const state=(order.payment_status==="paid" || order.status==="paid")
-    ?"paid"
-    :(order.payment_status==="failed"?"failed":"pending");
+  /*
+    Never trust the return URL as proof of payment.
+    Wait for our server-side webhook to update Supabase.
+  */
+  let tries = 0;
 
-  if(state==="pending"){
-    const d=paymentResultPage(order,"pending");
-    setTimeout(async()=>{
-      d.remove();
-      await handlePaymentReturn();
-    },1500);
-    return;
+  while(
+    order &&
+    order.payment_status!=="paid" &&
+    order.status!=="paid" &&
+    order.payment_status!=="failed" &&
+    tries < 30
+  ){
+    await new Promise(
+      resolve => setTimeout(resolve,2000)
+    );
+
+    const refreshed =
+      await fetchOrderById(order.id);
+
+    if(refreshed){
+      order = refreshed;
+    }else if(savedReference){
+      const byReference =
+        await fetchOrderByReference(savedReference);
+
+      if(byReference){
+        order = byReference;
+      }
+    }
+
+    tries++;
   }
 
-  paymentResultPage(order,state);
+  const state =
+    order &&
+    (
+      order.payment_status==="paid" ||
+      order.status==="paid"
+    )
+      ? "paid"
+      : (
+        order &&
+        order.payment_status==="failed"
+      )
+        ? "failed"
+        : "pending";
+
+  const resultModal =
+    paymentResultPage(
+      order,
+      state
+    );
 
   if(state==="paid"){
-    // Store a clean state and remove payment flags from the URL.
-    localStorage.removeItem("restoflow_payment_reference");
-    localStorage.removeItem("restoflow_paymob_order");
 
-    // Try automatic printing; if the browser blocks it, the invoice button remains available.
+    localStorage.removeItem(
+      "restoflow_payment_reference"
+    );
+
+    localStorage.removeItem(
+      "restoflow_paymob_order"
+    );
+
+    localStorage.setItem(
+      "restoflow_last_paid_order",
+      String(order.id)
+    );
+
+    /*
+      Clean the Paymob callback query without reloading.
+    */
+    try{
+      const cleanUrl =
+        location.origin +
+        location.pathname +
+        (
+          s.table
+            ? `?table=${s.table}`
+            : ""
+        );
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl
+      );
+    }catch(e){
+      console.warn(
+        "Could not clean payment URL",
+        e
+      );
+    }
+
+    /*
+      Attempt auto-print.
+      The browser may block automatic popups.
+    */
     setTimeout(()=>{
-      try{ printInvoice(order); }catch(e){ console.warn("Auto print blocked",e); }
-    },500);
+      try{
+        printInvoice(order);
+      }catch(e){
+        console.warn(
+          "Auto print blocked",
+          e
+        );
+      }
+    },700);
+
+    return;
+  }
+
+  if(state==="failed"){
+    localStorage.removeItem(
+      "restoflow_payment_reference"
+    );
+
+    localStorage.removeItem(
+      "restoflow_paymob_order"
+    );
+  }
+
+  if(state==="pending" && resultModal){
+    resultModal
+      .querySelector("#checkPaymentAgain")
+      ?.addEventListener("click",async()=>{
+        resultModal.remove();
+        await handlePaymentReturn();
+      });
   }
 }
 
