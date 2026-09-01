@@ -732,6 +732,17 @@ h1,h2,h3,.brand,.price{
   flex:1
 }
 
+.unpaid-label{
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:700;
+  color:var(--accent);
+  background:#7a1f1f14;
+  border:1px solid #7a1f1f4d;
+  border-radius:999px;
+  padding:6px 12px
+}
+
 
 .qr-scan-box{text-align:center}
 #cashQrReader{width:100%;max-width:420px;margin:16px auto;overflow:hidden;border-radius:18px;border:1px solid var(--line)}
@@ -1139,7 +1150,7 @@ async function init(){
     );
 
     await loadMenu();
-    await loadOrders();
+    await loadOrders(false);
 
     s.sb.channel("rf-live")
 
@@ -1151,7 +1162,7 @@ async function init(){
           table:"orders"
         },
         async()=>{
-          await loadOrders();
+          await loadOrders(false);
         }
       )
 
@@ -1163,7 +1174,7 @@ async function init(){
           table:"order_items"
         },
         async()=>{
-          await loadOrders();
+          await loadOrders(false);
         }
       )
 
@@ -1219,7 +1230,7 @@ async function loadMenu(){
 }
 
 
-async function loadOrders(){
+async function loadOrders(renderAfter=true){
 
   if(!s.sb)return;
 
@@ -1236,17 +1247,11 @@ async function loadOrders(){
   const r=await q;
 
   if(!r.error && r.data){
-
-    const changed=
-      JSON.stringify(r.data)!==
-      JSON.stringify(s.orders);
-
     s.orders=r.data;
+  }
 
-    if(changed){
-      render();
-    }
-
+  if(renderAfter){
+    render();
   }
 }
 
@@ -1295,6 +1300,18 @@ function header(){
 
 
 function customer(){
+
+  const unpaidCount=
+    s.orders.filter(
+      o=>
+        (
+          !s.table ||
+          Number(o.table_number)===
+          Number(s.table)
+        ) &&
+        o.payment_status!=="paid" &&
+        o.status!=="paid"
+    ).length;
 
   return header()+`
 
@@ -1348,9 +1365,19 @@ function customer(){
 
       </div>
 
-      <button class="btn" id="orders">
-        ${t("طلباتي","My orders")}
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+        <button class="btn" id="orders">
+          ${t("طلباتي","My orders")}
+        </button>
+
+        ${
+          unpaidCount
+            ?`<span class="unpaid-label">${t("لم يتم الدفع","Not paid")}</span>`
+            :""
+        }
+
+      </div>
 
     </div>
 
@@ -3856,14 +3883,8 @@ function render(){
 }
 
 
-setInterval(
-  ()=>{
-    if(s.sb){
-      loadOrders();
-    }
-  },
-  5000
-);
+// (removed) periodic order polling — page no longer re-renders itself
+// automatically after the initial load.
 
 
 init();
