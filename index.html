@@ -2,427 +2,3918 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f6f7f4">
-<title>RestoFlow — شاشة الكاشير</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#f6f2ea">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>RestoFlow — المنيو</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Markazi+Text:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
 :root{
-  --bg:#f5f6f3; --panel:#ffffff; --panel2:#fafaf8; --line:#e4e7e1; --line-soft:#edefea;
-  --text:#20251d; --text-dim:#565f52; --muted:#868f81; --muted-dim:#adb5a8; --top-bg:rgba(245,246,243,.88);
-  --sage:#4f8f5f; --sage-dim:#356a41; --sage-tint:#e9f4ea;
-  --amber:#b8842f; --amber-dim:#8c6423; --amber-tint:#f7eedb;
-  --brick:#c2492f; --brick-dim:#8f3924; --brick-tint:#fbe9e4;
-  --shadow-sm:0 1px 2px rgba(32,37,29,.04);
-  --shadow-md:0 1px 2px rgba(32,37,29,.04),0 10px 24px -14px rgba(32,37,29,.16);
-  --shadow-lg:0 2px 4px rgba(32,37,29,.05),0 18px 36px -14px rgba(32,37,29,.22);
-  --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
+  --ink:#5b564d;
+  --ink-soft:#726c60;
+  --card:#ffffff;
+  --text:#332e28;
+  --text-inverse:#ffffff;
+  --muted:#8a8177;
+  --muted-inverse:#6b6259;
+  --line:#e2ddd2;
+  --accent:#7a1f1f;
+  --accent-deep:#551414;
+  --dark:#5b564d;
+  --good:#3fae78;
+  --shadow:0 30px 65px -24px rgba(0,0,0,.55);
+  --bg-grad:
+    radial-gradient(circle at 88% -8%,#7a1f1f14,transparent 45%),
+    #f6f2ea;
+  --hero-grad:
+    radial-gradient(circle at 82% 15%,#7a1f1f22,transparent 45%),
+    radial-gradient(circle at 8% 90%,#e2ddd2,transparent 42%),
+    linear-gradient(160deg,#fdfbf7,#f0ebe0);
+  --top-bg:#ffffffee;
+  --modal-bg:#0a0705cc;
+  --step-bg:var(--line);
+  --status-new-bg:#f5e6c7;
+  --status-new-fg:#8d5f10;
+  --status-prep-bg:#e4e6f5;
+  --status-prep-fg:#3d4c9b;
+  --status-ready-bg:#dcf0e4;
+  --status-ready-fg:#1f6b45;
+  --status-served-bg:#eae5db;
+  --status-served-fg:#66594c;
+  --status-paid-bg:#dcf0e4;
+  --status-paid-fg:#1f6b45;
+  --qr-status-bg:#f3ecdd;
+  --payment-loading-bg:#f2e2c4;
+  --paid-banner-bg:#e5f8ed;
+  --paid-banner-fg:#167045;
+  --pending-banner-bg:#fff7e8;
+  --pending-banner-fg:#8d6425;
+  color-scheme:light
 }
-[data-theme="dark"]{
-  --bg:#171b16; --panel:#20251f; --panel2:#252a23; --line:#333a2f; --line-soft:#2b3128;
-  --text:#eaece5; --text-dim:#b8bfaf; --muted:#818a7b; --muted-dim:#565f50; --top-bg:rgba(23,27,22,.88);
-  --sage-tint:#152418; --amber-tint:#291f0f; --brick-tint:#2b1712;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
-  --shadow-md:0 1px 2px rgba(0,0,0,.3),0 10px 24px -14px rgba(0,0,0,.5);
-  --shadow-lg:0 2px 4px rgba(0,0,0,.35),0 18px 36px -14px rgba(0,0,0,.6);
+
+:root.dark{
+  --ink:#e7e2d6;
+  --ink-soft:#c9c2b3;
+  --card:#221f1a;
+  --text:#f2ede2;
+  --text-inverse:#221f1a;
+  --muted:#a89f90;
+  --muted-inverse:#8f8779;
+  --line:#3a352c;
+  --accent:#c25a5a;
+  --accent-deep:#9c3d3d;
+  --dark:#e7e2d6;
+  --good:#4fc98c;
+  --shadow:0 30px 65px -24px rgba(0,0,0,.75);
+  --bg-grad:
+    radial-gradient(circle at 88% -8%,#c25a5a1f,transparent 45%),
+    #16140f;
+  --hero-grad:
+    radial-gradient(circle at 82% 15%,#c25a5a2a,transparent 45%),
+    radial-gradient(circle at 8% 90%,#231f18,transparent 42%),
+    linear-gradient(160deg,#1b1812,#100e0a);
+  --top-bg:#171410ee;
+  --modal-bg:#000000d9;
+  --step-bg:var(--line);
+  --status-new-bg:#4a3a17;
+  --status-new-fg:#f0c467;
+  --status-prep-bg:#2a2c47;
+  --status-prep-fg:#aeb4ee;
+  --status-ready-bg:#173829;
+  --status-ready-fg:#7fe0ac;
+  --status-served-bg:#332f27;
+  --status-served-fg:#cfc6b6;
+  --status-paid-bg:#173829;
+  --status-paid-fg:#7fe0ac;
+  --qr-status-bg:#241f17;
+  --payment-loading-bg:#3a2c14;
+  --paid-banner-bg:#132c20;
+  --paid-banner-fg:#6fe0a4;
+  --pending-banner-bg:#332711;
+  --pending-banner-fg:#f0c467;
+  color-scheme:dark
 }
+
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);transition:background .2s,color .2s;-webkit-font-smoothing:antialiased}
-button{font:inherit;cursor:pointer}
-svg{display:block}
-.tnum{font-variant-numeric:tabular-nums;font-weight:600}
 
-/* ---------------- header ---------------- */
-.top{position:sticky;top:0;z-index:30;background:var(--top-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:15px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.mark{width:36px;height:36px;border-radius:11px;background:var(--amber-tint);border:1px solid #b8842f3d;color:var(--amber-dim);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
-.brand .names{display:flex;flex-direction:column;line-height:1.25}
-.brand b{font-weight:700;font-size:16.5px}
-.brand small{color:var(--muted);font-weight:500;font-size:12.5px}
-.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:var(--panel);padding:9px 15px;border-radius:10px;font-weight:600;font-size:13.5px;color:var(--text);transition:border-color .15s,transform .1s,box-shadow .15s;display:inline-flex;align-items:center;gap:7px}
-.btn:hover{border-color:var(--muted-dim);box-shadow:var(--shadow-sm)}
-.btn:active{transform:scale(.96)}
-.btn:disabled{opacity:.55;cursor:default;transform:none}
-.btn.pay{background:var(--sage);color:#fff;border-color:var(--sage)}
-.btn.icon{width:38px;height:38px;padding:0;justify-content:center;background:var(--panel)}
-.live-pill{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);font-weight:600;padding:0 6px}
-.live-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px var(--sage-tint)}
-
-.container{max-width:1180px;margin:auto;padding:34px 4vw 16px}
-.banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:18px;display:flex;gap:9px;align-items:flex-start;line-height:1.6;background:var(--brick-tint);color:var(--brick-dim);border:1px solid #c2492f33}
-.banner .x{margin-inline-start:auto;border:none;background:transparent;color:inherit;font-size:13px;opacity:.7;flex:none}
-
-/* ---------------- utility strip: kpis + qr ---------------- */
-.strip{display:grid;grid-template-columns:repeat(3,1fr) 1.9fr;gap:14px;margin-bottom:36px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px 20px;box-shadow:var(--shadow-sm)}
-.stat .lbl{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;font-weight:600}
-.stat .lbl i{width:7px;height:7px;border-radius:50%;flex:none}
-.stat.c-brick .lbl i{background:var(--brick)}.stat.c-amber .lbl i{background:var(--amber)}.stat.c-sage .lbl i{background:var(--sage)}
-.stat b{display:block;font-size:27px;margin-top:11px;letter-spacing:-.02em}
-
-.qr-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)}
-.qr-info{flex:1;min-width:0}
-.qr-info .lbl{color:var(--muted);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
-.qr-info .lbl i{width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none}
-.qr-code{font-size:25px;font-weight:700;letter-spacing:4px;margin-top:9px}
-.qr-code.loading{font-size:14px;letter-spacing:normal;color:var(--muted);font-weight:600}
-.qr-meta{display:flex;align-items:center;gap:9px;margin-top:9px;flex-wrap:wrap}
-.qr-until{font-size:12px;color:var(--text-dim)}
-.qr-until b{font-weight:700;color:var(--text)}
-.qr-count{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
-.qr-count.warn{color:var(--brick-dim);font-weight:600}
-.qr-bar{height:4px;border-radius:100px;background:var(--line-soft);margin-top:10px;overflow:hidden}
-.qr-bar-fill{height:100%;background:var(--amber);border-radius:100px;transition:width 1s linear}
-.qr-bar-fill.warn{background:var(--brick)}
-.qr-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;place-items:center;min-height:96px;min-width:96px;flex:none}
-
-/* ---------------- section / legend ---------------- */
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:0 0 18px;flex-wrap:wrap}
-.section-title h2{margin:0;font-size:19.5px;font-weight:700;letter-spacing:-.01em}
-.legend{display:flex;gap:18px;flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
-.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.legend .free i{background:var(--sage)}.legend .active i{background:var(--amber)}.legend .due i{background:var(--brick)}
-
-/* ---------------- table grid ---------------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:14px}
-.tile{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:start;transition:transform .12s,box-shadow .15s;box-shadow:var(--shadow-sm)}
-.tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.tile:active{transform:scale(.97)}
-.tile .num{font-size:25px;font-weight:700;line-height:1;letter-spacing:-.02em}
-.tile .status{display:flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted);font-weight:600}
-.tile .status i{width:6px;height:6px;border-radius:50%;flex:none}
-.tile.free .status i{background:var(--sage)}
-.tile.active{border-inline-start:3px solid var(--amber)}
-.tile.active .status i{background:var(--amber)}
-.tile.due{background:var(--brick-tint);border-color:transparent;border-inline-start:3px solid var(--brick);box-shadow:var(--shadow-md)}
-.tile.due:hover{box-shadow:var(--shadow-lg)}
-.tile.due .status i{background:var(--brick)}
-.tile.due .amt{margin-top:12px;font-size:15.5px;font-weight:700;color:var(--brick-dim);padding-top:11px;border-top:1px solid #c2492f2b}
-.tile.selected{outline:2px solid var(--text);outline-offset:2px}
-.empty-note{text-align:center;padding:48px;color:var(--muted-dim);grid-column:1/-1}
-
-/* ---------------- drawer ---------------- */
-.scrim{position:fixed;inset:0;background:#181c1799;opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
-.scrim.open{opacity:1;pointer-events:auto}
-.drawer{position:fixed;inset-inline-end:0;top:0;bottom:0;width:min(400px,92vw);background:var(--panel);z-index:41;border-inline-start:1px solid var(--line);box-shadow:var(--shadow-lg);transform:translateX(105%);transition:transform .22s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
-[dir="rtl"] .drawer{transform:translateX(-105%)}
-.drawer.open{transform:translateX(0)}
-.drawer-head{padding:20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-.drawer-head h3{margin:0;font-size:18px}
-.drawer-head .st{font-size:12.5px;color:var(--muted);margin-top:3px}
-.drawer-close{border:none;background:var(--panel2);width:34px;height:34px;border-radius:10px;color:var(--text);display:grid;place-items:center;flex:none}
-.drawer-body{padding:18px 20px;overflow-y:auto;flex:1}
-.order-block{border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px;margin-bottom:12px}
-.order-block .oh{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:9px}
-.order-block .oh .badge{font-weight:700}
-.order-block .oh .badge.served{color:var(--brick-dim)}
-.order-block .oh .badge.active{color:var(--amber-dim)}
-.item-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--text-dim)}
-.item-row b{color:var(--text);font-weight:600}
-.drawer-foot{padding:18px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-.drawer-total{display:flex;justify-content:space-between;font-size:15.5px;font-weight:700}
-.drawer-total .tnum{font-size:18px}
-.drawer-empty{text-align:center;padding:40px 10px;color:var(--muted-dim);font-size:13.5px}
-
-footer{padding:36px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
-
-@media(max-width:900px){
-  .strip{grid-template-columns:1fr 1fr;grid-template-areas:"a b" "c c"}
-  .strip .stat:nth-child(1){grid-area:a}.strip .stat:nth-child(2){grid-area:b}.strip .stat:nth-child(3){display:none}
-  .strip .qr-card{grid-area:c}
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%
 }
-@media(max-width:640px){
-  .strip{grid-template-columns:1fr;grid-template-areas:"a" "b" "c"}
-  .strip .stat:nth-child(2){display:block}
-  .grid{grid-template-columns:repeat(3,1fr)}
-  .tile{padding:16px 10px}
-  .container{padding:26px 5vw 12px}
-  .brand small{display:none}
+
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(26px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes fadeInDown{
+  from{opacity:0;transform:translateY(-16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes scaleIn{
+  from{opacity:0;transform:scale(.9) translateY(14px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+
+@keyframes popIn{
+  0%{opacity:0;transform:scale(.55)}
+  65%{opacity:1;transform:scale(1.08)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+@keyframes bounceIn{
+  0%{opacity:0;transform:translate(-50%,50px) scale(.9)}
+  55%{opacity:1;transform:translate(-50%,-8px) scale(1.02)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+
+@keyframes floaty{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-5px) rotate(-2deg)}
+}
+
+@keyframes pulseRing{
+  0%{box-shadow:0 0 0 0 rgba(122,31,31,.45)}
+  70%{box-shadow:0 0 0 14px rgba(122,31,31,0)}
+  100%{box-shadow:0 0 0 0 rgba(122,31,31,0)}
+}
+
+@keyframes badgePop{
+  0%{transform:scale(.4)}
+  55%{transform:scale(1.35)}
+  75%{transform:scale(.92)}
+  100%{transform:scale(1)}
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+@keyframes shimmerSweep{
+  0%{background-position:-150% 0}
+  100%{background-position:250% 0}
+}
+
+@keyframes wiggle{
+  0%,100%{transform:rotate(0deg)}
+  25%{transform:rotate(-4deg)}
+  75%{transform:rotate(4deg)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important
+  }
+}
+
+body{
+  margin:0;
+  min-width:0;
+  overflow-x:hidden;
+  font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+  background:var(--bg-grad);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .25s ease,color .25s ease
+}
+
+button{
+  font:inherit;
+  cursor:pointer
+}
+
+h1,h2,h3,.brand,.price{
+  font-family:"Markazi Text","IBM Plex Sans Arabic",Tahoma,serif
+}
+
+.top{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:var(--top-bg);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+  padding:calc(12px + env(safe-area-inset-top)) 4vw 12px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  animation:fadeInDown .5s ease both
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  font-weight:700;
+  font-size:19px;
+  letter-spacing:.2px;
+  color:var(--text)
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:linear-gradient(150deg,var(--accent),var(--accent-deep));
+  display:grid;
+  place-items:center;
+  color:#ffffff;
+  font-size:20px;
+  font-family:"Markazi Text",serif;
+  font-weight:700;
+  box-shadow:0 8px 16px -6px rgba(85,20,20,.4);
+  animation:floaty 3.2s ease-in-out infinite;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1)
+}
+
+.logo:hover{
+  transform:scale(1.1) rotate(8deg)
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap
+}
+
+.btn{
+  font-family:inherit;
+  font-size:15px;
+  font-weight:600;
+  line-height:1;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  padding:12px 18px;
+  border-radius:12px;
+  white-space:nowrap;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease
+}
+
+.btn:hover{
+  border-color:var(--ink-soft);
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.35);
+  transform:translateY(-2px)
+}
+
+.btn:active{
+  transform:translateY(1px) scale(.96)
+}
+
+.btn:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+
+.btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  box-shadow:none;
+  transform:none
+}
+
+.primary{
+  background:var(--ink);
+  color:var(--text-inverse);
+  border-color:var(--ink)
+}
+
+.gold{
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
+  border-color:var(--accent-deep);
+  font-weight:600;
+  animation:pulseRing 2.8s ease-in-out infinite
+}
+
+.gold:hover{
+  box-shadow:0 10px 22px -10px rgba(122,31,31,.55);
+  animation-play-state:paused
+}
+
+.hero{
+  min-height:340px;
+  padding:60px 7vw;
+  display:flex;
+  align-items:center;
+  background:var(--hero-grad);
+  color:var(--text);
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--line)
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(0deg,rgba(0,0,0,0),transparent 55%);
+  pointer-events:none
+}
+
+.hero>div{
+  position:relative
+}
+
+.hero h1{
+  font-weight:600;
+  font-size:clamp(38px,6.4vw,72px);
+  line-height:1.06;
+  margin:0 0 16px;
+  color:var(--text);
+  animation:fadeInUp .7s ease both;
+  animation-delay:.1s
+}
+
+.hero p{
+  max-width:620px;
+  color:var(--muted);
+  font-size:18px;
+  line-height:1.85;
+  animation:fadeInUp .7s ease both;
+  animation-delay:.22s
+}
+
+.badge{
+  display:inline-block;
+  border:1px solid #7a1f1f4d;
+  background:#7a1f1f14;
+  border-radius:999px;
+  padding:7px 14px;
+  color:var(--accent);
+  font-size:14px;
+  margin-bottom:16px;
+  animation:fadeInUp .6s ease both,pulseRing 2.6s ease-in-out 1s infinite
+}
+
+.container{
+  max-width:1250px;
+  margin:auto;
+  padding:30px 4vw
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:12px;
+  margin:6px 0 22px;
+  animation:fadeInUp .5s ease both
+}
+
+.section-title h2{
+  margin:0;
+  font-weight:600;
+  font-size:32px;
+  color:var(--text)
+}
+
+.section-title .muted{
+  color:var(--muted)
+}
+
+.muted{
+  color:var(--muted)
+}
+
+.categories{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:4px 2px 14px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity
+}
+
+.categories .chip{
+  scroll-snap-align:start
+}
+
+.categories::-webkit-scrollbar{
+  display:none
+}
+
+.chip{
+  flex:none;
+  white-space:nowrap;
+  padding:10px 20px;
+  margin:0;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink-soft);
+  border-radius:999px;
+  font-size:15px;
+  font-weight:500;
+  box-shadow:0 3px 10px -6px rgba(0,0,0,.2);
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  transition:color .15s ease,background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .2s cubic-bezier(.34,1.56,.64,1)
+}
+
+.categories .chip:nth-child(1){animation-delay:.02s}
+.categories .chip:nth-child(2){animation-delay:.06s}
+.categories .chip:nth-child(3){animation-delay:.1s}
+.categories .chip:nth-child(4){animation-delay:.14s}
+.categories .chip:nth-child(5){animation-delay:.18s}
+.categories .chip:nth-child(6){animation-delay:.22s}
+.categories .chip:nth-child(7){animation-delay:.26s}
+.categories .chip:nth-child(8){animation-delay:.3s}
+
+.chip:hover{
+  color:var(--text);
+  border-color:var(--ink-soft);
+  transform:translateY(-2px) scale(1.04)
+}
+
+.chip:active{
+  transform:scale(.94)
+}
+
+.chip:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+
+.chip.active{
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
+  border-color:var(--accent-deep);
+  font-weight:600;
+  box-shadow:0 10px 20px -10px rgba(122,31,31,.55)
+}
+
+.menu{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(235px,1fr));
+  gap:18px
+}
+
+.food{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  animation:fadeInUp .5s ease both;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease
+}
+
+.menu .food:nth-child(1){animation-delay:.03s}
+.menu .food:nth-child(2){animation-delay:.08s}
+.menu .food:nth-child(3){animation-delay:.13s}
+.menu .food:nth-child(4){animation-delay:.18s}
+.menu .food:nth-child(5){animation-delay:.23s}
+.menu .food:nth-child(6){animation-delay:.28s}
+.menu .food:nth-child(7){animation-delay:.33s}
+.menu .food:nth-child(8){animation-delay:.38s}
+.menu .food:nth-child(9){animation-delay:.43s}
+.menu .food:nth-child(10){animation-delay:.48s}
+.menu .food:nth-child(n+11){animation-delay:.5s}
+
+.food:hover{
+  transform:translateY(-8px) scale(1.015);
+  box-shadow:0 34px 70px -22px rgba(0,0,0,.65)
+}
+
+.food img{
+  width:100%;
+  height:170px;
+  object-fit:cover;
+  display:block;
+  transition:transform .5s cubic-bezier(.22,1,.36,1);
+  cursor:pointer
+}
+
+.food:hover img{
+  transform:scale(1.08)
+}
+
+.food h3{
+  margin:0 0 6px;
+  font-weight:600;
+  font-size:21px;
+  color:var(--text);
+  cursor:pointer;
+  transition:color .2s ease
+}
+
+.food-body{
+  padding:16px
+}
+
+.food:hover h3{
+  color:var(--accent-deep)
+}
+
+.price{
+  font-weight:600;
+  color:var(--accent-deep);
+  font-size:20px;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1)
+}
+
+.food:hover .price{
+  transform:scale(1.08)
+}
+
+.food-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin-top:14px
+}
+
+.cart{
+  position:fixed;
+  left:22px;
+  bottom:calc(22px + env(safe-area-inset-bottom));
+  z-index:30;
+  max-width:calc(100vw - 44px);
+  background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  color:#ffffff;
+  border:0;
+  border-radius:999px;
+  padding:14px 20px;
+  box-shadow:0 20px 45px -10px rgba(85,20,20,.45);
+  font-weight:700;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1)
+}
+
+.cart:hover{
+  transform:translateY(-3px) scale(1.03)
+}
+
+.cart:active{
+  transform:scale(.95)
+}
+
+.cart span{
+  background:var(--ink);
+  color:var(--text-inverse);
+  border-radius:999px;
+  padding:3px 8px;
+  margin-right:6px;
+  font-weight:700;
+  display:inline-block;
+  animation:badgePop .4s cubic-bezier(.34,1.56,.64,1) both
+}
+
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:var(--shadow);
+  margin-bottom:18px;
+  animation:fadeInUp .4s ease both
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:var(--modal-bg);
+  backdrop-filter:blur(3px);
+  z-index:50;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  animation:fadeIn .25s ease both
+}
+
+.modal-card{
+  width:min(650px,100%);
+  max-height:90vh;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--card);
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 50px 100px -25px rgba(0,0,0,.6);
+  animation:scaleIn .32s cubic-bezier(.22,1,.36,1) both
+}
+
+.modal-card h2{
+  font-weight:600;
+  font-size:26px;
+  color:var(--text)
+}
+
+.close{
+  float:left;
+  border:0;
+  background:color-mix(in srgb, var(--text) 8%, transparent);
+  color:var(--muted);
+  border-radius:50%;
+  width:34px;
+  height:34px;
+  font-size:16px;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background-color .2s ease
+}
+
+.close:hover{
+  transform:rotate(90deg) scale(1.08);
+  background:color-mix(in srgb, var(--text) 14%, transparent)
+}
+
+.cart-item{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:13px 0;
+  border-bottom:1px solid var(--line);
+  animation:fadeInUp .35s ease both
+}
+
+.qty{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+.qty button{
+  width:30px;
+  height:30px;
+  border:1px solid var(--line);
+  background:var(--card);
+  border-radius:8px;
+  color:var(--text);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),background-color .15s ease
+}
+
+.qty button:active{
+  transform:scale(.85)
+}
+
+.track{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:20px 0
+}
+
+.step{
+  height:7px;
+  border-radius:9px;
+  background:var(--step-bg)
+}
+
+.step.on{
+  background:var(--accent)
+}
+
+.status{
+  display:inline-block;
+  border-radius:999px;
+  padding:5px 11px;
+  font-size:12px;
+  font-weight:600;
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both
+}
+
+.s-new{
+  background:var(--status-new-bg);
+  color:var(--status-new-fg)
+}
+
+.s-prep{
+  background:var(--status-prep-bg);
+  color:var(--status-prep-fg)
+}
+
+.s-ready{
+  background:var(--status-ready-bg);
+  color:var(--status-ready-fg)
+}
+
+.s-served{
+  background:var(--status-served-bg);
+  color:var(--status-served-fg)
+}
+
+.s-paid{
+  background:var(--status-paid-bg);
+  color:var(--status-paid-fg)
+}
+
+.invoice-actions{
+  display:flex;
+  gap:8px;
+  margin-top:15px
+}
+
+.invoice-actions .btn{
+  flex:1
+}
+
+.unpaid-label{
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:700;
+  color:var(--accent);
+  background:#7a1f1f14;
+  border:1px solid #7a1f1f4d;
+  border-radius:999px;
+  padding:6px 12px
+}
+
+
+.qr-scan-box{text-align:center}
+#cashQrReader{width:100%;max-width:420px;margin:16px auto;overflow:hidden;border-radius:18px;border:1px solid var(--line)}
+.qr-scan-status{padding:12px;border-radius:12px;background:var(--qr-status-bg);color:var(--muted);font-weight:600;margin-top:10px}
+.qr-scan-actions{display:flex;gap:8px;margin-top:12px}
+.qr-scan-actions .btn{flex:1}
+
+.payment-loading{
+  padding:14px;
+  margin-top:12px;
+  border-radius:14px;
+  background:linear-gradient(90deg,var(--payment-loading-bg) 0%,var(--payment-loading-bg) 35%,#ffffff55 50%,var(--payment-loading-bg) 65%,var(--payment-loading-bg) 100%);
+  background-size:250% 100%;
+  color:var(--accent-deep);
+  text-align:center;
+  font-weight:600;
+  animation:shimmerSweep 1.6s linear infinite,fadeIn .3s ease both
+}
+
+.food-detail-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:16px;
+  display:block;
+  margin-bottom:16px;
+  animation:scaleIn .4s cubic-bezier(.22,1,.36,1) both
+}
+
+.food-detail-qty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin:20px 0
+}
+
+.food-detail-qty button{
+  width:44px;
+  height:44px;
+  border:1px solid var(--line);
+  background:var(--card);
+  border-radius:12px;
+  color:var(--text);
+  font-size:20px;
+  font-weight:700;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),background-color .15s ease
+}
+
+.food-detail-qty button:active{
+  transform:scale(.85)
+}
+
+.food-detail-qty span{
+  font-size:26px;
+  font-weight:700;
+  min-width:34px;
+  text-align:center;
+  display:inline-block;
+  animation:badgePop .3s cubic-bezier(.34,1.56,.64,1)
+}
+
+.food-detail-note{
+  width:100%;
+  min-height:70px;
+  resize:vertical;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  font-family:inherit;
+  font-size:16px;
+  line-height:1.6;
+  margin-top:6px
+}
+
+.food-detail-note:focus{
+  outline:2px solid var(--accent);
+  outline-offset:1px
+}
+
+.item-note{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px
+}
+
+.toast{
+  position:fixed;
+  bottom:calc(100px + env(safe-area-inset-bottom));
+  left:50%;
+  transform:translate(-50%,16px);
+  z-index:60;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  max-width:min(420px,90vw);
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--line);
+  border-inline-start:4px solid var(--accent);
+  border-radius:14px;
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .35s cubic-bezier(.34,1.56,.64,1),transform .35s cubic-bezier(.34,1.56,.64,1)
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+  pointer-events:auto;
+  animation:bounceIn .5s cubic-bezier(.34,1.56,.64,1)
+}
+
+.toast span{
+  font-size:14px;
+  line-height:1.7;
+  flex:1
+}
+
+.toast .toast-close{
+  flex:none;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:17px;
+  line-height:1;
+  padding:2px;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1)
+}
+
+.toast .toast-close:hover{
+  transform:rotate(90deg) scale(1.15)
+}
+
+@media(max-width:480px){
+  .toast{
+    bottom:calc(90px + env(safe-area-inset-bottom))
+  }
+}
+
+footer{
+  padding:40px 4vw calc(40px + env(safe-area-inset-bottom));
+  color:var(--muted);
+  text-align:center;
+  border-top:1px solid var(--line);
+  margin-top:20px
+}
+
+@media(max-width:600px){
+  .actions{
+    row-gap:10px
+  }
+
+  .invoice-actions,
+  .qr-scan-actions{
+    flex-wrap:wrap
+  }
+
+  #invoice > div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important
+  }
+}
+
+@media(max-width:480px){
+  .food img{
+    height:145px
+  }
+
+  .container{
+    padding:24px 4vw
+  }
+
+  .hero{
+    min-height:auto;
+    padding:38px 6vw 34px
+  }
+
+  .hero p{
+    font-size:16px;
+    line-height:1.7
+  }
+
+  .section-title{
+    flex-wrap:wrap
+  }
+
+  .section-title h2{
+    font-size:26px
+  }
+
+  .modal-card{
+    padding:18px;
+    border-radius:18px
+  }
+
+  .modal-card h2{
+    font-size:22px
+  }
+
+  .food-detail-img{
+    height:170px
+  }
+
+  .food-detail-qty{
+    gap:14px
+  }
+
+  .btn{
+    padding:11px 16px;
+    font-size:14px
+  }
+
+  .cart{
+    left:14px;
+    padding:12px 16px;
+    font-size:14px
+  }
+
+  .brand{
+    font-size:17px
+  }
+
+  .logo{
+    width:38px;
+    height:38px;
+    font-size:18px
+  }
 }
 </style>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
-<body><div id="app"></div>
+
+<body>
+<div id="app"></div>
+
 <script>
-const ICONS={
-  moon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-  sun:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-  globe:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>',
-  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-  close:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-  warn:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
-  clock:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>'
-};
+
 const CONFIG={
   SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
-  RESTAURANT_NAME:"RestoFlow", CURRENCY:"ج.م", TABLES:30,
-  QR_TABLE:"cashier_qr_codes",   // single seeded row, id = QR_ROW_ID, updated in place every hour
-  QR_ROW_ID:"00000000-0000-0000-0000-000000000001" // fixed uuid — see migration SQL
+  RESTAURANT_NAME:"RestoFlow",
+  CURRENCY:"ج.م",
+  DEFAULT_LANGUAGE:"ar"
 };
+
+const MENU=[
+  {
+    id:1,
+    name_ar:"برجر كلاسيك",
+    name_en:"Classic Burger",
+    cat:"burgers",
+    price:185,
+    description_ar:"قطعة لحم بقري مشوية، مع الخس والطماطم وصلصة المطعم الخاصة، داخل خبز طازج",
+    description_en:"Grilled beef patty with lettuce, tomato and house sauce in a fresh bun",
+    img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:2,
+    name_ar:"تشيز برجر",
+    name_en:"Cheese Burger",
+    cat:"burgers",
+    price:215,
+    description_ar:"البرجر الكلاسيكي، مضافاً إليه شرائح من جبن الشيدر الذائب",
+    description_en:"Our classic burger topped with melted cheddar cheese",
+    img:"https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:3,
+    name_ar:"بيتزا مارغريتا",
+    name_en:"Margherita Pizza",
+    cat:"pizza",
+    price:190,
+    description_ar:"صلصة طماطم إيطالية، جبن موزاريلا وريحان طازج، فوق عجينة رقيقة",
+    description_en:"Italian tomato sauce, mozzarella and fresh basil on a thin crust",
+    img:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:4,
+    name_ar:"بيتزا بيبروني",
+    name_en:"Pepperoni Pizza",
+    cat:"pizza",
+    price:230,
+    description_ar:"بيتزا المارغريتا، مغطاة بشرائح بيبروني حارة ومقرمشة",
+    description_en:"Margherita topped with crispy, spicy pepperoni slices",
+    img:"https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:5,
+    name_ar:"باستا ألفريدو",
+    name_en:"Alfredo Pasta",
+    cat:"pasta",
+    price:205,
+    description_ar:"باستا فيتوتشيني، بصلصة كريمية غنية وجبن البارميزان",
+    description_en:"Fettuccine tossed in a rich, creamy parmesan sauce",
+    img:"https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:6,
+    name_ar:"فراخ مشوية",
+    name_en:"Grilled Chicken",
+    cat:"mains",
+    price:260,
+    description_ar:"صدر دجاج متبل ومشوي على الفحم، يقدَّم مع طبق من الخضروات",
+    description_en:"Charcoal-grilled seasoned chicken breast, served with vegetables",
+    img:"https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:7,
+    name_ar:"سيزر سالاد",
+    name_en:"Caesar Salad",
+    cat:"salads",
+    price:145,
+    description_ar:"خس، دجاج مشوي، جبن بارميزان وقطع خبز محمّصة، مع صلصة السيزر",
+    description_en:"Grilled chicken, parmesan and croutons tossed in Caesar dressing",
+    img:"https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:8,
+    name_ar:"تشيز كيك",
+    name_en:"Cheesecake",
+    cat:"desserts",
+    price:120,
+    description_ar:"تشيز كيك كلاسيكي، بقاعدة من البسكويت وطبقة ناعمة من كريمة الجبن",
+    description_en:"Classic cheesecake with a biscuit base and smooth cream cheese layer",
+    img:"https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:9,
+    name_ar:"مولتن كيك",
+    name_en:"Molten Cake",
+    cat:"desserts",
+    price:135,
+    description_ar:"كيكة شوكولاتة ساخنة، بقلب سائل من الشوكولاتة الداكنة",
+    description_en:"Warm chocolate cake with a molten dark chocolate center",
+    img:"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=85"
+  },
+  {
+    id:10,
+    name_ar:"عصير مانجو",
+    name_en:"Mango Juice",
+    cat:"drinks",
+    price:75,
+    description_ar:"عصير مانجو طازج، بنسبة 100% من غير أي إضافات",
+    description_en:"100% fresh mango juice, no additives",
+    img:"https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=900&q=85"
+  }
+];
+
+const CAT={
+  all:["الكل","All"],
+  burgers:["البرجر","Burgers"],
+  pizza:["البيتزا","Pizza"],
+  pasta:["المكرونة","Pasta"],
+  mains:["الأطباق الرئيسية","Mains"],
+  salads:["السلطات","Salads"],
+  desserts:["الحلويات","Desserts"],
+  drinks:["المشروبات","Drinks"]
+};
+
+const params=new URLSearchParams(location.search);
+const appMode=params.get("mode")||"customer";
 
 let s={
-  lang:"ar", sb:null, theme:localStorage.getItem("rf_theme")||"light",
-  orders:[], loading:true, error:null,
-  qr:{code:null,expiresAt:null,issuedAt:null,loading:true},
-  now:new Date(),
-  selectedTable:null, drawerOpen:false
+  lang:CONFIG.DEFAULT_LANGUAGE,
+  menu:MENU,
+  cat:"all",
+  cart:[],
+  orders:[],
+  table:Number(params.get("table"))||null,
+  dark:false,
+  sb:null,
+  currentOrder:null,
+  mode:appMode
 };
+
 const t=(a,e)=>s.lang==="ar"?a:e;
-const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
-const clockTime=d=>d?d.toLocaleTimeString(s.lang==="ar"?"ar-EG":"en-US",{hour:"2-digit",minute:"2-digit"}):"—";
 
-/* ---------------- hourly QR code, updated in place ----------------
-   A single seeded row (id = QR_ROW_ID, a fixed uuid) holds the current
-   code. Every hour we overwrite that same row with a fresh code + new
-   expiry instead of inserting a new one — the table never grows. Two
-   cashier screens racing at the same moment both try to write;
-   whichever write lands last simply wins, and both screens re-read the
-   same row a moment later, so they stay in sync. Requires the
-   migration (seeds that row + adds an UPDATE policy). */
-function nextHourBoundary(d){
-  const n=new Date(d); n.setUTCMinutes(0,0,0); n.setUTCHours(n.getUTCHours()+1); return n;
-}
-function randomCode(len=8){
-  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars (0/O, 1/I)
-  const bytes=new Uint8Array(len);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes,b=>chars[b%chars.length]).join("");
-}
-async function ensureHourlyQR(){
-  if(!s.sb)return;
-  s.qr.loading=true; render();
-  try{
-    let {data,error}=await s.sb.from(CONFIG.QR_TABLE).select("*").eq("id",CONFIG.QR_ROW_ID).maybeSingle();
-    if(error) throw error;
-    const now=new Date();
-    if(!data || !data.expires_at || new Date(data.expires_at)<=now){
-      const expires=nextHourBoundary(now);
-      const {data:upserted,error:upErr}=await s.sb.from(CONFIG.QR_TABLE)
-        .upsert({id:CONFIG.QR_ROW_ID,code:randomCode(),expires_at:expires.toISOString()},{onConflict:"id"})
-        .select().maybeSingle();
-      if(upErr) throw upErr;
-      data=upserted;
-    }
-    const expiresAt=new Date(data.expires_at);
-    s.qr={code:data.code,expiresAt,issuedAt:new Date(expiresAt.getTime()-3600000),loading:false};
-    s.error=null;
-  }catch(e){
-    s.qr.loading=false;
-    s.error=e.message||String(e);
-  }
-  render();
-}
+const money=n=>
+  `${Number(n||0).toLocaleString(
+    s.lang==="ar"?"ar-EG":"en-US"
+  )} ${CONFIG.CURRENCY}`;
 
-/* ---------------- orders, grouped per table ---------------- */
-async function fetchOrders(){
-  if(!s.sb)return;
-  s.loading=true;
-  try{
-    const {data,error}=await s.sb.from("orders").select("*,order_items(*)")
-      .neq("status","paid").order("table_number",{ascending:true});
-    if(error)throw error;
-    s.orders=data||[];
-    s.error=null;
-  }catch(e){ s.error=e.message||String(e); }
-  s.loading=false;
-  render();
-}
-function ordersFor(n){ return s.orders.filter(o=>o.table_number===n); }
-function tableState(n){
-  const os=ordersFor(n);
-  if(!os.length) return "free";
-  if(os.some(o=>o.status==="served")) return "due";
-  return "active";
-}
-function tableDue(n){
-  return ordersFor(n).filter(o=>o.status==="served").reduce((a,o)=>a+Number(o.total||0),0);
-}
-function allDueTables(){
-  const set=new Set();
-  s.orders.forEach(o=>{ if(o.status==="served") set.add(o.table_number); });
-  return [...set];
-}
+const name=x=>
+  s.lang==="ar"
+    ?(x.name_ar||x.name||"Item")
+    :(x.name_en||x.name||"Item");
 
-/* cashier action: mark every served (unpaid) order on that table as paid */
-async function markTablePaid(n){
-  if(!s.sb)return;
-  const ids=ordersFor(n).filter(o=>o.status==="served").map(o=>o.id);
-  if(!ids.length)return;
-  const r=await s.sb.from("orders").update({status:"paid"}).in("id",ids);
-  if(r.error){ alert(r.error.message); return; }
-  s.drawerOpen=false; s.selectedTable=null;
-  await fetchOrders();
-}
-
-/* ---------------- render ---------------- */
-function header(){
-  return `<header class="top">
-    <div class="brand"><div class="mark">R</div><div class="names"><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة الكاشير","Cashier screen")}</small></div></div>
-    <div class="actions">
-      <span class="live-pill"><span class="dot"></span>${t("متصل مباشرة","Live")}</span>
-      <button class="btn icon" id="themeToggle">${s.theme==="dark"?ICONS.sun:ICONS.moon}</button>
-      <button class="btn" id="lang">${ICONS.globe}${s.lang==="ar"?"EN":"عربي"}</button>
-    </div>
-  </header>`;
-}
-function qrProgress(){
-  if(!s.qr.expiresAt||!s.qr.issuedAt) return 0;
-  const total=s.qr.expiresAt-s.qr.issuedAt;
-  const left=s.qr.expiresAt-s.now;
-  return Math.max(0,Math.min(100,(left/total)*100));
-}
-function fmtCountdown(){
-  if(!s.qr.expiresAt)return "—";
-  const ms=s.qr.expiresAt-s.now;
-  if(ms<=0)return t("جارِ التجديد…","Refreshing…");
-  const m=Math.floor(ms/60000), sec=Math.floor((ms%60000)/1000);
-  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
-}
-function strip(){
-  const dueTables=allDueTables();
-  const totalDue=dueTables.reduce((a,n)=>a+tableDue(n),0);
-  const dueOrders=s.orders.filter(o=>o.status==="served").length;
-  const soon=s.qr.expiresAt && (s.qr.expiresAt-s.now)<60000;
-  return `<div class="strip">
-    <div class="stat c-brick"><div class="lbl"><i></i>${t("ترابيزات محتاجة تحصيل","Tables awaiting payment")}</div><b>${dueTables.length}</b></div>
-    <div class="stat c-amber"><div class="lbl"><i></i>${t("إجمالي المطلوب تحصيله","Total due now")}</div><b>${money(totalDue)}</b></div>
-    <div class="stat c-sage"><div class="lbl"><i></i>${t("عدد الطلبات المستحقة","Orders awaiting payment")}</div><b>${dueOrders}</b></div>
-    <div class="qr-card">
-      <div class="qr-info">
-        <div class="lbl"><i></i>${t("كود الدفع الكاش","Cash-payment code")}</div>
-        ${s.qr.loading?`<div class="qr-code loading">${t("جارِ التحميل…","Loading…")}</div>`
-          :`<div class="qr-code tnum">${s.qr.code||"—"}</div>
-            <div class="qr-meta">
-              <span class="qr-until">${t("سارٍ لحد الساعة","Valid until")} <b>${clockTime(s.qr.expiresAt)}</b></span>
-              <span class="qr-count${soon?" warn":""}" id="qrCount">${ICONS.clock}<span class="tnum">${fmtCountdown()}</span></span>
-            </div>
-            <div class="qr-bar"><div class="qr-bar-fill${soon?" warn":""}" id="qrBar" style="width:${qrProgress()}%"></div></div>`}
-      </div>
-      <div class="qr-box" id="qrBox"></div>
-    </div>
-  </div>`;
-}
-function tile(n){
-  const state=tableState(n);
-  const due=state==="due"?tableDue(n):0;
-  const selected=s.selectedTable===n?" selected":"";
-  const label=state==="due"?t("جاهزة للتحصيل","Ready to collect"):state==="active"?t("عليها طلب","Order placed"):t("متاحة","Available");
-  return `<button class="tile ${state}${selected}" data-table="${n}">
-    <div class="num">${n}</div>
-    <div class="status"><i></i>${label}</div>
-    ${state==="due"?`<div class="amt tnum">${money(due)}</div>`:""}
-  </button>`;
-}
-function tablesSection(){
-  const tiles=Array.from({length:CONFIG.TABLES},(_,i)=>i+1).map(tile).join("");
-  return `<div class="section-title">
-      <h2>${t("الترابيزات","Tables")}</h2>
-      <div class="legend">
-        <span class="free"><i></i>${t("متاحة","Available")}</span>
-        <span class="active"><i></i>${t("عليها طلب","Order placed")}</span>
-        <span class="due"><i></i>${t("جاهزة للتحصيل","Ready to collect")}</span>
-      </div>
-    </div>
-    <div class="grid">${s.loading?`<div class="empty-note">${t("جارِ التحميل…","Loading…")}</div>`:tiles}</div>`;
-}
-function drawer(){
-  const n=s.selectedTable;
-  const open=s.drawerOpen&&n;
-  if(!n) return `<div class="scrim"></div><div class="drawer"></div>`;
-  const os=ordersFor(n);
-  const due=tableDue(n);
-  const hasDue=os.some(o=>o.status==="served");
-  const body=os.length?os.map(o=>{
-    const items=(o.order_items||[]).map(i=>`<div class="item-row"><span>${i.name_ar||i.name||i.name_en}</span><b>×${i.quantity}</b></div>`).join("");
-    return `<div class="order-block">
-      <div class="oh"><span class="badge ${o.status==='served'?'served':'active'}">${o.status==='served'?t('جاهز للدفع','Ready to pay'):t('جاري التحضير','In progress')}</span><span class="tnum">${money(o.total)}</span></div>
-      ${items||`<div class="item-row">${t("لا توجد تفاصيل","No item details")}</div>`}
-    </div>`;
-  }).join(""):`<div class="drawer-empty">${t("مفيش طلبات مفتوحة على الترابيزة دي دلوقتي","No open orders on this table right now")}</div>`;
-  return `<div class="scrim${open?" open":""}" id="scrim"></div>
-  <div class="drawer${open?" open":""}">
-    <div class="drawer-head">
-      <div><h3>${t("ترابيزة","Table")} ${n}</h3><div class="st">${os.length} ${t("طلب","order(s)")}</div></div>
-      <button class="drawer-close" id="drawerClose">${ICONS.close}</button>
-    </div>
-    <div class="drawer-body">${body}</div>
-    ${hasDue?`<div class="drawer-foot">
-      <div class="drawer-total"><span>${t("الإجمالي المطلوب","Total due")}</span><span class="tnum">${money(due)}</span></div>
-      <button class="btn pay" id="drawerPay">${ICONS.check}${t("تسجيل الدفع","Mark table as paid")}</button>
-    </div>`:""}
-  </div>`;
-}
-function main(){
-  return header()+`<main class="container">
-    ${s.error?`<div class="banner">${ICONS.warn}<span>${t("حصل خطأ:","Error:")} ${s.error}</span><button class="x" id="dismissErr">${ICONS.close}</button></div>`:""}
-    ${strip()}
-    ${tablesSection()}
-  </main>
-  <footer>RestoFlow Cashier</footer>${drawer()}`;
-}
-function renderQRCode(){
-  const box=document.getElementById("qrBox");
-  if(!box || !s.qr.code)return;
-  box.innerHTML="";
-  new QRCode(box,{text:s.qr.code,width:80,height:80});
-}
-function bind(){
-  document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
-  document.getElementById("themeToggle")?.addEventListener("click",()=>{
-    s.theme=s.theme==="dark"?"light":"dark"; localStorage.setItem("rf_theme",s.theme); render();
-  });
-  document.getElementById("dismissErr")?.addEventListener("click",()=>{s.error=null;render()});
-  document.querySelectorAll("[data-table]").forEach(b=>{
-    b.onclick=()=>{ s.selectedTable=Number(b.dataset.table); s.drawerOpen=true; render(); };
-  });
-  document.getElementById("drawerClose")?.addEventListener("click",()=>{ s.drawerOpen=false; render(); });
-  document.getElementById("scrim")?.addEventListener("click",()=>{ s.drawerOpen=false; render(); });
-  document.getElementById("drawerPay")?.addEventListener("click",(e)=>{
-    e.target.disabled=true; e.target.textContent=t("جارِ التسجيل…","Saving…");
-    markTablePaid(s.selectedTable);
-  });
-}
-function render(){
-  document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
-  document.documentElement.setAttribute("data-theme",s.theme);
-  document.getElementById("app").innerHTML=main();
-  bind();
-  renderQRCode();
-}
 
 async function init(){
+
+  const savedTheme=localStorage.getItem("restoflow_theme");
+  s.dark=savedTheme==="dark";
+  applyTheme();
+
   if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
-    s.sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY);
-    await Promise.all([ensureHourlyQR(),fetchOrders()]);
-    let debounce=null;
-    s.sb.channel("rf-cashier-live")
-      .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{
-        clearTimeout(debounce); debounce=setTimeout(fetchOrders,500);
-      })
+
+    s.sb=supabase.createClient(
+      CONFIG.SUPABASE_URL,
+      CONFIG.SUPABASE_ANON_KEY
+    );
+
+    await loadMenu();
+    await loadOrders(false);
+
+    s.sb.channel("rf-live")
+
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"orders"
+        },
+        async()=>{
+          await loadOrders(false);
+        }
+      )
+
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"order_items"
+        },
+        async()=>{
+          await loadOrders(false);
+        }
+      )
+
+      .on(
+        "postgres_changes",
+        {
+          event:"*",
+          schema:"public",
+          table:"menu_items"
+        },
+        async()=>{
+          await loadMenu();
+        }
+      )
+
       .subscribe();
-  }else{
-    render();
   }
-  // once a second: tick the countdown text + progress bar; only trigger
-  // a full QR refresh + re-render when the current code actually expires
-  setInterval(()=>{
-    s.now=new Date();
-    if(s.qr.expiresAt && s.now>=s.qr.expiresAt){ ensureHourlyQR(); return; }
-    const bar=document.getElementById("qrBar");
-    const warn=s.qr.expiresAt && (s.qr.expiresAt-s.now)<60000;
-    if(bar){ bar.style.width=qrProgress()+"%"; bar.classList.toggle("warn",warn); }
-    const cnt=document.getElementById("qrCount");
-    if(cnt){ cnt.innerHTML=`${ICONS.clock}<span class="tnum">${fmtCountdown()}</span>`; cnt.classList.toggle("warn",warn); }
-  },1000);
+
+  render();
+  setTimeout(handlePaymentReturn, 500);
 }
 
+
+function applyTheme(){
+  document.documentElement.classList.toggle("dark", s.dark);
+
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta){
+    meta.setAttribute(
+      "content",
+      s.dark ? "#16140f" : "#f6f2ea"
+    );
+  }
+}
+
+
+async function loadMenu(){
+
+  if(!s.sb)return;
+
+  const r=await s.sb
+    .from("menu_items")
+    .select("*")
+    .eq("active",true)
+    .order("sort_order");
+
+  if(!r.error && r.data && r.data.length){
+    s.menu=r.data.map(row=>({
+      ...row,
+      cat:row.cat||row.category||row.cat_key||"all"
+    }));
+  }
+}
+
+
+async function loadOrders(renderAfter=true){
+
+  if(!s.sb)return;
+
+  let q=s.sb
+    .from("orders")
+    .select("*,order_items(*)")
+    .order("created_at",{ascending:false})
+    .limit(100);
+
+  if(s.table && s.mode==="customer"){
+    q=q.eq("table_number",s.table);
+  }
+
+  const r=await q;
+
+  if(!r.error && r.data){
+    s.orders=r.data;
+  }
+
+  if(renderAfter){
+    render();
+  }
+}
+
+
+function header(){
+
+  return `
+    <header class="top">
+
+      <div class="brand">
+
+        <div class="logo">R</div>
+
+        <div>
+          ${CONFIG.RESTAURANT_NAME}
+
+          <small
+            class="muted"
+            style="display:block;font-weight:400"
+          >
+            ${t(
+              "تجربة طعام أكثر ذكاءً",
+              "Smarter restaurant experience"
+            )}
+          </small>
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button class="btn" id="lang">
+          ${s.lang==="ar"?"EN":"عربي"}
+        </button>
+
+        <button class="btn" id="theme">
+          ${s.dark?"☀️":"🌙"}
+        </button>
+
+      </div>
+
+    </header>
+  `;
+}
+
+
+function customer(){
+
+  const unpaidCount=
+    s.orders.filter(
+      o=>
+        (
+          !s.table ||
+          Number(o.table_number)===
+          Number(s.table)
+        ) &&
+        o.payment_status!=="paid" &&
+        o.status!=="paid"
+    ).length;
+
+  return header()+`
+
+  <section class="hero">
+
+    <div>
+
+      <span class="badge">
+        ${t("الترابيزة","TABLE")} ${s.table||"—"} •
+        ${t(
+          "اطلب من هاتفك",
+          "ORDER FROM YOUR PHONE"
+        )}
+      </span>
+
+      <h1>
+        ${t(
+          "قائمة المطعم<br>بين يديك.",
+          "Your menu.<br>In your hands."
+        )}
+      </h1>
+
+      <p>
+        ${t(
+          "اختر طلبك، عدّله كما تشاء، تابع حالة تحضيره في المطبخ، واطّلع على فاتورتك — كل ذلك من خلال رمز الاستجابة السريعة نفسه.",
+          "Choose, customize, track and view your bill — all from the same QR."
+        )}
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <main class="container">
+
+    <div class="section-title">
+
+      <div>
+
+        <h2>
+          ${t("القائمة","Menu")}
+        </h2>
+
+        <div class="muted">
+          ${t(
+            "أطباق طازجة تُحضَّر بسرعة وتُقدَّم على ذوقك",
+            "Fresh, fast, your way"
+          )}
+        </div>
+
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+        <button class="btn" id="orders">
+          ${t("طلباتي","My orders")}
+        </button>
+
+        ${
+          unpaidCount
+            ?`<span class="unpaid-label">${t("لم يتم الدفع","Not paid")}</span>`
+            :""
+        }
+
+      </div>
+
+    </div>
+
+
+    <div class="categories">
+
+      ${Object.entries(CAT).map(
+        ([k,v])=>`
+
+          <button
+            class="chip ${s.cat===k?"active":""}"
+            data-cat="${k}"
+          >
+            ${t(v[0],v[1])}
+          </button>
+
+        `
+      ).join("")}
+
+    </div>
+
+
+    <div
+      class="menu"
+      style="margin-top:18px"
+    >
+
+      ${s.menu
+        .filter(
+          x=>s.cat==="all"||x.cat===s.cat
+        )
+        .map(food)
+        .join("")
+      }
+
+    </div>
+
+  </main>
+
+  `;
+}
+
+
+function food(x){
+
+  return `
+    <article class="food">
+
+      <img
+        src="${x.img||x.image_url||""}"
+        alt=""
+        data-open="${x.id}"
+      >
+
+      <div class="food-body">
+
+        <h3 data-open="${x.id}">
+          ${name(x)}
+        </h3>
+
+        <div class="muted">
+          ${
+            s.lang==="ar"
+              ?(
+                x.description_ar||
+                "اختيار شهي من إعداد الشيف"
+              )
+              :(
+                x.description_en||
+                "A delicious chef selection"
+              )
+          }
+        </div>
+
+        <div class="food-row">
+
+          <span class="price">
+            ${money(x.price)}
+          </span>
+
+          <button
+            class="btn gold"
+            data-add="${x.id}"
+          >
+            + ${t("إضافة","Add")}
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+function bind(){
+
+  document
+    .getElementById("lang")
+    ?.addEventListener(
+      "click",
+      ()=>{
+        s.lang=s.lang==="ar"?"en":"ar";
+        render();
+      }
+    );
+
+
+  document
+    .getElementById("theme")
+    ?.addEventListener(
+      "click",
+      ()=>{
+        s.dark=!s.dark;
+
+        localStorage.setItem(
+          "restoflow_theme",
+          s.dark?"dark":"light"
+        );
+
+        applyTheme();
+        render();
+      }
+    );
+
+
+  document
+    .querySelectorAll("[data-cat]")
+    .forEach(
+      b=>
+        b.onclick=()=>{
+          s.cat=b.dataset.cat;
+          render();
+        }
+    );
+
+
+  document
+    .querySelectorAll("[data-add]")
+    .forEach(
+      b=>
+        b.onclick=()=>add(
+          +b.dataset.add
+        )
+    );
+
+
+  document
+    .querySelectorAll("[data-open]")
+    .forEach(
+      el=>
+        el.onclick=()=>foodDetail(
+          +el.dataset.open
+        )
+    );
+
+
+  document
+    .getElementById("orders")
+    ?.addEventListener(
+      "click",
+      ordersModal
+    );
+}
+
+
+function updateCartButton(){
+
+  const count=
+    s.cart.reduce(
+      (a,x)=>a+x.qty,
+      0
+    );
+
+  let btn=
+    document.getElementById("cart");
+
+  if(!s.cart.length){
+    btn?.remove();
+    return;
+  }
+
+  if(btn){
+
+    btn.innerHTML=`
+      🛒 ${t("السلة","Cart")}
+      <span>${count}</span>
+    `;
+
+  }else{
+
+    btn=
+      document.createElement("button");
+
+    btn.className="cart";
+    btn.id="cart";
+
+    btn.innerHTML=`
+      🛒 ${t("السلة","Cart")}
+      <span>${count}</span>
+    `;
+
+    btn.addEventListener(
+      "click",
+      cartModal
+    );
+
+    document.body.appendChild(btn);
+
+  }
+}
+
+
+function add(id,qty=1){
+
+  let f=s.menu.find(
+    x=>+x.id===id
+  );
+
+  if(!f)return;
+
+  let wasEmpty=s.cart.length===0;
+
+  let q=s.cart.find(
+    x=>+x.id===id
+  );
+
+  if(q){
+    q.qty+=qty;
+  }else{
+    s.cart.push({
+      id,
+      qty
+    });
+  }
+
+  updateCartButton();
+
+  if(wasEmpty)showOrderReminder();
+}
+
+
+function setCartItem(id,qty,note=""){
+
+  let wasEmpty=s.cart.length===0;
+
+  let i=s.cart.findIndex(
+    x=>+x.id===id
+  );
+
+  if(qty<=0){
+    if(i>-1)s.cart.splice(i,1);
+  }else if(i>-1){
+    s.cart[i].qty=qty;
+    s.cart[i].note=note||"";
+  }else{
+    s.cart.push({id,qty,note:note||""});
+  }
+
+  updateCartButton();
+
+  if(wasEmpty && qty>0)showOrderReminder();
+}
+
+
+function showOrderReminder(){
+
+  showToast(
+    t(
+      "✅ تمت إضافة الصنف إلى طلبك بنجاح. عند الانتهاء من اختيار كل ما ترغبون به، يُرجى التكرّم بالضغط على زر «إرسال الطلب إلى المطبخ» لإتمام عملية الطلب.",
+      "✅ Item added to your order. Once you have finished selecting everything you would like, kindly tap the “Send to kitchen” button to complete your order."
+    )
+  );
+}
+
+
+function showToast(message){
+
+  document
+    .querySelectorAll(".toast")
+    .forEach(el=>el.remove());
+
+  let el=document.createElement("div");
+
+  el.className="toast";
+
+  el.innerHTML=`
+    <span>${message}</span>
+    <button class="toast-close" aria-label="close">×</button>
+  `;
+
+  document.body.appendChild(el);
+
+  requestAnimationFrame(
+    ()=>el.classList.add("show")
+  );
+
+  const close=()=>{
+    el.classList.remove("show");
+    setTimeout(()=>el.remove(),300);
+  };
+
+  el.querySelector(".toast-close")
+    .onclick=close;
+
+  setTimeout(close,6000);
+}
+
+
+function modal(content){
+
+  let d=document.createElement("div");
+
+  d.className="modal";
+
+  d.innerHTML=`
+    <div class="modal-card">
+
+      <button class="close">
+        ×
+      </button>
+
+      ${content}
+
+    </div>
+  `;
+
+  d.querySelector(".close")
+    .onclick=()=>d.remove();
+
+  d.onclick=e=>{
+    if(e.target===d){
+      d.remove();
+    }
+  };
+
+  document.body.appendChild(d);
+
+  return d;
+}
+
+
+function foodDetail(id){
+
+  let f=s.menu.find(
+    x=>+x.id===id
+  );
+
+  if(!f)return;
+
+  let inCart=s.cart.find(
+    x=>+x.id===id
+  );
+
+  let qty=inCart?inCart.qty:1;
+
+  const d=modal(`
+
+    <img
+      class="food-detail-img"
+      src="${f.img||f.image_url||""}"
+      alt=""
+    >
+
+    <h2>
+      ${name(f)}
+    </h2>
+
+    <p class="muted">
+      ${
+        s.lang==="ar"
+          ?(
+            f.description_ar||
+            "اختيار شهي من إعداد الشيف"
+          )
+          :(
+            f.description_en||
+            "A delicious chef selection"
+          )
+      }
+    </p>
+
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-top:6px
+      "
+    >
+      <span class="price">
+        ${money(f.price)}
+      </span>
+    </div>
+
+    <div class="food-detail-qty">
+
+      <button id="fdMinus">−</button>
+
+      <span id="fdQty">${qty}</span>
+
+      <button id="fdPlus">+</button>
+
+    </div>
+
+    <div
+      class="muted"
+      style="text-align:center;margin-bottom:14px"
+    >
+      ${t("الإجمالي","Total")}:
+      <b id="fdTotal">${money(f.price*qty)}</b>
+    </div>
+
+    <label
+      class="muted"
+      style="font-size:14px;font-weight:600"
+    >
+      ${t(
+        "ملاحظات على الطلب (اختياري)",
+        "Order notes (optional)"
+      )}
+    </label>
+
+    <textarea
+      id="fdNote"
+      class="food-detail-note"
+      placeholder="${t(
+        "مثال: من غير بصل، صوص إضافي، ماحدش زيادة...",
+        "e.g. no onions, extra sauce, not too spicy..."
+      )}"
+    >${inCart?.note||""}</textarea>
+
+    <button
+      class="btn gold"
+      style="width:100%;margin-top:14px"
+      id="fdConfirm"
+    >
+      ${
+        inCart
+          ?t("تحديث السلة","Update cart")
+          :t("إضافة إلى السلة","Add to cart")
+      }
+    </button>
+
+  `);
+
+
+  const qtyEl=d.querySelector("#fdQty");
+  const totalEl=d.querySelector("#fdTotal");
+
+  const refresh=()=>{
+    qtyEl.textContent=qty;
+    totalEl.textContent=money(f.price*qty);
+    d.querySelector("#fdMinus").disabled=qty<=1;
+  };
+
+  refresh();
+
+  d.querySelector("#fdMinus")
+    .onclick=()=>{
+      if(qty>1){
+        qty--;
+        refresh();
+      }
+    };
+
+  d.querySelector("#fdPlus")
+    .onclick=()=>{
+      qty++;
+      refresh();
+    };
+
+  d.querySelector("#fdConfirm")
+    .onclick=()=>{
+      const note=
+        d.querySelector("#fdNote")
+          .value.trim();
+
+      setCartItem(id,qty,note);
+
+      d.remove();
+    };
+}
+
+
+function cartModal(){
+
+  let d=modal(`
+    <h2>
+      ${t("سلة الطلب","Your order")}
+    </h2>
+
+    <div>
+
+      ${s.cart.map((x,i)=>{
+
+        let f=s.menu.find(
+          m=>+m.id===+x.id
+        );
+
+        return `
+          <div class="cart-item">
+
+            <span>
+
+              <b>
+                ${name(f)}
+              </b>
+
+              <br>
+
+              ${money(f.price)} × ${x.qty}
+
+              ${
+                x.note
+                  ?`<span class="item-note">📝 ${x.note}</span>`
+                  :""
+              }
+
+              <button
+                class="btn"
+                style="padding:5px 12px;font-size:12px;margin-top:6px"
+                data-note="${x.id}"
+              >
+                ${
+                  x.note
+                    ?t("تعديل الملاحظة","Edit note")
+                    :t("إضافة ملاحظة","Add note")
+                }
+              </button>
+
+            </span>
+
+            <span class="qty">
+
+              <button data-dec="${i}">
+                −
+              </button>
+
+              ${x.qty}
+
+              <button data-inc="${i}">
+                +
+              </button>
+
+            </span>
+
+          </div>
+        `;
+
+      }).join("")}
+
+    </div>
+
+
+    <button
+      class="btn gold"
+      style="width:100%;margin-top:16px"
+      id="send"
+    >
+      ${t(
+        "إرسال الطلب إلى المطبخ",
+        "Send to kitchen"
+      )}
+    </button>
+  `);
+
+
+  d.querySelectorAll("[data-note]")
+    .forEach(
+      b=>
+        b.onclick=()=>{
+          d.remove();
+          foodDetail(+b.dataset.note);
+        }
+    );
+
+
+  d.querySelectorAll("[data-inc]")
+    .forEach(
+      b=>
+        b.onclick=()=>{
+          s.cart[
+            +b.dataset.inc
+          ].qty++;
+
+          d.remove();
+
+          cartModal();
+        }
+    );
+
+
+  d.querySelectorAll("[data-dec]")
+    .forEach(
+      b=>
+        b.onclick=()=>{
+          let i=+b.dataset.dec;
+
+          s.cart[i].qty--;
+
+          if(s.cart[i].qty<=0){
+            s.cart.splice(i,1);
+          }
+
+          d.remove();
+
+          updateCartButton();
+
+          if(s.cart.length){
+            cartModal();
+          }
+        }
+    );
+
+
+  d.querySelector("#send")
+    .onclick=()=>place(d);
+}
+
+
+async function place(d){
+
+  if(!s.table){
+
+    alert(
+      t(
+        "هذا الرابط غير مرتبط بترابيزة.",
+        "This link is not assigned to a table."
+      )
+    );
+
+    return;
+  }
+
+
+  let items=s.cart.map(x=>{
+
+    let f=s.menu.find(
+      m=>+m.id===+x.id
+    );
+
+    const noteSuffix_ar=
+      x.note
+        ?` (ملاحظة: ${x.note})`
+        :"";
+
+    const noteSuffix_en=
+      x.note
+        ?` (note: ${x.note})`
+        :"";
+
+    return {
+
+      menu_item_id:f.id,
+
+      name:
+        (f.name_en||f.name_ar)+
+        noteSuffix_en,
+
+      name_ar:
+        f.name_ar+
+        noteSuffix_ar,
+
+      name_en:
+        f.name_en+
+        noteSuffix_en,
+
+      price:f.price,
+
+      quantity:x.qty
+    };
+
+  });
+
+
+  let total=items.reduce(
+    (a,i)=>
+      a+
+      Number(i.price)*
+      Number(i.quantity),
+    0
+  );
+
+
+  let o={
+    id:"LOCAL-"+Date.now(),
+    table_number:s.table,
+    total,
+    status:"new",
+    order_items:items
+  };
+
+
+  if(s.sb){
+
+    let sessionId=null;
+
+
+    const sr=
+      await s.sb
+        .from("table_sessions")
+        .select("id")
+        .eq("table_number",s.table)
+        .eq("status","open")
+        .order(
+          "opened_at",
+          {ascending:false}
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+    if(sr.error){
+
+      alert(
+        t(
+          "حدث خطأ أثناء جلب جلسة الترابيزة: ",
+          "Error fetching the table session: "
+        )+
+        sr.error.message
+      );
+
+      return;
+    }
+
+
+    if(sr.data){
+
+      sessionId=sr.data.id;
+
+    }else{
+
+      const ns=
+        await s.sb
+          .from("table_sessions")
+          .insert({
+            table_number:s.table,
+            status:"open"
+          })
+          .select("id")
+          .single();
+
+
+      if(ns.error){
+
+        alert(
+          t(
+            "حدث خطأ أثناء إنشاء جلسة الترابيزة: ",
+            "Error creating the table session: "
+          )+
+          ns.error.message
+        );
+
+        return;
+      }
+
+      sessionId=ns.data.id;
+    }
+
+
+    const r=
+      await s.sb
+        .from("orders")
+        .insert({
+          table_number:s.table,
+          session_id:sessionId,
+          total,
+          status:"new"
+        })
+        .select()
+        .single();
+
+
+    if(r.error){
+
+      alert(r.error.message);
+
+      return;
+    }
+
+
+    o.id=r.data.id;
+    o.session_id=sessionId;
+
+
+    const ri=
+      await s.sb
+        .from("order_items")
+        .insert(
+          items.map(
+            i=>({
+              ...i,
+              order_id:o.id
+            })
+          )
+        );
+
+
+    if(ri.error){
+
+      alert(ri.error.message);
+
+      return;
+    }
+
+  }
+
+
+  s.orders.unshift(o);
+
+  s.cart=[];
+
+  s.currentOrder=o;
+
+  d.remove();
+
+  tracking(o);
+
+  render();
+}
+
+
+function tracking(o){
+
+  let d=modal(`
+
+    <h2>
+
+      ${t(
+        "وصل طلبك إلى المطبخ 🔥",
+        "Your order is in the kitchen 🔥"
+      )}
+
+    </h2>
+
+
+    <p class="muted">
+      #${o.id} •
+      ${t("الترابيزة","Table")}
+      ${o.table_number}
+    </p>
+
+
+    <button
+      class="btn"
+      style="width:100%;margin-top:8px"
+      id="sentConfirm"
+    >
+      ✓
+      ${t(
+        "تم إرسال الطلب إلى المطبخ",
+        "Order sent to the kitchen"
+      )}
+    </button>
+
+
+    <button
+      class="btn gold"
+      style="width:100%;margin-top:10px"
+      id="bill"
+    >
+      🧾
+      ${t(
+        "الفاتورة / الدفع",
+        "Bill / Payment"
+      )}
+    </button>
+
+  `);
+
+
+  d.querySelector("#sentConfirm")
+    .onclick=()=>d.remove();
+
+
+  d.querySelector("#bill")
+    .onclick=()=>{
+      d.remove();
+      bill(o);
+    };
+}
+
+
+function ordersModal(){
+
+  const os=
+    s.orders.filter(
+      o=>
+        (
+          !s.table ||
+          Number(o.table_number)===
+          Number(s.table)
+        ) &&
+        o.payment_status!=="paid" &&
+        o.status!=="paid"
+    );
+
+
+  const content=`
+
+    <h2>
+      ${t(
+        "طلبات الترابيزة",
+        "Table orders"
+      )}
+    </h2>
+
+
+    ${
+      os.length
+        ?os.map(o=>`
+
+          <div class="panel">
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px
+              "
+            >
+
+              <b>
+                #${o.id}
+              </b>
+
+              <span
+                class="status ${
+                  o.status==="paid"
+                    ?"s-paid"
+                    :o.status==="ready"
+                      ?"s-ready"
+                      :o.status==="preparing"
+                        ?"s-prep"
+                        :"s-new"
+                }"
+              >
+                ${
+                  o.status==="paid"
+                    ?t("مدفوع","Paid")
+                    :o.status==="ready"
+                      ?t("جاهز","Ready")
+                      :o.status==="preparing"
+                        ?t("قيد التحضير","Preparing")
+                        :t("جديد","New")
+                }
+              </span>
+
+            </div>
+
+
+            <p class="muted">
+
+              ${(o.order_items||[])
+                .map(
+                  i=>
+                    (
+                      i.name_ar||
+                      i.name||
+                      i.name_en
+                    )+
+                    " × "+
+                    i.quantity
+                )
+                .join(" • ")
+              }
+
+            </p>
+
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center
+              "
+            >
+
+              <strong>
+                ${money(o.total)}
+              </strong>
+
+              <button
+                class="btn gold"
+                data-open-bill="${o.id}"
+              >
+                ${t(
+                  "الفاتورة",
+                  "Invoice"
+                )}
+              </button>
+
+            </div>
+
+          </div>
+
+        `).join("")
+        :`
+          <p class="muted">
+            ${t(
+              "لا توجد طلبات في الوقت الحالي.",
+              "No orders yet."
+            )}
+          </p>
+        `
+    }
+
+  `;
+
+
+  const d=modal(content);
+
+
+  d.querySelectorAll(
+    "[data-open-bill]"
+  ).forEach(
+    b=>
+      b.onclick=()=>{
+
+        const o=s.orders.find(
+          x=>
+            String(x.id)===
+            String(
+              b.dataset.openBill
+            )
+        );
+
+        if(o){
+
+          d.remove();
+
+          bill(o);
+
+        }
+
+      }
+  );
+}
+
+
+
+function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
+  if(!s.sb){
+    alert(t("تعذّر الاتصال بقاعدة البيانات Supabase.","Supabase is not connected."));
+    originalBtn.disabled=false;
+    return;
+  }
+
+  originalBtn.disabled=true;
+  note.className="payment-loading";
+  note.textContent=t(
+    "تم مسح رمز الجرسون بنجاح ✓، جارٍ تسجيل الدفع نقداً...",
+    "Waiter QR scanned ✓ Registering cash payment..."
+  );
+
+  s.sb.from("orders").update({
+    payment_status:"paid",
+    payment_method:"cash",
+    paid_at:new Date().toISOString()
+  }).eq("id",o.id).then(r=>{
+    if(r.error){
+      originalBtn.disabled=false;
+      note.className="muted";
+      note.textContent=r.error.message;
+      return;
+    }
+
+    // Cash is considered paid immediately after the waiter QR is scanned.
+    // Keep the kitchen order status unchanged.
+    o.payment_status="paid";
+    o.payment_method="cash";
+    o.paid_at=new Date().toISOString();
+
+    invoiceModal.remove();
+    render();
+    bill(o);
+  });
+}
+
+async function cashQrScanner(o,invoiceModal,note,originalBtn){
+  const scanModal=modal(`
+    <div class="qr-scan-box" dir="${s.lang==="ar"?"rtl":"ltr"}">
+      <h2>${t("تأكيد الدفع النقدي","Confirm cash payment")}</h2>
+      <p class="muted">${t(
+        "يرجى تفعيل الكاميرا ومسح رمز الجرسون المطبوع.",
+        "Open the camera and scan the printed waiter QR."
+      )}</p>
+      <div id="cashQrReader"></div>
+      <div id="cashQrStatus" class="qr-scan-status">${t(
+        "يرجى توجيه الكاميرا نحو رمز الجرسون...",
+        "Point the camera at the waiter QR..."
+      )}</div>
+      <div class="qr-scan-actions">
+        <button class="btn" id="closeCashScanner">${t("إلغاء","Cancel")}</button>
+      </div>
+    </div>
+  `);
+
+  let scanner=null;
+  let finished=false;
+
+  const closeScanner=async()=>{
+    if(finished)return;
+    finished=true;
+    try{
+      if(scanner){
+        await scanner.stop();
+        await scanner.clear();
+      }
+    }catch(e){}
+    scanModal.remove();
+    originalBtn.disabled=false;
+    note.className="muted";
+    note.textContent=t(
+      "لم يتم تسجيل الدفع النقدي. يمكنك إعادة المحاولة.",
+      "Cash was not registered. You can try again."
+    );
+  };
+
+  scanModal.querySelector("#closeCashScanner").onclick=closeScanner;
+
+  if(typeof Html5Qrcode==="undefined"){
+    scanModal.querySelector("#cashQrStatus").textContent=t(
+      "تعذّر تحميل قارئ رمز الاستجابة السريعة. يرجى التحقق من الاتصال بالإنترنت ثم إعادة المحاولة.",
+      "QR scanner could not load. Check your internet connection and try again."
+    );
+    return;
+  }
+
+  scanner=new Html5Qrcode("cashQrReader");
+
+  try{
+    const cameras=await Html5Qrcode.getCameras();
+    if(!cameras || !cameras.length){
+      throw new Error(t("لم يتم العثور على كاميرا.","No camera was found."));
+    }
+
+    const preferred=cameras.find(c=>/back|rear|environment|خلف/i.test(c.label))||cameras[0];
+
+    await scanner.start(
+      preferred.id,
+      {fps:10,qrbox:{width:250,height:250},aspectRatio:1},
+      async(decodedText)=>{
+        if(finished)return;
+
+        let valid=false;
+        try{
+          const u=new URL(decodedText);
+          valid=
+            u.origin==="https://abdo-8-mamoon.github.io" &&
+            u.pathname==="/Menu/" &&
+            u.searchParams.get("mode")==="cashier";
+        }catch(e){}
+
+        if(!valid){
+          scanModal.querySelector("#cashQrStatus").textContent=t(
+            "هذا ليس رمز الجرسون الخاص بنظام RestoFlow. يرجى إعادة المحاولة.",
+            "This is not the RestoFlow waiter QR. Please try again."
+          );
+          return;
+        }
+
+        finished=true;
+        scanModal.querySelector("#cashQrStatus").textContent=t(
+          "تم التعرّف على رمز الجرسون ✓",
+          "Waiter QR recognized ✓"
+        );
+
+        try{
+          await scanner.stop();
+          await scanner.clear();
+        }catch(e){}
+
+        scanModal.remove();
+        confirmCashAfterQr(o,invoiceModal,note,originalBtn);
+      },
+      ()=>{}
+    );
+  }catch(error){
+    console.error("QR camera error:",error);
+    scanModal.querySelector("#cashQrStatus").textContent=
+      error?.message||t(
+        "تعذّر تشغيل الكاميرا. يرجى السماح للموقع باستخدام الكاميرا ثم إعادة المحاولة.",
+        "Could not open the camera. Allow camera access and try again."
+      );
+  }
+}
+
+function bill(o){
+
+  const items=o.order_items||[];
+
+
+  const subtotal=
+    items.reduce(
+      (a,i)=>
+        a+
+        Number(i.price||0)*
+        Number(i.quantity||0),
+      0
+    );
+
+
+  const total=
+    Number(
+      o.total||subtotal
+    );
+
+
+  const paid=
+    o.payment_status==="paid";
+
+  const cashPending=
+    o.payment_method==="cash" &&
+    o.payment_status==="pending_cash";
+
+
+  const created=
+    o.created_at
+      ?new Date(o.created_at)
+      :new Date();
+
+
+  const d=modal(`
+
+    <div
+      id="invoice"
+      dir="${s.lang==="ar"?"rtl":"ltr"}"
+      style="background:var(--card);padding:4px"
+    >
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          gap:15px;
+          align-items:flex-start;
+          border-bottom:2px solid var(--line);
+          padding-bottom:16px
+        "
+      >
+
+        <div>
+
+          <div
+            style="
+              font-size:28px;
+              font-weight:900
+            "
+          >
+            RestoFlow
+          </div>
+
+          <div class="muted">
+            ${t(
+              "فاتورة المطعم الذكي",
+              "Smart Restaurant Invoice"
+            )}
+          </div>
+
+        </div>
+
+
+        <div
+          style="
+            text-align:${s.lang==="ar"?"left":"right"}
+          "
+        >
+
+          <b>
+            ${t(
+              "فاتورة رقم",
+              "Invoice"
+            )}
+            #${o.id}
+          </b>
+
+          <br>
+
+          <span class="muted">
+            ${created.toLocaleString(
+              s.lang==="ar"
+                ?"ar-EG"
+                :"en-US"
+            )}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          margin:18px 0
+        "
+      >
+
+        <div
+          class="panel"
+          style="margin:0"
+        >
+
+          <span class="muted">
+            ${t(
+              "الترابيزة",
+              "Table"
+            )}
+          </span>
+
+          <strong
+            style="
+              display:block;
+              font-size:22px
+            "
+          >
+            ${
+              o.table_number||
+              s.table||
+              "—"
+            }
+          </strong>
+
+        </div>
+
+
+        <div
+          class="panel"
+          style="margin:0"
+        >
+
+          <span class="muted">
+            ${t(
+              "الحالة",
+              "Status"
+            )}
+          </span>
+
+          <strong
+            style="
+              display:block;
+              font-size:18px
+            "
+          >
+
+            ${
+              paid
+                ?t(
+                  "مدفوع ✓",
+                  "Paid ✓"
+                )
+                :cashPending
+                  ?t(
+                    "بانتظار تأكيد الكاشير",
+                    "Waiting for cashier confirmation"
+                  )
+                  :t(
+                    "غير مدفوع",
+                    "Unpaid"
+                  )
+            }
+
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="panel">
+
+        ${
+          items.length
+
+            ?items.map(i=>`
+
+              <div class="cart-item">
+
+                <div>
+
+                  <b>
+                    ${
+                      i.name_ar||
+                      i.name||
+                      i.name_en||
+                      t("صنف","Item")
+                    }
+                  </b>
+
+                  <br>
+
+                  <small class="muted">
+
+                    ${money(i.price||0)}
+                    ×
+                    ${i.quantity||0}
+
+                  </small>
+
+                </div>
+
+
+                <b>
+                  ${
+                    money(
+                      Number(i.price||0)*
+                      Number(i.quantity||0)
+                    )
+                  }
+                </b>
+
+              </div>
+
+            `).join("")
+
+            :`
+              <p class="muted">
+                ${t(
+                  "لا تتوفر تفاصيل لأصناف هذا الطلب",
+                  "No item details available"
+                )}
+              </p>
+            `
+        }
+
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            margin-top:16px;
+            font-size:23px
+          "
+        >
+
+          <b>
+            ${t(
+              "الإجمالي",
+              "Total"
+            )}
+          </b>
+
+          <b class="price">
+            ${money(total)}
+          </b>
+
+        </div>
+
+      </div>
+
+
+      ${
+        paid
+
+          ?`
+            <div
+              style="
+                padding:14px;
+                border-radius:14px;
+                background:var(--paid-banner-bg);
+                color:var(--paid-banner-fg);
+                font-weight:800;
+                text-align:center
+              "
+            >
+
+              ✓
+              ${t(
+                "تم الدفع بنجاح",
+                "Payment completed successfully"
+              )}
+
+            </div>
+          `
+
+          :cashPending
+            ?`
+              <div
+                style="
+                  padding:16px;
+                  border-radius:14px;
+                  background:var(--pending-banner-bg);
+                  color:var(--pending-banner-fg);
+                  font-weight:800;
+                  text-align:center
+                "
+              >
+                💵
+                ${t(
+                  "تم اختيار الدفع النقدي، وطلبك بانتظار تأكيد الكاشير.",
+                  "Cash selected. Waiting for cashier confirmation."
+                )}
+              </div>
+            `
+          :`
+            <h3>
+              ${t(
+                "يرجى اختيار طريقة الدفع",
+                "Choose payment method"
+              )}
+            </h3>
+
+
+            <div
+              class="actions"
+              id="paymentMethods"
+            >
+
+              <button
+                class="btn"
+                data-pay="cash"
+              >
+                💵
+                ${t(
+                  "نقداً",
+                  "Cash"
+                )}
+              </button>
+
+
+              <button
+                class="btn"
+                data-pay="wallet"
+              >
+                📱
+                ${t(
+                  "المحفظة الإلكترونية",
+                  "Wallet"
+                )}
+              </button>
+
+
+              <button
+                class="btn gold"
+                data-pay="card"
+              >
+                💳
+                ${t(
+                  "الدفع بالبطاقة",
+                  "Pay by Card"
+                )}
+              </button>
+
+            </div>
+
+
+            <div
+              id="paymentNote"
+              class="muted"
+              style="margin-top:12px"
+            ></div>
+          `
+      }
+
+
+      <div
+        class="actions"
+        style="margin-top:18px"
+      >
+
+        <button
+          class="btn primary"
+          id="printInvoice"
+        >
+          🖨️
+          ${t(
+            "طباعة الفاتورة",
+            "Print invoice"
+          )}
+        </button>
+
+
+        <button
+          class="btn"
+          id="closeInvoice"
+        >
+          ${t(
+            "إغلاق",
+            "Close"
+          )}
+        </button>
+
+      </div>
+
+    </div>
+
+  `);
+
+
+  d.querySelector(
+    "#closeInvoice"
+  )?.addEventListener(
+    "click",
+    ()=>d.remove()
+  );
+
+
+  d.querySelector(
+    "#printInvoice"
+  )?.addEventListener(
+    "click",
+    ()=>{
+
+      const invoice=
+        d.querySelector(
+          "#invoice"
+        ).innerHTML;
+
+
+      const w=
+        window.open(
+          "",
+          "_blank",
+          "width=800,height=900"
+        );
+
+
+      if(!w){
+
+        alert(
+          t(
+            "يرجى السماح بالنوافذ المنبثقة لإتمام عملية الطباعة.",
+            "Allow popups to print the invoice."
+          )
+        );
+
+        return;
+      }
+
+
+      w.document.write(`
+
+        <!doctype html>
+
+        <html
+          lang="${s.lang}"
+          dir="${s.lang==="ar"?"rtl":"ltr"}"
+        >
+
+        <head>
+
+          <meta charset="utf-8">
+
+          <title>
+            RestoFlow Invoice
+          </title>
+
+          <style>
+
+            body{
+              font-family:Tahoma,Arial,sans-serif;
+              padding:30px;
+              color:#151515
+            }
+
+            .panel{
+              border:1px solid #ddd;
+              border-radius:14px;
+              padding:15px;
+              margin-bottom:12px
+            }
+
+            .cart-item{
+              display:flex;
+              justify-content:space-between;
+              border-bottom:1px solid #eee;
+              padding:12px 0
+            }
+
+            .muted{
+              color:#777
+            }
+
+            .price{
+              color:#551414
+            }
+
+            button,.actions{
+              display:none!important
+            }
+
+            @media print{
+              body{
+                padding:10mm
+              }
+            }
+
+          </style>
+
+        </head>
+
+        <body>
+
+          ${invoice}
+
+          <script>
+
+            window.onload=()=>{
+              window.print();
+
+              setTimeout(
+                ()=>{
+                  window.close();
+                },
+                500
+              );
+            }
+
+          <\/script>
+
+        </body>
+
+        </html>
+
+      `);
+
+      w.document.close();
+
+    }
+  );
+
+
+  d.querySelectorAll(
+    "[data-pay]"
+  ).forEach(
+    btn=>{
+
+      btn.addEventListener(
+        "click",
+        async()=>{
+
+          const method=
+            btn.dataset.pay;
+
+          const note=
+            d.querySelector(
+              "#paymentNote"
+            );
+
+
+          // ======================================
+          // PAYMOB CARD / MOBILE WALLET PAYMENT
+          // ======================================
+
+          if(method==="online" || method==="card" || method==="wallet"){
+
+            // Paymob Integration IDs
+            // Card: 5889037
+            // Mobile Wallet: 5889814
+            const paymentMethod =
+              method === "wallet" ? "wallet" : "card";
+
+            const integrationId =
+              paymentMethod === "wallet"
+                ? "5889814"
+                : "5889037";
+
+            // For wallet payments, ask for the Egyptian wallet number.
+            let walletNumber = "";
+
+            if(paymentMethod === "wallet"){
+              walletNumber = window.prompt(
+                t(
+                  "يرجى إدخال رقم المحفظة (مثال: 01010101010)",
+                  "Enter wallet number (example: 01010101010)"
+                ),
+                ""
+              ) || "";
+
+              walletNumber = walletNumber.replace(/\D/g, "");
+
+              if(!/^01\d{9}$/.test(walletNumber)){
+                note.className="muted";
+                note.textContent=t(
+                  "رقم المحفظة غير صحيح. يرجى إدخال رقم مصري مكوّن من 11 رقماً يبدأ بـ 01.",
+                  "Invalid wallet number. Enter an 11-digit Egyptian number starting with 01."
+                );
+                return;
+              }
+            }
+
+            if(!s.sb){
+
+              note.textContent=
+                t(
+                  "تعذّر الاتصال بقاعدة البيانات Supabase.",
+                  "Supabase is not connected."
+                );
+
+              return;
+            }
+
+
+            // Prevent double click
+
+            btn.disabled=true;
+
+            note.className=
+              "payment-loading";
+
+            note.textContent=
+              t(
+                "جارٍ تجهيز عملية الدفع الآمن...",
+                "Preparing secure payment..."
+              );
+
+
+            try{
+
+              console.log(
+                "Starting Paymob payment for order:",
+                o.id
+              );
+
+
+              const {
+                data,
+                error
+              }=
+                await s.sb.functions.invoke(
+                  "create-kashier-payment",
+                  {
+                    body:{
+                      order_id:o.id,
+                      payment_method:paymentMethod,
+                      integration_id:integrationId,
+                      ...(paymentMethod === "wallet"
+                        ? { wallet_number:walletNumber }
+                        : {})
+                    }
+                  }
+                );
+
+
+              console.log(
+                "Paymob response:",
+                data
+              );
+
+              console.log(
+                "Paymob function error:",
+                error
+              );
+
+
+              if(error){
+
+                throw new Error(
+                  error.message||
+                  "Payment function failed"
+                );
+
+              }
+
+
+              if(!data || !data.success){
+                throw new Error(
+                  data?.error ||
+                  "Paymob payment could not be started"
+                );
+              }
+
+              // Card returns checkout_url.
+              // Wallet returns redirect_url.
+              const paymentUrl =
+                paymentMethod === "wallet"
+                  ? data.redirect_url
+                  : data.checkout_url;
+
+              if(!paymentUrl){
+                throw new Error(
+                  paymentMethod === "wallet"
+                    ? "Paymob wallet redirect URL was not returned"
+                    : "Paymob checkout URL was not returned"
+                );
+              }
+
+
+              // Save payment information
+
+              localStorage.setItem(
+                "restoflow_payment_method",
+                paymentMethod
+              );
+
+              localStorage.setItem(
+                "restoflow_payment_order",
+                String(o.id)
+              );
+
+              localStorage.setItem(
+                "restoflow_payment_table",
+                String(s.table || o.table_number || "")
+              );
+
+
+              localStorage.setItem(
+                "restoflow_payment_reference",
+                String(
+                  data.reference||""
+                )
+              );
+
+
+              localStorage.setItem(
+                "restoflow_paymob_order",
+                String(
+                  data.paymob_order_id||""
+                )
+              );
+
+
+              console.log(
+                "Opening Paymob Checkout..."
+              );
+
+
+              // Open Paymob
+
+              window.location.href=
+                paymentUrl;
+
+
+            }catch(error){
+
+              console.error(
+                "Online payment error:",
+                error
+              );
+
+
+              btn.disabled=false;
+
+              note.className="muted";
+
+
+              note.textContent=
+                error?.message||
+                t(
+                  "حدث خطأ أثناء تجهيز عملية الدفع.",
+                  "Payment initialization failed."
+                );
+
+            }
+
+            return;
+          }
+
+
+          // ======================================
+          // CASH PAYMENT
+          // Cash is NOT considered paid until a cashier confirms it.
+          // ======================================
+
+          if(method==="cash"){
+
+            if(!s.sb){
+              note.textContent=
+                t(
+                  "تعذّر الاتصال بقاعدة البيانات Supabase.",
+                  "Supabase is not connected."
+                );
+              return;
+            }
+
+            btn.disabled=true;
+            note.className="payment-loading";
+            note.textContent=t(
+              "يرجى تفعيل الكاميرا ومسح رمز الجرسون...",
+              "Open the camera and scan the waiter QR..."
+            );
+
+            await cashQrScanner(o,d,note,btn);
+            return;
+          }
+
+          // ======================================
+          // CARD / WALLET
+          // ======================================
+
+          if(!s.sb){
+
+            note.textContent=
+              t(
+                "تعذّر الاتصال بقاعدة البيانات Supabase.",
+                "Supabase is not connected."
+              );
+
+            return;
+          }
+
+
+          btn.disabled=true;
+
+
+          const paymentMethod=
+            method;
+
+
+          const patch={
+            payment_status:"paid",
+            payment_method:
+              paymentMethod,
+            paid_at:
+              new Date().toISOString(),
+            status:"paid"
+          };
+
+
+          const r=
+            await s.sb
+              .from("orders")
+              .update(patch)
+              .eq("id",o.id);
+
+
+          if(r.error){
+
+            btn.disabled=false;
+
+            note.textContent=
+              r.error.message;
+
+            return;
+          }
+
+
+          o.payment_status="paid";
+          o.payment_method=
+            paymentMethod;
+          o.paid_at=
+            patch.paid_at;
+          o.status="paid";
+
+
+          note.className=
+            "payment-loading";
+
+          note.textContent=
+            t(
+              "تم تسجيل الدفع بنجاح ✓",
+              "Payment recorded successfully ✓"
+            );
+
+
+          setTimeout(
+            ()=>{
+              d.remove();
+              render();
+            },
+            500
+          );
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+
+async function fetchOrderForPaymentReturn(orderId){
+  if(!s.sb || !orderId) return null;
+
+  const {data,error}=await s.sb
+    .from("orders")
+    .select("*,order_items(*)")
+    .eq("id",orderId)
+    .maybeSingle();
+
+  if(error){
+    console.error(
+      "Payment return order lookup error:",
+      error
+    );
+    return null;
+  }
+
+  return data || null;
+}
+
+async function handlePaymentReturn(){
+  const paramsNow =
+    new URLSearchParams(location.search);
+
+  const isReturn =
+    paramsNow.get("payment")==="return" ||
+    paramsNow.get("payment")==="success" ||
+    paramsNow.get("success")==="true" ||
+    paramsNow.get("success")==="1" ||
+    paramsNow.has("id") ||
+    paramsNow.has("txn_response_code") ||
+    paramsNow.has("merchant_order_id");
+
+  if(!isReturn || !s.sb) return;
+
+  const savedTable =
+    localStorage.getItem(
+      "restoflow_payment_table"
+    );
+
+  if(savedTable){
+    const tableNumber=Number(savedTable);
+
+    if(
+      Number.isFinite(tableNumber) &&
+      tableNumber>0
+    ){
+      s.table=tableNumber;
+    }
+  }
+
+  const savedOrderId =
+    localStorage.getItem(
+      "restoflow_payment_order"
+    );
+
+  if(!savedOrderId){
+    paymentReturnMessage(
+      "error",
+      t(
+        "تعذّر تحديد الطلب.",
+        "Could not determine the order."
+      )
+    );
+    return;
+  }
+
+  let order =
+    await fetchOrderForPaymentReturn(
+      savedOrderId
+    );
+
+  if(!order){
+    paymentReturnMessage(
+      "error",
+      t(
+        "تعذّر العثور على الطلب.",
+        "The order could not be found."
+      )
+    );
+    return;
+  }
+
+  /*
+    The Response Callback is only the customer return.
+    We wait for paymob-webhook to update Supabase.
+  */
+  let tries=0;
+  const maxTries=30;
+
+  while(
+    order &&
+    order.payment_status!=="paid" &&
+    order.status!=="paid" &&
+    order.payment_status!=="failed" &&
+    tries<maxTries
+  ){
+    await new Promise(
+      resolve=>setTimeout(resolve,1000)
+    );
+
+    const refreshed =
+      await fetchOrderForPaymentReturn(
+        savedOrderId
+      );
+
+    if(refreshed){
+      order=refreshed;
+    }
+
+    tries++;
+  }
+
+  // One final fresh read.
+  order =
+    await fetchOrderForPaymentReturn(
+      savedOrderId
+    ) || order;
+
+  const paid =
+    order.payment_status==="paid" ||
+    order.status==="paid";
+
+  const failed =
+    order.payment_status==="failed";
+
+  if(paid){
+
+    localStorage.removeItem(
+      "restoflow_payment_method"
+    );
+
+    localStorage.removeItem(
+      "restoflow_payment_order"
+    );
+
+    localStorage.removeItem(
+      "restoflow_payment_reference"
+    );
+
+    localStorage.removeItem(
+      "restoflow_paymob_order"
+    );
+
+    // Keep table in URL and remove Paymob callback params.
+    try{
+      const cleanUrl =
+        location.origin+
+        location.pathname+
+        (
+          s.table
+            ? `?table=${s.table}`
+            : ""
+        );
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl
+      );
+    }catch(e){
+      console.warn(
+        "Could not clean payment URL:",
+        e
+      );
+    }
+
+    // IMPORTANT: show the real paid invoice.
+    bill(order);
+
+    return;
+  }
+
+  if(failed){
+    paymentReturnMessage(
+      "failed",
+      t(
+        "تعذّر إتمام عملية الدفع",
+        "Payment failed"
+      ),
+      t(
+        "أفادت Paymob بأن العملية لم تكتمل. يمكنك إعادة المحاولة.",
+        "Paymob reported that the payment was not completed. You can try again."
+      ),
+      order
+    );
+    return;
+  }
+
+  paymentReturnMessage(
+    "pending",
+    t(
+      "جارٍ تأكيد عملية الدفع...",
+      "Confirming payment..."
+    ),
+    t(
+      "تم الرجوع من Paymob، إلا أن تأكيد الخادم لم يصل بعد.",
+      "You returned from Paymob, but the server confirmation has not arrived yet."
+    ),
+    order
+  );
+}
+
+function paymentReturnMessage(
+  type,
+  title,
+  message,
+  order=null
+){
+  const icon =
+    type==="failed"
+      ? "❌"
+      : type==="pending"
+        ? "⏳"
+        : "⚠️";
+
+  const d=modal(`
+    <div style="text-align:center;padding:12px">
+
+      <div style="font-size:52px">
+        ${icon}
+      </div>
+
+      <h2>${title}</h2>
+
+      <p class="muted">
+        ${message || ""}
+      </p>
+
+      ${
+        order
+          ? `
+            <div class="panel">
+              <b>
+                ${t("الطلب","Order")}
+                #${order.id}
+              </b>
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  margin-top:12px;
+                  font-size:20px;
+                  font-weight:900
+                "
+              >
+                <span>
+                  ${t("الإجمالي","Total")}
+                </span>
+
+                <span class="price">
+                  ${money(order.total)}
+                </span>
+              </div>
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        type==="failed" && order
+          ? `
+            <button
+              class="btn gold"
+              id="retryPaymentReturn"
+            >
+              ↻
+              ${t(
+                "إعادة المحاولة",
+                "Try again"
+              )}
+            </button>
+          `
+          : ""
+      }
+
+      ${
+        type==="pending" && order
+          ? `
+            <button
+              class="btn gold"
+              id="checkPaymentReturn"
+            >
+              ⟳
+              ${t(
+                "التحقق من حالة الدفع",
+                "Check payment"
+              )}
+            </button>
+          `
+          : ""
+      }
+
+    </div>
+  `);
+
+  d
+    .querySelector("#retryPaymentReturn")
+    ?.addEventListener(
+      "click",
+      ()=>{
+        d.remove();
+        bill(order);
+      }
+    );
+
+  d
+    .querySelector("#checkPaymentReturn")
+    ?.addEventListener(
+      "click",
+      async()=>{
+        d.remove();
+        await handlePaymentReturn();
+      }
+    );
+
+  return d;
+}
+
+function cashier(){
+
+  const pending=
+    s.orders.filter(
+      o=>o.payment_method==="cash" &&
+         o.payment_status==="pending_cash"
+    );
+
+  return header()+`
+
+    <main class="container" style="padding-top:28px">
+
+      <div class="section-title">
+        <div>
+          <h2>
+            ${t("لوحة تحكم الكاشير","Cashier Dashboard")}
+          </h2>
+          <div class="muted">
+            ${t(
+              "يرجى تأكيد الدفع النقدي بعد استلام المبلغ من العميل.",
+              "Confirm cash payments after receiving the money from the customer."
+            )}
+          </div>
+        </div>
+
+        <span class="badge">
+          ${pending.length} ${t("طلبات بانتظار التأكيد","pending")}
+        </span>
+      </div>
+
+      ${pending.length ? pending.map(o=>`
+        <div class="panel" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div>
+              <b style="font-size:20px">#${o.id}</b>
+              <div class="muted" style="margin-top:6px">
+                ${t("الترابيزة","Table")} ${o.table_number} • ${money(o.total)}
+              </div>
+            </div>
+            <span class="status s-new">
+              ${t("بانتظار الدفع النقدي","Cash pending")}
+            </span>
+          </div>
+
+          <p class="muted">
+            ${(o.order_items||[]).map(i=>
+              (i.name_ar||i.name||i.name_en)+" × "+i.quantity
+            ).join(" • ")}
+          </p>
+
+          <div class="actions">
+            <button class="btn" data-cash-view="${o.id}">
+              🧾 ${t("الفاتورة","Invoice")}
+            </button>
+            <button class="btn gold" data-cash-confirm="${o.id}">
+              ✓ ${t("تأكيد استلام المبلغ","Confirm cash received")}
+            </button>
+          </div>
+        </div>
+      `).join("") : `
+        <div class="panel" style="text-align:center;padding:40px">
+          <div style="font-size:42px">💵</div>
+          <h3>${t("لا توجد مدفوعات نقدية بانتظار التأكيد","No pending cash payments")}</h3>
+        </div>
+      `}
+
+    </main>
+  `;
+}
+
+function bindCashier(){
+
+  document.querySelectorAll("[data-cash-view]").forEach(btn=>{
+    btn.onclick=()=>{
+      const o=s.orders.find(x=>String(x.id)===String(btn.dataset.cashView));
+      if(o) bill(o);
+    };
+  });
+
+  document.querySelectorAll("[data-cash-confirm]").forEach(btn=>{
+    btn.onclick=async()=>{
+      const o=s.orders.find(x=>String(x.id)===String(btn.dataset.cashConfirm));
+      if(!o || !s.sb) return;
+
+      const ok=confirm(
+        t(
+          `هل تم استلام مبلغ ${money(o.total)} من الترابيزة رقم ${o.table_number}؟`,
+          `Did you receive ${money(o.total)} from table ${o.table_number}?`
+        )
+      );
+
+      if(!ok) return;
+
+      btn.disabled=true;
+      btn.textContent=t("جارٍ التأكيد...","Confirming...");
+
+      const r=await s.sb
+        .from("orders")
+        .update({
+          payment_status:"paid",
+          payment_method:"cash",
+          paid_at:new Date().toISOString()
+        })
+        .eq("id",o.id)
+        .eq("payment_status","pending_cash");
+
+      if(r.error){
+        btn.disabled=false;
+        btn.textContent=t("تأكيد استلام المبلغ","Confirm cash received");
+        alert(r.error.message);
+        return;
+      }
+
+      await loadOrders();
+    };
+  });
+}
+
+function render(){
+
+  document.documentElement.dir=
+    s.lang==="ar"
+      ?"rtl"
+      :"ltr";
+
+  document.getElementById(
+    "app"
+  ).innerHTML=
+    s.mode==="cashier"
+      ? cashier()
+      : customer();
+
+  if(s.mode==="cashier")
+    bindCashier();
+  else{
+    bind();
+    updateCartButton();
+  }
+}
+
+
+// (removed) periodic order polling — page no longer re-renders itself
+// automatically after the initial load.
+
+
 init();
+
 </script>
+
 </body>
 </html>
