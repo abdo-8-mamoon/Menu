@@ -2495,8 +2495,8 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
     <div class="qr-scan-box" dir="${s.lang==="ar"?"rtl":"ltr"}">
       <h2>${t("تأكيد الدفع النقدي","Confirm cash payment")}</h2>
       <p class="muted">${t(
-        "يرجى تفعيل الكاميرا ومسح كود الدفع الحالي المعروض على شاشة الكاشير — الكود ده بيتغيّر كل ساعة.",
-        "Open the camera and scan the current cash-payment code shown on the cashier screen — it rotates every hour."
+        "يرجى تفعيل الكاميرا ومسح كود الدفع الحالي المعروض على شاشة الكاشير",
+        "Open the camera and scan the current cash-payment code shown on the cashier screen"
       )}</p>
       <div id="cashQrReader"></div>
       <div id="cashQrStatus" class="qr-scan-status">${t(
@@ -2569,8 +2569,8 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
 
         if(!valid){
           scanModal.querySelector("#cashQrStatus").textContent=t(
-            "هذا الكود غير صحيح أو منتهي الصلاحية (بيتغيّر كل ساعة). يرجى إعادة المحاولة.",
-            "This code is invalid or has expired (it rotates every hour). Please try again."
+            "هذا الكود غير صحيح أو منتهي الصلاحية . يرجى إعادة المحاولة.",
+            "This code is invalid or has expired . Please try again."
           );
           checking=false;
           return;
