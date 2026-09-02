@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1c2422">
+<title>RestoFlow — شاشة الكاشير</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1ef; --panel:#ffffff; --panel2:#fbfcfb; --line:#d7ddda; --line-soft:#e2e7e4;
+  --text:#202725; --text-dim:#4c5652; --muted:#7e8a85; --muted-dim:#a8b2ad; --top-bg:rgba(255,255,255,.92);
+  --ink:#1c2422; --ink2:#26302c;
+  --steel:#2f6f7a; --steel-dim:#1f4d55; --steel-tint:#e0eef0;
+  --amber:#c9862c; --amber-dim:#96691f; --amber-tint:#faf0dd;
+  --ember:#c23b2b; --ember-dim:#8f2a1e; --ember-tint:#fbe6e2;
+  --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
+  --font-num:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="dark"]{
+  --bg:#121716; --panel:#1b201f; --panel2:#212724; --line:#2b3230; --line-soft:#242b29;
+  --text:#e7ece9; --text-dim:#b5bfba; --muted:#889390; --muted-dim:#5c655f; --top-bg:rgba(18,23,22,.88);
+  --ink:#0e1211; --ink2:#171d1a;
+  --steel-tint:#173238; --amber-tint:#2e2410; --ember-tint:#301813;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+button{font:inherit;cursor:pointer}
+
+.top{position:sticky;top:0;z-index:20;background:var(--top-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:13px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,var(--ink2),var(--ink));display:grid;place-items:center;color:var(--amber);font-size:19px;font-weight:800;border:1px solid var(--line)}
+.brand b{font-weight:700;font-size:16px;display:block}
+.brand small{color:var(--muted);font-weight:500;font-size:12px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 14px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--text);transition:border-color .15s}
+.btn:hover{border-color:var(--muted-dim)}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.dark{background:var(--ink);color:var(--amber);border-color:var(--ink)}
+.btn.pay{background:#3f9660;color:#fff;border-color:#3f9660}
+.btn.icon{width:38px;padding:9px 0;text-align:center}
+
+.container{max-width:1100px;margin:auto;padding:26px 4vw 10px}
+.banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;line-height:1.6}
+.banner.err{background:var(--ember-tint);color:var(--ember-dim);border:1px solid #c23b2b55}
+.banner .x{margin-inline-start:auto;border:none;background:transparent;color:inherit;font-size:13px;opacity:.7;flex:none}
+
+.qr-panel{background:linear-gradient(128deg,var(--ink),var(--ink2));color:#eef1ee;border-radius:20px;padding:26px 28px;margin-bottom:18px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.qr-panel .qr-left{display:flex;flex-direction:column;gap:8px}
+.qr-panel h2{margin:0;font-size:17px}
+.qr-panel .muted2{color:#aeb8b3;font-size:13px}
+.qr-code-text{font-family:var(--font-num);font-size:26px;font-weight:700;letter-spacing:3px;color:var(--amber)}
+.qr-countdown{font-family:var(--font-num);font-size:13px;color:#c7cfcb}
+.qr-box{background:#fff;border-radius:14px;padding:10px;display:grid;place-items:center;min-height:150px;min-width:150px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.kpi{padding:16px 18px;border-inline-start:1px solid var(--line)}
+.kpi:first-child{border-inline-start:none}
+.kpi .lbl{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;font-weight:600}
+.kpi .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.kpi.c-steel .dot{background:var(--steel)}.kpi.c-amber .dot{background:var(--amber)}.kpi.c-ember .dot{background:var(--ember)}
+.kpi b{display:block;font-family:var(--font-num);font-size:24px;margin-top:8px;font-weight:700}
+
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:22px 0 12px;flex-wrap:wrap}
+.section-title h2{margin:0;font-size:17px;font-weight:700}
+.muted{color:var(--muted)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 12px}
+.due-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:15px 2px;border-top:1px dashed var(--line-soft);align-items:center}
+.due-row:first-child{border-top:none}
+.due-table{font-weight:700;font-size:16px}
+.due-items{color:var(--text-dim);font-size:13px;margin-top:4px}
+.due-right{text-align:end;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.due-total{font-family:var(--font-num);font-weight:700;font-size:17px}
+.empty-note{text-align:center;padding:40px;color:var(--muted-dim)}
+
+footer{padding:34px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
+@media(max-width:640px){
+  .kpis{grid-template-columns:1fr}
+  .kpi{border-inline-start:none;border-top:1px solid var(--line)}
+  .kpi:first-child{border-top:none}
+  .qr-panel{justify-content:center;text-align:center}
+  .due-row{grid-template-columns:1fr}
+  .due-right{align-items:flex-start;text-align:start}
+}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+const CONFIG={
+  SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
+  SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
+  RESTAURANT_NAME:"RestoFlow", CURRENCY:"ج.م", TABLES:30,
+  QR_TABLE:"cashier_qr_codes"   // created by cashier_qr_setup.sql
+};
+
+let s={
+  lang:"ar", sb:null, theme:localStorage.getItem("rf_theme")||"light",
+  orders:[], loading:true, error:null,
+  qr:{code:null,expiresAt:null,loading:true},
+  now:new Date()
+};
+const t=(a,e)=>s.lang==="ar"?a:e;
+const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
+
+/* ---------------- hourly QR code, logged in Supabase ----------------
+   One row per UTC hour (hour_slot is unique). ensureHourlyQR() first
+   looks for this hour's row; if it doesn't exist yet it tries to
+   insert one. If another cashier screen inserted it a moment earlier,
+   the unique constraint rejects our insert (code 23505) and we just
+   re-read the row that already exists — so every screen ends up
+   showing the exact same code for that hour. */
+function utcHourSlot(d){
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}`;
+}
+function nextHourBoundary(d){
+  const n=new Date(d); n.setUTCMinutes(0,0,0); n.setUTCHours(n.getUTCHours()+1); return n;
+}
+function randomCode(len=8){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars (0/O, 1/I)
+  const bytes=new Uint8Array(len);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes,b=>chars[b%chars.length]).join("");
+}
+async function ensureHourlyQR(){
+  if(!s.sb)return;
+  s.qr.loading=true; render();
+  const slot=utcHourSlot(new Date());
+  try{
+    let {data,error}=await s.sb.from(CONFIG.QR_TABLE).select("*").eq("hour_slot",slot).maybeSingle();
+    if(error) throw error;
+    if(!data){
+      const expires=nextHourBoundary(new Date());
+      const {error:insErr}=await s.sb.from(CONFIG.QR_TABLE).insert({code:randomCode(),hour_slot:slot,expires_at:expires.toISOString()});
+      if(insErr && insErr.code!=="23505") throw insErr; // 23505 = someone else already created this hour's code
+      const r2=await s.sb.from(CONFIG.QR_TABLE).select("*").eq("hour_slot",slot).maybeSingle();
+      if(r2.error) throw r2.error;
+      data=r2.data;
+    }
+    s.qr={code:data.code,expiresAt:new Date(data.expires_at),loading:false};
+    s.error=null;
+  }catch(e){
+    s.qr.loading=false;
+    s.error=e.message||String(e);
+  }
+  render();
+}
+
+/* ---------------- orders waiting to be paid (status = served) ---------------- */
+async function fetchDueOrders(){
+  if(!s.sb)return;
+  s.loading=true;
+  try{
+    const {data,error}=await s.sb.from("orders").select("*,order_items(*)")
+      .eq("status","served").order("table_number",{ascending:true});
+    if(error)throw error;
+    s.orders=data||[];
+    s.error=null;
+  }catch(e){ s.error=e.message||String(e); }
+  s.loading=false;
+  render();
+}
+function dueByTable(){
+  const map=new Map();
+  s.orders.forEach(o=>{
+    const n=o.table_number;
+    const cur=map.get(n)||{table:n,orders:[],total:0};
+    cur.orders.push(o); cur.total+=Number(o.total||0);
+    map.set(n,cur);
+  });
+  return [...map.values()].sort((a,b)=>a.table-b.table);
+}
+
+/* cashier action: mark every served (unpaid) order on that table as paid */
+async function markTablePaid(n){
+  if(!s.sb)return;
+  const ids=s.orders.filter(o=>o.table_number===n).map(o=>o.id);
+  if(!ids.length)return;
+  const r=await s.sb.from("orders").update({status:"paid"}).in("id",ids);
+  if(r.error){ alert(r.error.message); return; }
+  await fetchDueOrders();
+}
+
+/* ---------------- render ---------------- */
+function header(){
+  return `<header class="top">
+    <div class="brand"><div class="logo">R</div><div><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة الكاشير","Cashier screen")}</small></div></div>
+    <div class="actions">
+      <button class="btn icon" id="themeToggle">${s.theme==="dark"?"☀️":"🌙"}</button>
+      <button class="btn dark" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+    </div>
+  </header>`;
+}
+function fmtCountdown(){
+  if(!s.qr.expiresAt)return "—";
+  const ms=s.qr.expiresAt-s.now;
+  if(ms<=0)return t("جارِ التجديد…","Refreshing…");
+  const m=Math.floor(ms/60000), sec=Math.floor((ms%60000)/1000);
+  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+function qrPanel(){
+  return `<section class="qr-panel">
+    <div class="qr-left">
+      <div class="muted2">${t("كود الدفع الكاش الحالي","Current cash-payment code")}</div>
+      <h2>${t("بيتغيّر كل ساعة تلقائيًا","Rotates automatically every hour")}</h2>
+      ${s.qr.loading?`<div class="qr-code-text">${t("جارِ التحميل…","Loading…")}</div>`
+        :`<div class="qr-code-text">${s.qr.code||"—"}</div>
+          <div class="qr-countdown" id="qrCountdown">${t("متبقي على الكود الجديد","New code in")}: ${fmtCountdown()}</div>`}
+    </div>
+    <div class="qr-box" id="qrBox"></div>
+  </section>`;
+}
+function dueRow(g){
+  const items=g.orders.flatMap(o=>(o.order_items||[]).map(i=>`${i.name_ar||i.name||i.name_en} ×${i.quantity}`)).join(" • ");
+  return `<div class="due-row">
+    <div>
+      <div class="due-table">${t("ترابيزة","Table")} ${g.table}</div>
+      <div class="due-items">${items||t("لا توجد تفاصيل","No item details")}</div>
+    </div>
+    <div class="due-right">
+      <div class="due-total">${money(g.total)}</div>
+      <button class="btn pay" data-paytable="${g.table}">✓ ${t("تسجيل الدفع","Mark as paid")}</button>
+    </div>
+  </div>`;
+}
+function main(){
+  const groups=dueByTable();
+  const totalDue=groups.reduce((a,g)=>a+g.total,0);
+  return header()+`<main class="container">
+    ${s.error?`<div class="banner err"><span>⚠</span><span>${t("حصل خطأ:","Error:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
+    ${qrPanel()}
+    <div class="kpis">
+      <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("ترابيزات محتاجة تحصيل","Tables awaiting payment")}</div><b>${groups.length}</b></div>
+      <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("إجمالي المطلوب تحصيله","Total due now")}</div><b>${money(totalDue)}</b></div>
+      <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("عدد الطلبات المستحقة","Orders awaiting payment")}</div><b>${s.orders.length}</b></div>
+    </div>
+    <div class="section-title"><h2>${t("المطلوبات — طلبات اتقدّمت ولسه ما اتحصّلتش","Dues — served orders not yet paid")}</h2></div>
+    <section class="panel">
+      ${s.loading?`<div class="empty-note">${t("جارِ التحميل…","Loading…")}</div>`
+        :groups.length?groups.map(dueRow).join(""):`<div class="empty-note">${t("مفيش ترابيزات مستحقة دلوقتي 🎉","No tables owe anything right now 🎉")}</div>`}
+    </section>
+  </main>
+  <footer>RestoFlow Cashier</footer>`;
+}
+function renderQRCode(){
+  const box=document.getElementById("qrBox");
+  if(!box || !s.qr.code)return;
+  box.innerHTML="";
+  new QRCode(box,{text:s.qr.code,width:130,height:130});
+}
+function bind(){
+  document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
+  document.getElementById("themeToggle")?.addEventListener("click",()=>{
+    s.theme=s.theme==="dark"?"light":"dark"; localStorage.setItem("rf_theme",s.theme); render();
+  });
+  document.getElementById("dismissErr")?.addEventListener("click",()=>{s.error=null;render()});
+  document.querySelectorAll("[data-paytable]").forEach(b=>{
+    b.onclick=()=>{ const n=Number(b.dataset.paytable); b.disabled=true; b.textContent=t("جارِ التسجيل…","Saving…"); markTablePaid(n); };
+  });
+}
+function render(){
+  document.documentElement.dir=s.lang==="ar"?"rtl":"ltr";
+  document.documentElement.setAttribute("data-theme",s.theme);
+  document.getElementById("app").innerHTML=main();
+  bind();
+  renderQRCode();
+}
+
+async function init(){
+  if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
+    s.sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY);
+    await Promise.all([ensureHourlyQR(),fetchDueOrders()]);
+    let debounce=null;
+    s.sb.channel("rf-cashier-live")
+      .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{
+        clearTimeout(debounce); debounce=setTimeout(fetchDueOrders,500);
+      })
+      .subscribe();
+  }else{
+    render();
+  }
+  // once a second: just tick the countdown text; only trigger a full
+  // QR refresh + re-render when the current code actually expires
+  setInterval(()=>{
+    s.now=new Date();
+    if(s.qr.expiresAt && s.now>=s.qr.expiresAt){ ensureHourlyQR(); return; }
+    const el=document.getElementById("qrCountdown");
+    if(el) el.textContent=`${t("متبقي على الكود الجديد","New code in")}: ${fmtCountdown()}`;
+  },1000);
+}
+
+init();
+</script>
+</body>
+</html>
