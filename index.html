@@ -990,7 +990,8 @@ const CONFIG={
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
   RESTAURANT_NAME:"RestoFlow",
   CURRENCY:"ج.م",
-  DEFAULT_LANGUAGE:"ar"
+  DEFAULT_LANGUAGE:"ar",
+  QR_TABLE:"cashier_qr_codes" // same hourly-rotating cash code the cashier screen writes/reads
 };
 
 const MENU=[
@@ -1134,6 +1135,36 @@ const name=x=>
   s.lang==="ar"
     ?(x.name_ar||x.name||"Item")
     :(x.name_en||x.name||"Item");
+
+/* ---------------- hourly cash-payment code (shared with the cashier screen) ----------------
+   The cashier screen writes one row per UTC hour into `cashier_qr_codes`
+   (hour_slot is unique, e.g. "2026-09-02T14"). To confirm a cash payment
+   here we just look up *this* hour's row and compare its code to whatever
+   the customer scanned — no fixed/static QR involved, it rotates exactly
+   like the one shown at the register. */
+function utcHourSlot(d){
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}T${String(d.getUTCHours()).padStart(2,"0")}`;
+}
+
+async function isValidCashQrCode(scannedText){
+  if(!s.sb || !scannedText) return false;
+  const code=String(scannedText).trim().toUpperCase();
+  if(!code) return false;
+  try{
+    const slot=utcHourSlot(new Date());
+    const {data,error}=await s.sb
+      .from(CONFIG.QR_TABLE)
+      .select("code,expires_at")
+      .eq("hour_slot",slot)
+      .maybeSingle();
+    if(error || !data) return false;
+    if(new Date(data.expires_at)<=new Date()) return false; // this hour's code just expired
+    return String(data.code).trim().toUpperCase()===code;
+  }catch(e){
+    console.error("Cash QR validation error:",e);
+    return false;
+  }
+}
 
 
 async function init(){
@@ -2431,8 +2462,8 @@ function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
   originalBtn.disabled=true;
   note.className="payment-loading";
   note.textContent=t(
-    "تم مسح رمز الجرسون بنجاح ✓، جارٍ تسجيل الدفع نقداً...",
-    "Waiter QR scanned ✓ Registering cash payment..."
+    "تم التأكد من كود الدفع بنجاح ✓، جارٍ تسجيل الدفع نقداً...",
+    "Cash code confirmed ✓ Registering cash payment..."
   );
 
   s.sb.from("orders").update({
@@ -2447,7 +2478,7 @@ function confirmCashAfterQr(o,invoiceModal,note,originalBtn){
       return;
     }
 
-    // Cash is considered paid immediately after the waiter QR is scanned.
+    // Cash is considered paid immediately after the cashier's rotating code is confirmed.
     // Keep the kitchen order status unchanged.
     o.payment_status="paid";
     o.payment_method="cash";
@@ -2464,13 +2495,13 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
     <div class="qr-scan-box" dir="${s.lang==="ar"?"rtl":"ltr"}">
       <h2>${t("تأكيد الدفع النقدي","Confirm cash payment")}</h2>
       <p class="muted">${t(
-        "يرجى تفعيل الكاميرا ومسح رمز الجرسون المطبوع.",
-        "Open the camera and scan the printed waiter QR."
+        "يرجى تفعيل الكاميرا ومسح كود الدفع الحالي المعروض على شاشة الكاشير — الكود ده بيتغيّر كل ساعة.",
+        "Open the camera and scan the current cash-payment code shown on the cashier screen — it rotates every hour."
       )}</p>
       <div id="cashQrReader"></div>
       <div id="cashQrStatus" class="qr-scan-status">${t(
-        "يرجى توجيه الكاميرا نحو رمز الجرسون...",
-        "Point the camera at the waiter QR..."
+        "يرجى توجيه الكاميرا نحو الكود...",
+        "Point the camera at the code..."
       )}</div>
       <div class="qr-scan-actions">
         <button class="btn" id="closeCashScanner">${t("إلغاء","Cancel")}</button>
@@ -2480,6 +2511,7 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
 
   let scanner=null;
   let finished=false;
+  let checking=false;
 
   const closeScanner=async()=>{
     if(finished)return;
@@ -2523,29 +2555,31 @@ async function cashQrScanner(o,invoiceModal,note,originalBtn){
       preferred.id,
       {fps:10,qrbox:{width:250,height:250},aspectRatio:1},
       async(decodedText)=>{
-        if(finished)return;
+        if(finished || checking)return;
+        checking=true;
 
-        let valid=false;
-        try{
-          const u=new URL(decodedText);
-          valid=
-            u.origin==="https://abdo-8-mamoon.github.io" &&
-            u.pathname==="/Menu/" &&
-            u.searchParams.get("mode")==="cashier";
-        }catch(e){}
+        scanModal.querySelector("#cashQrStatus").textContent=t(
+          "جارٍ التحقق من الكود...",
+          "Checking code..."
+        );
+
+        const valid=await isValidCashQrCode(decodedText);
+
+        if(finished){ checking=false; return; }
 
         if(!valid){
           scanModal.querySelector("#cashQrStatus").textContent=t(
-            "هذا ليس رمز الجرسون الخاص بنظام RestoFlow. يرجى إعادة المحاولة.",
-            "This is not the RestoFlow waiter QR. Please try again."
+            "هذا الكود غير صحيح أو منتهي الصلاحية (بيتغيّر كل ساعة). يرجى إعادة المحاولة.",
+            "This code is invalid or has expired (it rotates every hour). Please try again."
           );
+          checking=false;
           return;
         }
 
         finished=true;
         scanModal.querySelector("#cashQrStatus").textContent=t(
-          "تم التعرّف على رمز الجرسون ✓",
-          "Waiter QR recognized ✓"
+          "تم التعرّف على الكود ✓",
+          "Code recognized ✓"
         );
 
         try{
@@ -3334,7 +3368,8 @@ function bill(o){
 
           // ======================================
           // CASH PAYMENT
-          // Cash is NOT considered paid until a cashier confirms it.
+          // Cash is NOT considered paid until the customer scans this
+          // hour's rotating cash-payment code shown on the cashier screen.
           // ======================================
 
           if(method==="cash"){
@@ -3351,8 +3386,8 @@ function bill(o){
             btn.disabled=true;
             note.className="payment-loading";
             note.textContent=t(
-              "يرجى تفعيل الكاميرا ومسح رمز الجرسون...",
-              "Open the camera and scan the waiter QR..."
+              "يرجى تفعيل الكاميرا ومسح كود الدفع الحالي على شاشة الكاشير...",
+              "Open the camera and scan the current cashier code..."
             );
 
             await cashQrScanner(o,d,note,btn);
