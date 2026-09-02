@@ -3,148 +3,131 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#1c2422">
+<meta name="theme-color" content="#f6f7f5">
 <title>RestoFlow — شاشة الكاشير</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#eef1ef; --panel:#ffffff; --panel2:#fbfcfb; --line:#d7ddda; --line-soft:#e2e7e4;
-  --text:#202725; --text-dim:#4c5652; --muted:#7e8a85; --muted-dim:#a8b2ad; --top-bg:rgba(255,255,255,.92);
-  --ink:#1c2422; --ink2:#26302c;
-  --steel:#2f6f7a; --steel-dim:#1f4d55; --steel-tint:#e0eef0;
-  --amber:#c9862c; --amber-dim:#96691f; --amber-tint:#faf0dd;
-  --ember:#c23b2b; --ember-dim:#8f2a1e; --ember-tint:#fbe6e2;
-  --free:#3f8f5b; --free-dim:#2c6b41; --free-tint:#e5f2e9;
-  --shadow:0 1px 2px rgba(20,26,24,.04), 0 8px 24px -12px rgba(20,26,24,.12);
+  --bg:#f6f7f4; --panel:#ffffff; --panel2:#fbfbf9; --line:#e3e6e1; --line-soft:#edefeb;
+  --text:#23281f; --text-dim:#565f52; --muted:#868f81; --muted-dim:#adb5a8; --top-bg:rgba(246,247,244,.9);
+  --sage:#4f8f5f; --sage-dim:#376b43; --sage-tint:#e9f4ea;
+  --amber:#b8842f; --amber-dim:#8c6423; --amber-tint:#f7eedb;
+  --brick:#c2492f; --brick-dim:#943a26; --brick-tint:#fbe9e4;
   --font-body:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;
-  --font-num:'JetBrains Mono',ui-monospace,monospace;
 }
 [data-theme="dark"]{
-  --bg:#121615; --panel:#1b201f; --panel2:#212724; --line:#2b3230; --line-soft:#242b29;
-  --text:#e7ece9; --text-dim:#b5bfba; --muted:#889390; --muted-dim:#5c655f; --top-bg:rgba(18,23,22,.9);
-  --ink:#0e1211; --ink2:#171d1a;
-  --steel-tint:#173238; --amber-tint:#2e2410; --ember-tint:#301813; --free-tint:#152a1c;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  --bg:#181c17; --panel:#212620; --panel2:#262b24; --line:#33392f; --line-soft:#2b3129;
+  --text:#e9ece6; --text-dim:#b7bfb0; --muted:#828b7c; --muted-dim:#565f50; --top-bg:rgba(24,28,23,.9);
+  --sage-tint:#16261a; --amber-tint:#2a2010; --brick-tint:#2c1712;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);transition:background .2s,color .2s}
 button{font:inherit;cursor:pointer}
-.mono{font-family:var(--font-num)}
+.tnum{font-variant-numeric:tabular-nums;font-weight:600}
 
 /* ---------------- header ---------------- */
-.top{position:sticky;top:0;z-index:30;background:var(--top-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:12px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:11px}
-.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(150deg,var(--ink2),var(--ink));display:grid;place-items:center;color:var(--amber);font-size:18px;font-weight:800;border:1px solid var(--line)}
-.brand b{font-weight:700;font-size:15.5px;display:block}
-.brand small{color:var(--muted);font-weight:500;font-size:12px}
+.top{position:sticky;top:0;z-index:30;background:var(--top-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:16px 4vw;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-weight:700;font-size:17px}
+.brand small{color:var(--muted);font-weight:500;font-size:13px}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:var(--panel);padding:9px 14px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--text);transition:border-color .15s,transform .1s}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 15px;border-radius:10px;font-weight:600;font-size:13.5px;color:var(--text);transition:border-color .15s,transform .1s}
 .btn:hover{border-color:var(--muted-dim)}
 .btn:active{transform:scale(.96)}
 .btn:disabled{opacity:.55;cursor:default;transform:none}
-.btn.dark{background:var(--ink);color:var(--amber);border-color:var(--ink)}
-.btn.pay{background:var(--free);color:#fff;border-color:var(--free)}
-.btn.pay:hover{border-color:var(--free)}
-.btn.icon{width:38px;padding:9px 0;text-align:center}
-.live-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);font-weight:600;padding:0 4px}
-.live-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--free);box-shadow:0 0 0 3px var(--free-tint)}
+.btn.pay{background:var(--sage);color:#fff;border-color:var(--sage)}
+.btn.icon{width:38px;padding:9px 0;text-align:center;background:transparent}
+.live-pill{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);font-weight:600;padding:0 6px}
+.live-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--sage)}
 
-.container{max-width:1180px;margin:auto;padding:24px 4vw 12px}
-.banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;line-height:1.6}
-.banner.err{background:var(--ember-tint);color:var(--ember-dim);border:1px solid #c23b2b55}
+.container{max-width:1180px;margin:auto;padding:32px 4vw 16px}
+.banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:16px;display:flex;gap:9px;align-items:flex-start;line-height:1.6;background:var(--brick-tint);color:var(--brick-dim);border:1px solid #c2492f33}
 .banner .x{margin-inline-start:auto;border:none;background:transparent;color:inherit;font-size:13px;opacity:.7;flex:none}
 
-/* ---------------- QR ticket ---------------- */
-.qr-wrap{position:relative;margin-bottom:18px}
-.qr-panel{position:relative;background:linear-gradient(128deg,var(--ink),var(--ink2));color:#eef1ee;border-radius:20px;padding:24px 30px;display:flex;gap:10px;align-items:center;justify-content:space-between;overflow:hidden}
-.qr-panel::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:1px;background-image:repeating-linear-gradient(to bottom,#eef1ee33 0 8px,transparent 8px 16px);display:none}
-.qr-left{display:flex;flex-direction:column;gap:7px;z-index:1}
-.qr-eyebrow{color:#aeb8b3;font-size:12.5px;font-weight:600}
-.qr-code-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.qr-code-text{font-size:30px;font-weight:800;letter-spacing:5px;color:var(--amber)}
-.qr-code-text.loading{font-size:15px;letter-spacing:normal;color:#aeb8b3;font-weight:600}
-.qr-sub{color:#c7cfcb;font-size:13px}
-.qr-countdown-chip{display:inline-flex;align-items:center;gap:7px;background:#ffffff14;border:1px solid #ffffff22;border-radius:100px;padding:5px 12px;font-size:12.5px;color:#eef1ee;width:fit-content}
-.qr-countdown-chip .num{font-weight:700}
-.qr-countdown-chip.warn{background:var(--ember-tint);color:var(--ember-dim);border-color:transparent}
-.qr-stub{position:relative;background:#fff;border-radius:14px;padding:10px;display:grid;place-items:center;min-height:132px;min-width:132px;z-index:1}
-.qr-notch{position:absolute;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:var(--bg);z-index:2}
-.qr-notch.l{inset-inline-start:-11px}
-.qr-notch.r{inset-inline-start:auto;inset-inline-end:calc(-1 * (30px - 11px))}
-[data-theme="dark"] .qr-notch{background:var(--bg)}
+/* ---------------- utility strip: kpis + qr ---------------- */
+.strip{display:grid;grid-template-columns:repeat(3,1fr) 1.7fr;gap:14px;margin-bottom:34px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.stat .lbl{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;font-weight:600}
+.stat .lbl i{width:7px;height:7px;border-radius:50%;flex:none}
+.stat.c-brick .lbl i{background:var(--brick)}.stat.c-amber .lbl i{background:var(--amber)}.stat.c-sage .lbl i{background:var(--sage)}
+.stat b{display:block;font-size:26px;margin-top:10px}
 
-/* ---------------- KPIs ---------------- */
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow)}
-.kpi{padding:15px 18px;border-inline-start:1px solid var(--line)}
-.kpi:first-child{border-inline-start:none}
-.kpi .lbl{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;font-weight:600}
-.kpi .dot{width:7px;height:7px;border-radius:50%;flex:none}
-.kpi.c-steel .dot{background:var(--steel)}.kpi.c-amber .dot{background:var(--amber)}.kpi.c-ember .dot{background:var(--ember)}
-.kpi b{display:block;font-family:var(--font-num);font-size:23px;margin-top:7px;font-weight:700}
+.qr-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.qr-info{flex:1;min-width:0}
+.qr-info .lbl{color:var(--muted);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.qr-info .lbl i{width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none}
+.qr-code{font-size:24px;font-weight:700;letter-spacing:4px;margin-top:9px}
+.qr-code.loading{font-size:14px;letter-spacing:normal;color:var(--muted);font-weight:600}
+.qr-bar{height:4px;border-radius:100px;background:var(--line-soft);margin-top:11px;overflow:hidden}
+.qr-bar-fill{height:100%;background:var(--amber);border-radius:100px;transition:width 1s linear}
+.qr-bar-fill.warn{background:var(--brick)}
+.qr-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;place-items:center;min-height:92px;min-width:92px;flex:none}
 
 /* ---------------- section / legend ---------------- */
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:6px 0 14px;flex-wrap:wrap}
-.section-title h2{margin:0;font-size:16.5px;font-weight:700}
-.legend{display:flex;gap:16px;flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:0 0 18px;flex-wrap:wrap}
+.section-title h2{margin:0;font-size:19px;font-weight:700}
+.legend{display:flex;gap:18px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.legend .free i{background:var(--free)}.legend .active i{background:var(--steel)}.legend .due i{background:var(--ember)}
+.legend .free i{background:var(--sage)}.legend .active i{background:var(--amber)}.legend .due i{background:var(--brick)}
 
 /* ---------------- table grid ---------------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:11px}
-.tile{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:14px 12px 12px;text-align:start;box-shadow:var(--shadow);transition:transform .1s,border-color .15s}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px}
+.tile{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:start;transition:transform .1s,border-color .15s}
 .tile:hover{border-color:var(--muted-dim)}
 .tile:active{transform:scale(.97)}
-.tile .num{font-family:var(--font-num);font-weight:700;font-size:21px;line-height:1}
-.tile .status{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:11.5px;color:var(--muted);font-weight:600}
-.tile .status i{width:7px;height:7px;border-radius:50%;flex:none}
-.tile .amt{margin-top:9px;font-family:var(--font-num);font-weight:700;font-size:14px;padding-top:9px;border-top:1px dashed var(--line-soft)}
-.tile.free{border-color:var(--line)}
-.tile.active{border-color:var(--steel);background:var(--steel-tint)}
-.tile.active .status i{background:var(--steel)}
-.tile.due{border-color:var(--ember);background:var(--ember-tint)}
-.tile.due .status i{background:var(--ember)}
-.tile.due .amt{color:var(--ember-dim);border-top-color:#c23b2b33}
-.tile.free .status i{background:var(--free)}
-.tile.selected{outline:2px solid var(--ink);outline-offset:2px}
-.empty-note{text-align:center;padding:40px;color:var(--muted-dim);grid-column:1/-1}
+.tile .num{font-size:24px;font-weight:700;line-height:1}
+.tile .status{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:12px;color:var(--muted);font-weight:600}
+.tile .status i{width:6px;height:6px;border-radius:50%;flex:none}
+.tile.free .status i{background:var(--sage)}
+.tile.active{border-inline-start:3px solid var(--amber)}
+.tile.active .status i{background:var(--amber)}
+.tile.due{background:var(--brick-tint);border-color:transparent;border-inline-start:3px solid var(--brick)}
+.tile.due .status i{background:var(--brick)}
+.tile.due .amt{margin-top:11px;font-size:15px;font-weight:700;color:var(--brick-dim);padding-top:10px;border-top:1px solid #c2492f2b}
+.tile.selected{outline:2px solid var(--text);outline-offset:2px}
+.empty-note{text-align:center;padding:48px;color:var(--muted-dim);grid-column:1/-1}
 
 /* ---------------- drawer ---------------- */
-.scrim{position:fixed;inset:0;background:#0e12119c;opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
+.scrim{position:fixed;inset:0;background:#181c1799;opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
 .scrim.open{opacity:1;pointer-events:auto}
-.drawer{position:fixed;inset-inline-end:0;top:0;bottom:0;width:min(400px,92vw);background:var(--panel);z-index:41;box-shadow:-16px 0 40px -16px rgba(0,0,0,.25);transform:translateX(105%);transition:transform .22s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.drawer{position:fixed;inset-inline-end:0;top:0;bottom:0;width:min(400px,92vw);background:var(--panel);z-index:41;border-inline-start:1px solid var(--line);transform:translateX(105%);transition:transform .22s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
 [dir="rtl"] .drawer{transform:translateX(-105%)}
 .drawer.open{transform:translateX(0)}
-.drawer-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-.drawer-head h3{margin:0;font-size:17px}
+.drawer-head{padding:20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.drawer-head h3{margin:0;font-size:18px}
 .drawer-head .st{font-size:12.5px;color:var(--muted);margin-top:3px}
-.drawer-close{border:none;background:var(--panel2);width:32px;height:32px;border-radius:9px;color:var(--text);font-size:15px;flex:none}
-.drawer-body{padding:16px 20px;overflow-y:auto;flex:1}
-.order-block{border:1px solid var(--line-soft);border-radius:12px;padding:12px 14px;margin-bottom:10px}
-.order-block .oh{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.drawer-close{border:none;background:var(--panel2);width:34px;height:34px;border-radius:10px;color:var(--text);font-size:15px;flex:none}
+.drawer-body{padding:18px 20px;overflow-y:auto;flex:1}
+.order-block{border:1px solid var(--line-soft);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.order-block .oh{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:9px}
 .order-block .oh .badge{font-weight:700}
-.order-block .oh .badge.served{color:var(--ember-dim)}
-.order-block .oh .badge.active{color:var(--steel-dim)}
-.item-row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:var(--text-dim)}
+.order-block .oh .badge.served{color:var(--brick-dim)}
+.order-block .oh .badge.active{color:var(--amber-dim)}
+.item-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--text-dim)}
 .item-row b{color:var(--text);font-weight:600}
-.drawer-foot{padding:16px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
-.drawer-total{display:flex;justify-content:space-between;font-size:15px;font-weight:700}
-.drawer-total .mono{font-size:17px}
-.drawer-empty{text-align:center;padding:36px 10px;color:var(--muted-dim);font-size:13.5px}
+.drawer-foot{padding:18px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.drawer-total{display:flex;justify-content:space-between;font-size:15.5px;font-weight:700}
+.drawer-total .tnum{font-size:18px}
+.drawer-empty{text-align:center;padding:40px 10px;color:var(--muted-dim);font-size:13.5px}
 
-footer{padding:30px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
+footer{padding:34px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
 
+@media(max-width:900px){
+  .strip{grid-template-columns:1fr 1fr;grid-template-areas:"a b" "c c"}
+  .strip .stat:nth-child(1){grid-area:a}.strip .stat:nth-child(2){grid-area:b}.strip .stat:nth-child(3){display:none}
+  .strip .qr-card{grid-area:c}
+}
 @media(max-width:640px){
-  .kpis{grid-template-columns:1fr}
-  .kpi{border-inline-start:none;border-top:1px solid var(--line)}
-  .kpi:first-child{border-top:none}
-  .qr-panel{flex-direction:column;align-items:stretch;text-align:center}
-  .qr-left{align-items:center}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+  .strip{grid-template-columns:1fr;grid-template-areas:"a" "b" "c"}
+  .strip .stat:nth-child(2){display:block}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .tile{padding:16px 10px}
+  .container{padding:24px 5vw 12px}
 }
 </style>
 </head>
@@ -154,14 +137,14 @@ const CONFIG={
   SUPABASE_URL:"https://rovuwlpkmscspjdtjipl.supabase.co",
   SUPABASE_ANON_KEY:"sb_publishable_slGnzuYx_rVNKPL1AoCMbw_thK-RMJ9",
   RESTAURANT_NAME:"RestoFlow", CURRENCY:"ج.م", TABLES:30,
-  QR_TABLE:"cashier_qr_codes",   // now a single row, id = QR_ROW_ID, updated in place every hour
-  QR_ROW_ID:1
+  QR_TABLE:"cashier_qr_codes",   // single seeded row, id = QR_ROW_ID, updated in place every hour
+  QR_ROW_ID:"00000000-0000-0000-0000-000000000001" // fixed uuid — see migration SQL
 };
 
 let s={
   lang:"ar", sb:null, theme:localStorage.getItem("rf_theme")||"light",
   orders:[], loading:true, error:null,
-  qr:{code:null,expiresAt:null,loading:true},
+  qr:{code:null,expiresAt:null,issuedAt:null,loading:true},
   now:new Date(),
   selectedTable:null, drawerOpen:false
 };
@@ -169,13 +152,13 @@ const t=(a,e)=>s.lang==="ar"?a:e;
 const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
 
 /* ---------------- hourly QR code, updated in place ----------------
-   A single row (id = QR_ROW_ID) holds the current code. Every hour we
-   overwrite that same row with a fresh code + new expiry instead of
-   inserting a new one — the table never grows. Two cashier screens
-   racing at the same moment both try to write; whichever write lands
-   last simply wins, and both screens re-read the same row a moment
-   later, so they stay in sync. Requires QR_TABLE to have an integer
-   "id" primary key column. */
+   A single seeded row (id = QR_ROW_ID, a fixed uuid) holds the current
+   code. Every hour we overwrite that same row with a fresh code + new
+   expiry instead of inserting a new one — the table never grows. Two
+   cashier screens racing at the same moment both try to write;
+   whichever write lands last simply wins, and both screens re-read the
+   same row a moment later, so they stay in sync. Requires the
+   migration (seeds that row + adds an UPDATE policy). */
 function nextHourBoundary(d){
   const n=new Date(d); n.setUTCMinutes(0,0,0); n.setUTCHours(n.getUTCHours()+1); return n;
 }
@@ -200,7 +183,8 @@ async function ensureHourlyQR(){
       if(upErr) throw upErr;
       data=upserted;
     }
-    s.qr={code:data.code,expiresAt:new Date(data.expires_at),loading:false};
+    const expiresAt=new Date(data.expires_at);
+    s.qr={code:data.code,expiresAt,issuedAt:new Date(expiresAt.getTime()-3600000),loading:false};
     s.error=null;
   }catch(e){
     s.qr.loading=false;
@@ -253,13 +237,19 @@ async function markTablePaid(n){
 /* ---------------- render ---------------- */
 function header(){
   return `<header class="top">
-    <div class="brand"><div class="logo">R</div><div><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة الكاشير","Cashier screen")}</small></div></div>
+    <div class="brand"><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة الكاشير","Cashier screen")}</small></div>
     <div class="actions">
       <span class="live-pill"><span class="dot"></span>${t("متصل مباشرة","Live")}</span>
       <button class="btn icon" id="themeToggle">${s.theme==="dark"?"☀️":"🌙"}</button>
-      <button class="btn dark" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
+      <button class="btn" id="lang">${s.lang==="ar"?"EN":"عربي"}</button>
     </div>
   </header>`;
+}
+function qrProgress(){
+  if(!s.qr.expiresAt||!s.qr.issuedAt) return 0;
+  const total=s.qr.expiresAt-s.qr.issuedAt;
+  const left=s.qr.expiresAt-s.now;
+  return Math.max(0,Math.min(100,(left/total)*100));
 }
 function fmtCountdown(){
   if(!s.qr.expiresAt)return "—";
@@ -268,29 +258,24 @@ function fmtCountdown(){
   const m=Math.floor(ms/60000), sec=Math.floor((ms%60000)/1000);
   return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
 }
-function qrPanel(){
-  const soon=s.qr.expiresAt && (s.qr.expiresAt-s.now)<60000;
-  return `<div class="qr-wrap"><section class="qr-panel">
-    <div class="qr-left">
-      <div class="qr-eyebrow">${t("كود الدفع الكاش الحالي","Current cash-payment code")}</div>
-      <div class="qr-code-row">
-        ${s.qr.loading?`<div class="qr-code-text loading">${t("جارِ التحميل…","Loading…")}</div>`
-          :`<div class="qr-code-text mono">${s.qr.code||"—"}</div>`}
-      </div>
-      <div class="qr-sub">${t("بيتحدّث تلقائيًا كل ساعة — نفس السجل، مش سجل جديد","Updates in place every hour")}</div>
-      ${s.qr.loading?"":`<div class="qr-countdown-chip${soon?" warn":""}" id="qrCountdown">${t("كود جديد بعد","New code in")} <span class="num mono">${fmtCountdown()}</span></div>`}
-    </div>
-    <div class="qr-stub" id="qrBox"></div>
-  </section></div>`;
-}
-function kpis(){
+function strip(){
   const dueTables=allDueTables();
   const totalDue=dueTables.reduce((a,n)=>a+tableDue(n),0);
   const dueOrders=s.orders.filter(o=>o.status==="served").length;
-  return `<div class="kpis">
-    <div class="kpi c-ember"><div class="lbl"><span class="dot"></span>${t("ترابيزات محتاجة تحصيل","Tables awaiting payment")}</div><b>${dueTables.length}</b></div>
-    <div class="kpi c-amber"><div class="lbl"><span class="dot"></span>${t("إجمالي المطلوب تحصيله","Total due now")}</div><b>${money(totalDue)}</b></div>
-    <div class="kpi c-steel"><div class="lbl"><span class="dot"></span>${t("عدد الطلبات المستحقة","Orders awaiting payment")}</div><b>${dueOrders}</b></div>
+  const soon=s.qr.expiresAt && (s.qr.expiresAt-s.now)<60000;
+  return `<div class="strip">
+    <div class="stat c-brick"><div class="lbl"><i></i>${t("ترابيزات محتاجة تحصيل","Tables awaiting payment")}</div><b>${dueTables.length}</b></div>
+    <div class="stat c-amber"><div class="lbl"><i></i>${t("إجمالي المطلوب تحصيله","Total due now")}</div><b>${money(totalDue)}</b></div>
+    <div class="stat c-sage"><div class="lbl"><i></i>${t("عدد الطلبات المستحقة","Orders awaiting payment")}</div><b>${dueOrders}</b></div>
+    <div class="qr-card">
+      <div class="qr-info">
+        <div class="lbl"><i></i>${t("كود الدفع الكاش","Cash-payment code")}</div>
+        ${s.qr.loading?`<div class="qr-code loading">${t("جارِ التحميل…","Loading…")}</div>`
+          :`<div class="qr-code tnum">${s.qr.code||"—"}</div>
+            <div class="qr-bar"><div class="qr-bar-fill${soon?" warn":""}" id="qrBar" style="width:${qrProgress()}%"></div></div>`}
+      </div>
+      <div class="qr-box" id="qrBox"></div>
+    </div>
   </div>`;
 }
 function tile(n){
@@ -301,7 +286,7 @@ function tile(n){
   return `<button class="tile ${state}${selected}" data-table="${n}">
     <div class="num">${n}</div>
     <div class="status"><i></i>${label}</div>
-    ${state==="due"?`<div class="amt">${money(due)}</div>`:""}
+    ${state==="due"?`<div class="amt tnum">${money(due)}</div>`:""}
   </button>`;
 }
 function tablesSection(){
@@ -326,7 +311,7 @@ function drawer(){
   const body=os.length?os.map(o=>{
     const items=(o.order_items||[]).map(i=>`<div class="item-row"><span>${i.name_ar||i.name||i.name_en}</span><b>×${i.quantity}</b></div>`).join("");
     return `<div class="order-block">
-      <div class="oh"><span class="badge ${o.status==='served'?'served':'active'}">${o.status==='served'?t('جاهز للدفع','Ready to pay'):t('جاري التحضير','In progress')}</span><span class="mono">${money(o.total)}</span></div>
+      <div class="oh"><span class="badge ${o.status==='served'?'served':'active'}">${o.status==='served'?t('جاهز للدفع','Ready to pay'):t('جاري التحضير','In progress')}</span><span class="tnum">${money(o.total)}</span></div>
       ${items||`<div class="item-row">${t("لا توجد تفاصيل","No item details")}</div>`}
     </div>`;
   }).join(""):`<div class="drawer-empty">${t("مفيش طلبات مفتوحة على الترابيزة دي دلوقتي","No open orders on this table right now")}</div>`;
@@ -338,16 +323,15 @@ function drawer(){
     </div>
     <div class="drawer-body">${body}</div>
     ${hasDue?`<div class="drawer-foot">
-      <div class="drawer-total"><span>${t("الإجمالي المطلوب","Total due")}</span><span class="mono">${money(due)}</span></div>
+      <div class="drawer-total"><span>${t("الإجمالي المطلوب","Total due")}</span><span class="tnum">${money(due)}</span></div>
       <button class="btn pay" id="drawerPay">✓ ${t("تسجيل الدفع","Mark table as paid")}</button>
     </div>`:""}
   </div>`;
 }
 function main(){
   return header()+`<main class="container">
-    ${s.error?`<div class="banner err"><span>⚠</span><span>${t("حصل خطأ:","Error:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
-    ${qrPanel()}
-    ${kpis()}
+    ${s.error?`<div class="banner"><span>⚠</span><span>${t("حصل خطأ:","Error:")} ${s.error}</span><button class="x" id="dismissErr">✕</button></div>`:""}
+    ${strip()}
     ${tablesSection()}
   </main>
   <footer>RestoFlow Cashier</footer>${drawer()}`;
@@ -356,7 +340,7 @@ function renderQRCode(){
   const box=document.getElementById("qrBox");
   if(!box || !s.qr.code)return;
   box.innerHTML="";
-  new QRCode(box,{text:s.qr.code,width:118,height:118});
+  new QRCode(box,{text:s.qr.code,width:76,height:76});
 }
 function bind(){
   document.getElementById("lang")?.addEventListener("click",()=>{s.lang=s.lang==="ar"?"en":"ar";render()});
@@ -395,13 +379,16 @@ async function init(){
   }else{
     render();
   }
-  // once a second: just tick the countdown text; only trigger a full
-  // QR refresh + re-render when the current code actually expires
+  // once a second: just tick the countdown bar/label; only trigger a
+  // full QR refresh + re-render when the current code actually expires
   setInterval(()=>{
     s.now=new Date();
     if(s.qr.expiresAt && s.now>=s.qr.expiresAt){ ensureHourlyQR(); return; }
-    const el=document.getElementById("qrCountdown");
-    if(el) el.innerHTML=`${t("كود جديد بعد","New code in")} <span class="num mono">${fmtCountdown()}</span>`;
+    const bar=document.getElementById("qrBar");
+    if(bar){
+      bar.style.width=qrProgress()+"%";
+      bar.classList.toggle("warn",(s.qr.expiresAt-s.now)<60000);
+    }
   },1000);
 }
 
