@@ -51,21 +51,24 @@ svg{display:block}
 .btn.pay{background:var(--sage);color:#fff;border-color:var(--sage)}
 .btn.icon{width:38px;height:38px;padding:0;justify-content:center;background:var(--panel)}
 .live-pill{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);font-weight:600;padding:0 6px}
-.live-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px var(--sage-tint)}
+.live-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px var(--sage-tint);animation:livePulse 2s infinite}
+.live-pill.connecting .dot{background:var(--amber);box-shadow:0 0 0 3px var(--amber-tint)}
+.live-pill.offline .dot{background:var(--brick);box-shadow:0 0 0 3px var(--brick-tint);animation:none}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
 
 .container{max-width:1180px;margin:auto;padding:34px 4vw 16px}
 .banner{border-radius:12px;padding:11px 14px;font-size:12.5px;margin-bottom:18px;display:flex;gap:9px;align-items:flex-start;line-height:1.6;background:var(--brick-tint);color:var(--brick-dim);border:1px solid #c2492f33}
 .banner .x{margin-inline-start:auto;border:none;background:transparent;color:inherit;font-size:13px;opacity:.7;flex:none}
 
 /* ---------------- utility strip: kpis + qr ---------------- */
-.strip{display:grid;grid-template-columns:repeat(3,1fr) 1.9fr;gap:14px;margin-bottom:36px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px 20px;box-shadow:var(--shadow-sm)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:14px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px 20px;box-shadow:var(--shadow-sm);transition:box-shadow .3s}
 .stat .lbl{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;font-weight:600}
 .stat .lbl i{width:7px;height:7px;border-radius:50%;flex:none}
 .stat.c-brick .lbl i{background:var(--brick)}.stat.c-amber .lbl i{background:var(--amber)}.stat.c-sage .lbl i{background:var(--sage)}
 .stat b{display:block;font-size:27px;margin-top:11px;letter-spacing:-.02em}
 
-.qr-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)}
+.qr-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm);margin-bottom:36px}
 .qr-info{flex:1;min-width:0}
 .qr-info .lbl{color:var(--muted);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
 .qr-info .lbl i{width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none}
@@ -105,6 +108,8 @@ svg{display:block}
 .tile.due .status i{background:var(--brick)}
 .tile.due .amt{margin-top:12px;font-size:15.5px;font-weight:700;color:var(--brick-dim);padding-top:11px;border-top:1px solid #c2492f2b}
 .tile.selected{outline:2px solid var(--text);outline-offset:2px}
+.tile.flash{animation:tileFlash 1s ease-in-out 3}
+@keyframes tileFlash{0%,100%{box-shadow:var(--shadow-md)}50%{box-shadow:0 0 0 5px var(--brick-tint),var(--shadow-lg)}}
 .empty-note{text-align:center;padding:48px;color:var(--muted-dim);grid-column:1/-1}
 
 /* ---------------- drawer ---------------- */
@@ -123,23 +128,24 @@ svg{display:block}
 .order-block .oh .badge{font-weight:700}
 .order-block .oh .badge.served{color:var(--brick-dim)}
 .order-block .oh .badge.active{color:var(--amber-dim)}
-.item-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--text-dim)}
-.item-row b{color:var(--text);font-weight:600}
+.item-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--text-dim);gap:10px}
+.item-row b{color:var(--text);font-weight:600;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.item-row b .tnum{color:var(--text-dim);font-weight:600;font-size:12.5px}
+.order-pay{margin-top:11px;width:100%;justify-content:center;font-size:12.5px;padding:8px;background:var(--panel2);color:var(--sage-dim);border-color:var(--sage)}
+.order-pay:hover{background:var(--sage-tint)}
 .drawer-foot{padding:18px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
 .drawer-total{display:flex;justify-content:space-between;font-size:15.5px;font-weight:700}
 .drawer-total .tnum{font-size:18px}
 .drawer-empty{text-align:center;padding:40px 10px;color:var(--muted-dim);font-size:13.5px}
 
+/* ---------------- toast ---------------- */
+.toast{position:fixed;bottom:22px;inset-inline:0;display:flex;justify-content:center;z-index:50;pointer-events:none}
+.toast .msg{background:var(--text);color:var(--bg);padding:11px 20px;border-radius:100px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);animation:toastIn .25s ease}
+@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+
 footer{padding:36px 4vw;color:var(--muted-dim);text-align:center;font-size:12.5px}
 
-@media(max-width:900px){
-  .strip{grid-template-columns:1fr 1fr;grid-template-areas:"a b" "c c"}
-  .strip .stat:nth-child(1){grid-area:a}.strip .stat:nth-child(2){grid-area:b}.strip .stat:nth-child(3){display:none}
-  .strip .qr-card{grid-area:c}
-}
 @media(max-width:640px){
-  .strip{grid-template-columns:1fr;grid-template-areas:"a" "b" "c"}
-  .strip .stat:nth-child(2){display:block}
   .grid{grid-template-columns:repeat(3,1fr)}
   .tile{padding:16px 10px}
   .container{padding:26px 5vw 12px}
@@ -171,11 +177,38 @@ let s={
   orders:[], loading:true, error:null,
   qr:{code:null,expiresAt:null,issuedAt:null,loading:true},
   now:new Date(),
-  selectedTable:null, drawerOpen:false
+  selectedTable:null, drawerOpen:false,
+  live:"connecting",           // connecting | online | offline
+  todayRevenue:null, todayPaidCount:null,
+  firstLoad:true, justDue:new Set(), toast:null
 };
+let liveChannel=null, reconnectTimer=null;
 const t=(a,e)=>s.lang==="ar"?a:e;
 const money=n=>`${Number(n||0).toLocaleString(s.lang==="ar"?"ar-EG":"en-US")} ${CONFIG.CURRENCY}`;
 const clockTime=d=>d?d.toLocaleTimeString(s.lang==="ar"?"ar-EG":"en-US",{hour:"2-digit",minute:"2-digit"}):"—";
+
+/* short two-tone chime for "table ready to collect" alerts — no external asset needed */
+function beep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const play=(freq,start,dur)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type="sine";o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,ctx.currentTime+start);
+      g.gain.exponentialRampToValueAtTime(0.18,ctx.currentTime+start+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+start+dur);
+      o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+dur+0.02);
+    };
+    play(740,0,.16); play(988,0.14,.28);
+    setTimeout(()=>ctx.close(),600);
+  }catch(e){}
+}
+function showToast(msg){
+  s.toast=msg; render();
+  clearTimeout(showToast._t);
+  showToast._t=setTimeout(()=>{ s.toast=null; render(); },2500);
+}
 
 /* ---------------- hourly QR code, updated in place ----------------
    A single seeded row (id = QR_ROW_ID, a fixed uuid) holds the current
@@ -227,10 +260,22 @@ async function fetchOrders(){
     const {data,error}=await s.sb.from("orders").select("*,order_items(*)")
       .neq("status","paid").order("table_number",{ascending:true});
     if(error)throw error;
+    // snapshot which tables were "due" under the OLD data, before we overwrite it
+    const prevDue=s.firstLoad?null:new Set(allDueTables());
     s.orders=data||[];
     s.error=null;
+    if(prevDue){
+      const newlyDue=allDueTables().filter(n=>!prevDue.has(n));
+      if(newlyDue.length){
+        newlyDue.forEach(n=>s.justDue.add(n));
+        beep();
+        setTimeout(()=>{ newlyDue.forEach(n=>s.justDue.delete(n)); render(); },4000);
+      }
+    }
+    s.firstLoad=false;
   }catch(e){ s.error=e.message||String(e); }
   s.loading=false;
+  await fetchTodayRevenue();
   render();
 }
 function ordersFor(n){ return s.orders.filter(o=>o.table_number===n); }
@@ -249,23 +294,58 @@ function allDueTables(){
   return [...set];
 }
 
+/* how much cash has actually been collected today — separate lightweight
+   query against paid orders; fails silently (older schemas without a
+   created_at column just won't show the stat) so it never blocks the
+   rest of the dashboard */
+async function fetchTodayRevenue(){
+  if(!s.sb)return;
+  try{
+    const start=new Date(); start.setHours(0,0,0,0);
+    const {data,error}=await s.sb.from("orders").select("total").eq("status","paid").gte("created_at",start.toISOString());
+    if(error) throw error;
+    s.todayRevenue=(data||[]).reduce((a,o)=>a+Number(o.total||0),0);
+    s.todayPaidCount=(data||[]).length;
+  }catch(e){
+    s.todayRevenue=null; s.todayPaidCount=null;
+  }
+}
+
 /* cashier action: mark every served (unpaid) order on that table as paid */
 async function markTablePaid(n){
   if(!s.sb)return;
   const ids=ordersFor(n).filter(o=>o.status==="served").map(o=>o.id);
   if(!ids.length)return;
   const r=await s.sb.from("orders").update({status:"paid"}).in("id",ids);
-  if(r.error){ alert(r.error.message); return; }
+  if(r.error){ s.error=r.error.message; render(); return; }
   s.drawerOpen=false; s.selectedTable=null;
+  showToast(t(`تم تسجيل الدفع لترابيزة ${n} ✅`,`Table ${n} marked as paid ✅`));
+  await fetchOrders();
+}
+/* cashier action: mark a single order as paid (partial payment on a table) */
+async function markOrderPaid(id){
+  if(!s.sb)return;
+  const r=await s.sb.from("orders").update({status:"paid"}).eq("id",id);
+  if(r.error){ s.error=r.error.message; render(); return; }
+  showToast(t("تم تسجيل دفع الطلب ✅","Order marked as paid ✅"));
   await fetchOrders();
 }
 
 /* ---------------- render ---------------- */
+function livePill(){
+  const map={
+    online:{cls:"",text:t("متصل مباشرة","Live")},
+    connecting:{cls:" connecting",text:t("جارِ الاتصال…","Connecting…")},
+    offline:{cls:" offline",text:t("غير متصل","Offline")}
+  };
+  const st=map[s.live]||map.connecting;
+  return `<span class="live-pill${st.cls}"><span class="dot"></span>${st.text}</span>`;
+}
 function header(){
   return `<header class="top">
     <div class="brand"><div class="mark">R</div><div class="names"><b>${CONFIG.RESTAURANT_NAME}</b><small>${t("شاشة الكاشير","Cashier screen")}</small></div></div>
     <div class="actions">
-      <span class="live-pill"><span class="dot"></span>${t("متصل مباشرة","Live")}</span>
+      ${livePill()}
       <button class="btn icon" id="themeToggle">${s.theme==="dark"?ICONS.sun:ICONS.moon}</button>
       <button class="btn" id="lang">${ICONS.globe}${s.lang==="ar"?"EN":"عربي"}</button>
     </div>
@@ -289,11 +369,15 @@ function strip(){
   const totalDue=dueTables.reduce((a,n)=>a+tableDue(n),0);
   const dueOrders=s.orders.filter(o=>o.status==="served").length;
   const soon=s.qr.expiresAt && (s.qr.expiresAt-s.now)<60000;
-  return `<div class="strip">
+  const revenueStat=s.todayRevenue==null?"":`
+    <div class="stat c-sage"><div class="lbl"><i></i>${t("المحصّل اليوم","Collected today")}</div><b class="tnum">${money(s.todayRevenue)}</b></div>`;
+  return `<div class="stats-row">
     <div class="stat c-brick"><div class="lbl"><i></i>${t("ترابيزات محتاجة تحصيل","Tables awaiting payment")}</div><b>${dueTables.length}</b></div>
     <div class="stat c-amber"><div class="lbl"><i></i>${t("إجمالي المطلوب تحصيله","Total due now")}</div><b>${money(totalDue)}</b></div>
     <div class="stat c-sage"><div class="lbl"><i></i>${t("عدد الطلبات المستحقة","Orders awaiting payment")}</div><b>${dueOrders}</b></div>
-    <div class="qr-card">
+    ${revenueStat}
+  </div>
+  <div class="qr-card">
       <div class="qr-info">
         <div class="lbl"><i></i>${t("كود الدفع الكاش","Cash-payment code")}</div>
         ${s.qr.loading?`<div class="qr-code loading">${t("جارِ التحميل…","Loading…")}</div>`
@@ -305,15 +389,15 @@ function strip(){
             <div class="qr-bar"><div class="qr-bar-fill${soon?" warn":""}" id="qrBar" style="width:${qrProgress()}%"></div></div>`}
       </div>
       <div class="qr-box" id="qrBox"></div>
-    </div>
   </div>`;
 }
 function tile(n){
   const state=tableState(n);
   const due=state==="due"?tableDue(n):0;
   const selected=s.selectedTable===n?" selected":"";
+  const flash=s.justDue.has(n)?" flash":"";
   const label=state==="due"?t("جاهزة للتحصيل","Ready to collect"):state==="active"?t("عليها طلب","Order placed"):t("متاحة","Available");
-  return `<button class="tile ${state}${selected}" data-table="${n}">
+  return `<button class="tile ${state}${selected}${flash}" data-table="${n}">
     <div class="num">${n}</div>
     <div class="status"><i></i>${label}</div>
     ${state==="due"?`<div class="amt tnum">${money(due)}</div>`:""}
@@ -339,10 +423,16 @@ function drawer(){
   const due=tableDue(n);
   const hasDue=os.some(o=>o.status==="served");
   const body=os.length?os.map(o=>{
-    const items=(o.order_items||[]).map(i=>`<div class="item-row"><span>${i.name_ar||i.name||i.name_en}</span><b>×${i.quantity}</b></div>`).join("");
+    const items=(o.order_items||[]).map(i=>{
+      const name=i.name_ar||i.name||i.name_en;
+      const hasPrice=i.price!=null && !isNaN(Number(i.price));
+      return `<div class="item-row"><span>${name}</span><b>${hasPrice?`<span class="tnum">${money(i.price*i.quantity)}</span>`:""}×${i.quantity}</b></div>`;
+    }).join("");
+    const canPay=o.status==="served";
     return `<div class="order-block">
       <div class="oh"><span class="badge ${o.status==='served'?'served':'active'}">${o.status==='served'?t('جاهز للدفع','Ready to pay'):t('جاري التحضير','In progress')}</span><span class="tnum">${money(o.total)}</span></div>
       ${items||`<div class="item-row">${t("لا توجد تفاصيل","No item details")}</div>`}
+      ${canPay?`<button class="btn order-pay" data-order="${o.id}">${ICONS.check}${t("دفع هذا الطلب","Pay this order")}</button>`:""}
     </div>`;
   }).join(""):`<div class="drawer-empty">${t("مفيش طلبات مفتوحة على الترابيزة دي دلوقتي","No open orders on this table right now")}</div>`;
   return `<div class="scrim${open?" open":""}" id="scrim"></div>
@@ -364,7 +454,7 @@ function main(){
     ${strip()}
     ${tablesSection()}
   </main>
-  <footer>RestoFlow Cashier</footer>${drawer()}`;
+  <footer>RestoFlow Cashier</footer>${drawer()}${s.toast?`<div class="toast"><div class="msg">${s.toast}</div></div>`:""}`;
 }
 function renderQRCode(){
   const box=document.getElementById("qrBox");
@@ -384,8 +474,15 @@ function bind(){
   document.getElementById("drawerClose")?.addEventListener("click",()=>{ s.drawerOpen=false; render(); });
   document.getElementById("scrim")?.addEventListener("click",()=>{ s.drawerOpen=false; render(); });
   document.getElementById("drawerPay")?.addEventListener("click",(e)=>{
+    if(!confirm(t(`تسجيل الدفع لكل الطلبات الجاهزة على ترابيزة ${s.selectedTable}؟`,`Mark all ready orders on table ${s.selectedTable} as paid?`))) return;
     e.target.disabled=true; e.target.textContent=t("جارِ التسجيل…","Saving…");
     markTablePaid(s.selectedTable);
+  });
+  document.querySelectorAll(".order-pay").forEach(b=>{
+    b.onclick=()=>{
+      b.disabled=true; b.textContent=t("جارِ الحفظ…","Saving…");
+      markOrderPaid(b.dataset.order);
+    };
   });
 }
 function render(){
@@ -395,17 +492,35 @@ function render(){
   bind();
   renderQRCode();
 }
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape" && s.drawerOpen){ s.drawerOpen=false; render(); }
+});
+
+/* realtime subscription with an actual connection-status readout + auto-reconnect */
+function subscribeLive(){
+  s.live="connecting"; render();
+  if(liveChannel){ try{ s.sb.removeChannel(liveChannel); }catch(e){} }
+  let debounce=null;
+  liveChannel=s.sb.channel("rf-cashier-live")
+    .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{
+      clearTimeout(debounce); debounce=setTimeout(fetchOrders,500);
+    })
+    .subscribe((status)=>{
+      if(status==="SUBSCRIBED"){ s.live="online"; clearTimeout(reconnectTimer); }
+      else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"||status==="CLOSED"){
+        s.live="offline";
+        clearTimeout(reconnectTimer);
+        reconnectTimer=setTimeout(subscribeLive,4000);
+      }
+      render();
+    });
+}
 
 async function init(){
   if(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY){
     s.sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY);
     await Promise.all([ensureHourlyQR(),fetchOrders()]);
-    let debounce=null;
-    s.sb.channel("rf-cashier-live")
-      .on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>{
-        clearTimeout(debounce); debounce=setTimeout(fetchOrders,500);
-      })
-      .subscribe();
+    subscribeLive();
   }else{
     render();
   }
